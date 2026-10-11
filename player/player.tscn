@@ -1,33 +1,50 @@
 [gd_scene format=3 uid="uid://vxvxhq660cmp"]
 
 [ext_resource type="Script" uid="uid://buqsfaam2a162" path="res://player/Player.cs" id="1_oul6g"]
-[ext_resource type="PackedScene" uid="uid://crtqyvo06hpic" path="res://weapons/bullet.tscn" id="2_rkbax"]
+[ext_resource type="Texture2D" uid="uid://c1jaho8p1f2y2" path="res://art/player.png" id="2_boad6"]
+[ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="3_rgyib"]
+[ext_resource type="Material" uid="uid://cifjhaubim5m8" path="res://art/neon_cycle_material.tres" id="4_hg6s5"]
+[ext_resource type="Texture2D" uid="uid://dfsw4le3doei7" path="res://art/goo.png" id="5_8t03j"]
+[ext_resource type="Texture2D" uid="uid://dp6ojh8eiqkdw" path="res://art/player_dead.png" id="6_2ieo8"]
+[ext_resource type="AudioStream" uid="uid://d235o01u7clgj" path="res://audio/player_death.wav" id="7_ebec5"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_rkbax"]
 radius = 7.0
 
-[node name="Player" type="CharacterBody2D" unique_id=510484012]
+[node name="Player" type="CharacterBody2D" unique_id=510484012 groups=["player"]]
+z_index = 1
 collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_oul6g")
-BulletScene = ExtResource("2_rkbax")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=826710886]
 shape = SubResource("CircleShape2D_rkbax")
 
 [node name="Visual" type="Node2D" parent="." unique_id=557705129]
 
-[node name="Body" type="Polygon2D" parent="Visual" unique_id=353388454]
-color = Color(1, 0.16470589, 0.42745098, 1)
-polygon = PackedVector2Array(8, 0, 7.391, 3.061, 5.657, 5.657, 3.061, 7.391, 0, 8, -3.061, 7.391, -5.657, 5.657, -7.391, 3.061, -8, 0, -7.391, -3.061, -5.657, -5.657, -3.061, -7.391, 0, -8, 3.061, -7.391, 5.657, -5.657, 7.391, -3.061)
+[node name="Alive" type="Node2D" parent="Visual" unique_id=1904984612]
 
-[node name="Nose" type="Polygon2D" parent="Visual" unique_id=1985766734]
-color = Color(0.019607844, 0.8509804, 0.9098039, 1)
-polygon = PackedVector2Array(6, -3, 13, 0, 6, 3)
+[node name="Sprite" type="Sprite2D" parent="Visual/Alive" unique_id=1155883437]
+texture = ExtResource("2_boad6")
 
-[node name="Muzzle" type="Marker2D" parent="Visual" unique_id=1810003226]
-position = Vector2(14, 0)
+[node name="Gun" parent="Visual/Alive" unique_id=20808233 instance=ExtResource("3_rgyib")]
+position = Vector2(11, 0)
+
+[node name="Corpse" type="Node2D" parent="Visual" unique_id=511698787]
+visible = false
+
+[node name="Goo" type="Sprite2D" parent="Visual/Corpse" unique_id=1412514160]
+material = ExtResource("4_hg6s5")
+position = Vector2(6, 0)
+texture = ExtResource("5_8t03j")
+
+[node name="Body" type="Sprite2D" parent="Visual/Corpse" unique_id=1418027627]
+position = Vector2(2, 0)
+texture = ExtResource("6_2ieo8")
 
 [node name="Camera" type="Camera2D" parent="." unique_id=99021898]
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
+
+[node name="DeathSound" type="AudioStreamPlayer2D" parent="." unique_id=73432174]
+stream = ExtResource("7_ebec5")

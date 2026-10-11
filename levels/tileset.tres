@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" format=3 uid="uid://cotdwfci2s71j"]
+[gd_resource type="TileSet" format=3 uid="uid://d2hcwrq2va36y"]
 
 [ext_resource type="Texture2D" uid="uid://cvfrase7gnj64" path="res://levels/tiles.png" id="1_tiles"]
 
@@ -7,6 +7,8 @@ texture = ExtResource("1_tiles")
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
 
 [resource]
 physics_layer_0/collision_layer = 1

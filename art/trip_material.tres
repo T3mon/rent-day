@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dxjesfdeveoy4"]
+
+[ext_resource type="Shader" uid="uid://dvif3w8hyltcu" path="res://art/trip.gdshader" id="1_lqtyx"]
+
+[resource]
+shader = ExtResource("1_lqtyx")
+shader_parameter/sway = 0.0015
+shader_parameter/color_split = 0.0012
+shader_parameter/drift = 0.05

@@ -1,7 +1,34 @@
 [gd_scene format=3 uid="uid://b5nk61ym4p0po"]
 
+[ext_resource type="Script" uid="uid://5ye6kv37knnw" path="res://Main.cs" id="1_h2yge"]
 [ext_resource type="PackedScene" uid="uid://ywg7ocic2t04" path="res://levels/test_room.tscn" id="1_ig7tw"]
+[ext_resource type="Material" uid="uid://dxjesfdeveoy4" path="res://art/trip_material.tres" id="3_1bvp3"]
 
 [node name="Main" type="Node2D" unique_id=1826785528]
+script = ExtResource("1_h2yge")
 
 [node name="TestRoom" parent="." unique_id=1256442886 instance=ExtResource("1_ig7tw")]
+
+[node name="Trip" type="CanvasLayer" parent="." unique_id=182106927]
+
+[node name="Filter" type="ColorRect" parent="Trip" unique_id=438629166]
+material = ExtResource("3_1bvp3")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=470378948]
+layer = 2
+
+[node name="Message" type="Label" parent="HUD" unique_id=1755535968]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.16862746, 0.8392157, 1)
+theme_override_colors/font_outline_color = Color(0.039215688, 0.019607844, 0.0627451, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 36
+text = "MESSAGE"
+horizontal_alignment = 1
+vertical_alignment = 1
