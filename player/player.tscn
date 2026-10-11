@@ -1,13 +1,16 @@
 [gd_scene format=3 uid="uid://vxvxhq660cmp"]
 
 [ext_resource type="Script" uid="uid://buqsfaam2a162" path="res://player/Player.cs" id="1_oul6g"]
+[ext_resource type="PackedScene" uid="uid://crtqyvo06hpic" path="res://weapons/bullet.tscn" id="2_rkbax"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_rkbax"]
 radius = 7.0
 
 [node name="Player" type="CharacterBody2D" unique_id=510484012]
+collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_oul6g")
+BulletScene = ExtResource("2_rkbax")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=826710886]
 shape = SubResource("CircleShape2D_rkbax")
@@ -21,6 +24,9 @@ polygon = PackedVector2Array(8, 0, 7.391, 3.061, 5.657, 5.657, 3.061, 7.391, 0, 
 [node name="Nose" type="Polygon2D" parent="Visual" unique_id=1985766734]
 color = Color(0.019607844, 0.8509804, 0.9098039, 1)
 polygon = PackedVector2Array(6, -3, 13, 0, 6, 3)
+
+[node name="Muzzle" type="Marker2D" parent="Visual" unique_id=1810003226]
+position = Vector2(14, 0)
 
 [node name="Camera" type="Camera2D" parent="." unique_id=99021898]
 position_smoothing_enabled = true
