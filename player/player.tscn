@@ -21,3 +21,7 @@ polygon = PackedVector2Array(8, 0, 7.391, 3.061, 5.657, 5.657, 3.061, 7.391, 0, 
 [node name="Nose" type="Polygon2D" parent="Visual" unique_id=1985766734]
 color = Color(0.019607844, 0.8509804, 0.9098039, 1)
 polygon = PackedVector2Array(6, -3, 13, 0, 6, 3)
+
+[node name="Camera" type="Camera2D" parent="." unique_id=99021898]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
