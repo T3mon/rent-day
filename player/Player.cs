@@ -11,6 +11,16 @@ public partial class Player : CharacterBody2D
 	[Export] public float Acceleration = 1600f; // how quickly we reach MaxSpeed
 	[Export] public float Friction = 2000f;     // how quickly we stop when no key is held
 
+	// The child node holding everything we can see. Only this part rotates;
+	// the physics body itself never spins.
+	private Node2D _visual;
+
+	// Godot calls this once, when the player enters the game.
+	public override void _Ready()
+	{
+		_visual = GetNode<Node2D>("Visual");
+	}
+
 	// Godot calls this 60 times per second, in step with the physics engine.
 	public override void _PhysicsProcess(double delta)
 	{
@@ -26,5 +36,9 @@ public partial class Player : CharacterBody2D
 
 		// Move by Velocity, sliding along anything solid instead of sticking to it.
 		MoveAndSlide();
+
+		// Turn the visuals to face the mouse cursor. Rotation 0 means facing right (+X),
+		// so everything on the player that "points" should point right.
+		_visual.LookAt(GetGlobalMousePosition());
 	}
 }
