@@ -7,9 +7,30 @@ namespace RentDay;
 public partial class Player : Character
 {
 	// [Export] shows these in the Inspector, so you can tune them without touching code.
-	[Export] public float MaxSpeed = 160f;      // pixels per second
-	[Export] public float Acceleration = 1600f; // how quickly we reach MaxSpeed
-	[Export] public float Friction = 2000f;     // how quickly we stop when no key is held
+	[Export] public float MaxSpeed = 200f;      // pixels per second
+	[Export] public float Acceleration = 2600f; // how quickly we reach MaxSpeed
+	[Export] public float Friction = 3000f;     // how quickly we stop when no key is held
+
+	// The camera leans toward the mouse, so you see further where you're aiming.
+	[Export] public float LookAhead = 0.35f;    // 0 = camera stays on you, 0.5 = halfway to the mouse
+	[Export] public float MaxLookAhead = 90f;   // pixels
+
+	private Camera2D _camera;
+
+	public override void _Ready()
+	{
+		base._Ready();
+		_camera = GetNode<Camera2D>("Camera");
+	}
+
+	// Keep the camera inside the level, so you never see past its edges.
+	public void SetCameraLimits(Rect2I area)
+	{
+		_camera.LimitLeft = area.Position.X;
+		_camera.LimitTop = area.Position.Y;
+		_camera.LimitRight = area.End.X;
+		_camera.LimitBottom = area.End.Y;
+	}
 
 	// Godot calls this 60 times per second, in step with the physics engine.
 	public override void _PhysicsProcess(double delta)
@@ -31,9 +52,11 @@ public partial class Player : Character
 		MoveAndSlide();
 
 		// Only the visuals turn toward the mouse; the physics body never spins.
-		Visual.LookAt(GetGlobalMousePosition());
+		Vector2 mouse = GetGlobalMousePosition();
+		Visual.LookAt(mouse);
+		_camera.Position = ((mouse - GlobalPosition) * LookAhead).LimitLength(MaxLookAhead);
 
-		if (Input.IsActionJustPressed("shoot"))
+		if (HasGun && Input.IsActionJustPressed("shoot"))
 			Gun.TryFire();
 	}
 }

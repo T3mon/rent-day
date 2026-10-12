@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://7f1f3vf61bhn"]
+
+[ext_resource type="Script" uid="uid://ccg3ee2e5r37n" path="res://effects/OneShotParticles.cs" id="1_script"]
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[node name="GooSpray" type="CPUParticles2D" unique_id=1462627171]
+z_index = 4
+emitting = false
+amount = 80
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+spread = 60.91
+gravity = Vector2(0, 0)
+initial_velocity_min = 70.0
+initial_velocity_max = 350.0
+damping_min = 300.0
+damping_max = 450.0
+scale_amount_min = 1.5
+scale_amount_max = 3.0
+color = Color(0.22, 1, 0.08, 1)
+color_ramp = SubResource("Gradient_fade")
+hue_variation_min = -1.0
+hue_variation_max = 1.0
+script = ExtResource("1_script")

@@ -21,12 +21,13 @@ _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=360
-window/size/window_width_override=1280
-window/size/window_height_override=720
-window/stretch/mode="canvas_items"
+window/size/viewport_width=400
+window/size/viewport_height=225
+window/size/window_width_override=1600
+window/size/window_height_override=900
+window/stretch/mode="viewport"
 window/stretch/aspect="expand"
+window/stretch/scale_mode="integer"
 
 [dotnet]
 
@@ -35,6 +36,11 @@ project/assembly_name="RentDay"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
+
+[gui]
+
+theme/default_font_antialiasing=0
+theme/custom_font="res://ui/Blox2.ttf"
 
 [input]
 
@@ -79,6 +85,7 @@ restart={
 2d_physics/layer_2="player"
 2d_physics/layer_3="enemies"
 2d_physics/layer_4="bullets"
+2d_physics/layer_5="furniture"
 
 [physics]
 

@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://effects/OneShotParticles.cs" id="1_script"]
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+colors = PackedColorArray(0.85, 0.85, 0.9, 0.6, 0.6, 0.6, 0.65, 0)
+
+[node name="MuzzleSmoke" type="CPUParticles2D"]
+z_index = 4
+emitting = false
+amount = 7
+lifetime = 0.55
+one_shot = true
+explosiveness = 0.85
+direction = Vector2(1, 0)
+spread = 22.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 12.0
+initial_velocity_max = 40.0
+damping_min = 40.0
+damping_max = 70.0
+scale_amount_min = 1.5
+scale_amount_max = 3.5
+color_ramp = SubResource("Gradient_fade")
+script = ExtResource("1_script")

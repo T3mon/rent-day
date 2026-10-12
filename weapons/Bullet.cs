@@ -10,6 +10,7 @@ public partial class Bullet : Area2D
 {
 	[Export] public float Speed = 700f;    // pixels per second
 	[Export] public float Lifetime = 1.5f; // seconds before it removes itself
+	[Export] public PackedScene SparkScene; // sparks when it hits a wall
 
 	public override void _Ready()
 	{
@@ -32,6 +33,8 @@ public partial class Bullet : Area2D
 		// Anyone killable (player or goon) dies; a wall just stops the bullet.
 		if (body is IKillable target)
 			target.Die(Transform.X);
+		else
+			Effects.Spawn(SparkScene, this, GlobalPosition, Rotation + Mathf.Pi); // sparks fly back off the wall
 
 		// QueueFree removes the node from the game at the end of this frame.
 		QueueFree();

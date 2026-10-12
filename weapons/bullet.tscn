@@ -1,15 +1,18 @@
 [gd_scene format=3 uid="uid://crtqyvo06hpic"]
 
 [ext_resource type="Script" uid="uid://dj3elx0kuvbl2" path="res://weapons/Bullet.cs" id="1_fc8e7"]
+[ext_resource type="PackedScene" path="res://effects/wall_sparks.tscn" id="2_6j2x7"]
 [ext_resource type="Texture2D" uid="uid://dhj4q8lnnaiux" path="res://art/bullet.png" id="2_l3ktd"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_l3ktd"]
 radius = 3.0
 
 [node name="Bullet" type="Area2D" unique_id=749848162]
+z_index = 4
 collision_layer = 8
 collision_mask = 5
 script = ExtResource("1_fc8e7")
+SparkScene = ExtResource("2_6j2x7")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1064330607]
 shape = SubResource("CircleShape2D_l3ktd")

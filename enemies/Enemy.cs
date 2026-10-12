@@ -2,7 +2,7 @@ using Godot;
 
 namespace RentDay;
 
-// A mushroom-headed goon. He stands guard facing one way. When he spots you
+// A goon. He stands guard facing one way. When he spots you
 // he turns, hesitates for a moment (your window to act), then opens fire.
 // If you break line of sight, he walks to where he last saw you.
 public partial class Enemy : Character
@@ -11,7 +11,7 @@ public partial class Enemy : Character
 	[Export] public float SightRange = 300f;    // pixels
 	[Export] public float FieldOfView = 140f;   // degrees he can see while unaware
 	[Export] public float ReactionTime = 0.35f; // seconds from spotting you to the first shot
-	[Export] public float ChaseSpeed = 90f;     // pixels per second
+	[Export] public float ChaseSpeed = 130f;    // pixels per second
 
 	private Player _player;
 	private bool _alerted;
@@ -45,7 +45,7 @@ public partial class Enemy : Character
 			Velocity = Vector2.Zero;
 			Visual.LookAt(_player.GlobalPosition);
 			_reactionLeft -= dt;
-			if (_reactionLeft <= 0)
+			if (_reactionLeft <= 0 && HasGun)
 				Gun.TryFire();
 		}
 		else if (_lastSeenAt is Vector2 target)

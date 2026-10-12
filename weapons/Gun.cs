@@ -14,6 +14,9 @@ public partial class Gun : Marker2D
 	// the goons' guns hit World | Player, so goons never shoot each other.
 	[Export(PropertyHint.Layers2DPhysics)] public uint BulletMask = Layers.World | Layers.Enemies;
 
+	[Export] public PackedScene SmokeScene;      // puff of smoke at the muzzle on every shot
+	[Export] public float ShakeAmount = 0.35f;   // screen shake per shot (0 for the goons' guns)
+
 	private float _cooldownLeft;
 	private float _flashLeft;
 	private Sprite2D _flash;
@@ -51,6 +54,9 @@ public partial class Gun : Marker2D
 
 		_flashLeft = 0.05f;
 		_sound.Play();
+		Effects.Spawn(SmokeScene, this, GlobalPosition, GlobalRotation);
+		if (ShakeAmount > 0)
+			ShakeCamera.Shake(ShakeAmount);
 		return true;
 	}
 }
