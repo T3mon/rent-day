@@ -5,7 +5,7 @@
 [ext_resource type="Material" uid="uid://cifjhaubim5m8" path="res://art/neon_cycle_material.tres" id="3_r"]
 [ext_resource type="PackedScene" uid="uid://vxvxhq660cmp" path="res://player/player.tscn" id="4_r"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="5_r"]
-[ext_resource type="Texture2D" uid="uid://mwm5ybkeegtv" path="res://art/goon_b_pistol.png" id="6_r"]
+[ext_resource type="Texture2D" uid="uid://b787fk3k0nxli" path="res://art/goon_b_armed.png" id="6_r"]
 [ext_resource type="Texture2D" uid="uid://7ktng2mb45b5" path="res://art/goon_b_unarmed.png" id="7_r"]
 [ext_resource type="Texture2D" uid="uid://cri8ty42tuujy" path="res://art/goon_b_legs.png" id="8_r"]
 [ext_resource type="Texture2D" uid="uid://cyiwkp7lxksfb" path="res://art/goon_b_dead.png" id="9_r"]
@@ -31,6 +31,11 @@
 [ext_resource type="PackedScene" path="res://props/office_chair.tscn" id="29_r"]
 [ext_resource type="PackedScene" path="res://props/cabinet.tscn" id="30_r"]
 [ext_resource type="PackedScene" path="res://props/car.tscn" id="31_r"]
+[ext_resource type="PackedScene" path="res://props/door.tscn" id="door_r"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="pickup_r"]
+[ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="pistol_r"]
+[ext_resource type="Resource" uid="uid://cppb6hmejk8wf" path="res://weapons/shotgun.tres" id="shotgun_r"]
+[ext_resource type="Resource" uid="uid://b03f2uueuetc8" path="res://weapons/uzi.tres" id="uzi_r"]
 
 [node name="Apartment1" type="Node2D" unique_id=1303934009]
 
@@ -161,11 +166,78 @@ position = Vector2(355, 358.255)
 [node name="Car" parent="Props" unique_id=939903708 instance=ExtResource("31_r")]
 position = Vector2(250, 516)
 
+[node name="Doors" type="Node2D" parent="." unique_id=1532943064]
+
+[node name="LivingRoomDoor" parent="Doors" unique_id=1556777618 instance=ExtResource("door_r")]
+position = Vector2(192, 228)
+
+[node name="KitchenDoor" parent="Doors" unique_id=171073949 instance=ExtResource("door_r")]
+position = Vector2(408, 228)
+rotation = 3.141593
+
+[node name="BedroomDoor" parent="Doors" unique_id=722835751 instance=ExtResource("door_r")]
+position = Vector2(544, 228)
+
+[node name="BathroomDoor" parent="Doors" unique_id=2118878267 instance=ExtResource("door_r")]
+position = Vector2(136, 292)
+Length = 32.0
+
+[node name="SmallBedroomDoor" parent="Doors" unique_id=1354143584 instance=ExtResource("door_r")]
+position = Vector2(296, 292)
+rotation = 3.141593
+
+[node name="OfficeDoor" parent="Doors" unique_id=2066669720 instance=ExtResource("door_r")]
+position = Vector2(512, 292)
+
+[node name="SideDoor" parent="Doors" unique_id=1606508322 instance=ExtResource("door_r")]
+position = Vector2(340, 368)
+rotation = 1.570796
+Length = 32.0
+
+[node name="StorageDoor" parent="Doors" unique_id=1346230645 instance=ExtResource("door_r")]
+position = Vector2(412, 352)
+rotation = -1.570796
+Length = 32.0
+
+[node name="FrontDoorLeft" parent="Doors" unique_id=2058909875 instance=ExtResource("door_r")]
+position = Vector2(352, 456)
+Length = 24.0
+
+[node name="FrontDoorRight" parent="Doors" unique_id=370852768 instance=ExtResource("door_r")]
+position = Vector2(400, 456)
+rotation = 3.141593
+Length = 24.0
+
+[node name="HallDoorLeft" parent="Doors" unique_id=1371568666 instance=ExtResource("door_r")]
+position = Vector2(344, 292)
+Length = 32.0
+
+[node name="HallDoorRight" parent="Doors" unique_id=767219567 instance=ExtResource("door_r")]
+position = Vector2(408, 292)
+rotation = 3.141593
+Length = 32.0
+
+[node name="Weapons" type="Node2D" parent="." unique_id=1398320427]
+
+[node name="Pistol" parent="Weapons" unique_id=889519783 instance=ExtResource("pickup_r")]
+position = Vector2(338, 478)
+Data = ExtResource("pistol_r")
+
+[node name="Shotgun" parent="Weapons" unique_id=331877312 instance=ExtResource("pickup_r")]
+position = Vector2(394, 420)
+Data = ExtResource("shotgun_r")
+
+[node name="Uzi" parent="Weapons" unique_id=1161978896 instance=ExtResource("pickup_r")]
+position = Vector2(122, 256)
+Data = ExtResource("uzi_r")
+
 [node name="Player" parent="." unique_id=1850699050 instance=ExtResource("4_r")]
 position = Vector2(376, 484)
 
 [node name="Enemy1" parent="." unique_id=1795071911 instance=ExtResource("5_r")]
 position = Vector2(140, 168)
+Behaviour = 2
+StayInRoom = true
 
 [node name="Enemy2" parent="." unique_id=1509906950 instance=ExtResource("5_r")]
 position = Vector2(442, 136)
@@ -176,13 +248,17 @@ LegsLook = ExtResource("8_r")
 DeadLook = ExtResource("9_r")
 DeadLookFaceDown = ExtResource("10_r")
 DeadLookSide = ExtResource("11_r")
+StartWeapon = ExtResource("shotgun_r")
 
 [node name="Enemy3" parent="." unique_id=1577289050 instance=ExtResource("5_r")]
 position = Vector2(560, 168)
+Behaviour = 1
 FacingDegrees = 180.0
+StartWeapon = ExtResource("uzi_r")
 
 [node name="Enemy4" parent="." unique_id=25705909 instance=ExtResource("5_r")]
 position = Vector2(300, 258)
+Behaviour = 1
 ArmedLook = ExtResource("6_r")
 UnarmedLook = ExtResource("7_r")
 LegsLook = ExtResource("8_r")
@@ -193,16 +269,21 @@ DeadLookSide = ExtResource("11_r")
 [node name="Enemy5" parent="." unique_id=391870420 instance=ExtResource("5_r")]
 position = Vector2(560, 396)
 FacingDegrees = 180.0
+StartWeapon = ExtResource("shotgun_r")
 
 [node name="Enemy6" parent="." unique_id=2065888808 instance=ExtResource("5_r")]
 position = Vector2(262, 368)
+Behaviour = 2
+StayInRoom = true
 ArmedLook = ExtResource("6_r")
 UnarmedLook = ExtResource("7_r")
 LegsLook = ExtResource("8_r")
 DeadLook = ExtResource("9_r")
 DeadLookFaceDown = ExtResource("10_r")
 DeadLookSide = ExtResource("11_r")
+StartWeapon = ExtResource("uzi_r")
 
 [node name="Enemy7" parent="." unique_id=45978480 instance=ExtResource("5_r")]
 position = Vector2(160, 410)
 FacingDegrees = 270.0
+StartWeapon = ExtResource("uzi_r")

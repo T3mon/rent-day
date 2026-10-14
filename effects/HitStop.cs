@@ -3,7 +3,7 @@ using Godot;
 namespace RentDay;
 
 // "Hit stop": the whole game slows to a crawl for a split second when something
-// dies, which makes the hit feel heavy. Fighting games and Hotline Miami use it.
+// dies, which makes the hit feel heavy.
 public static class HitStop
 {
 	public static void Freeze(Node anyNode, float seconds = 0.07f, float slowTo = 0.05f)

@@ -11,4 +11,7 @@ public static class Layers
 
 	// layer 5: furniture blocks walking, but bullets and eyesight pass over it
 	public const uint Furniture = 1 << 4;
+
+	// layer 6: doors stop bullets and eyesight, but people walk through (pushing them open)
+	public const uint Doors = 1 << 5;
 }

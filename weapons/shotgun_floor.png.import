@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://mwm5ybkeegtv"
-path="res://.godot/imported/goon_b_pistol.png-580e2272cd48b5beb806f801597a6af3.ctex"
+uid="uid://c3w6cljrc0fx1"
+path="res://.godot/imported/shotgun_floor.png-422ebeafe5db88f3e71051abd3ff06b9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/goon_b_pistol.png"
-dest_files=["res://.godot/imported/goon_b_pistol.png-580e2272cd48b5beb806f801597a6af3.ctex"]
+source_file="res://weapons/shotgun_floor.png"
+dest_files=["res://.godot/imported/shotgun_floor.png-422ebeafe5db88f3e71051abd3ff06b9.ctex"]
 
 [params]
 

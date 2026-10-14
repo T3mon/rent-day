@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://vxvxhq660cmp"]
 
 [ext_resource type="Script" uid="uid://buqsfaam2a162" path="res://player/Player.cs" id="1_oul6g"]
-[ext_resource type="Texture2D" uid="uid://coolyi0pmwtq0" path="res://art/collector_pistol.png" id="2_8t03j"]
+[ext_resource type="Texture2D" path="res://art/collector_armed.png" id="2_8t03j"]
 [ext_resource type="Texture2D" uid="uid://gpwbno4b8tgf" path="res://art/collector_unarmed.png" id="3_2ieo8"]
 [ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="3_rgyib"]
 [ext_resource type="Texture2D" uid="uid://dago7act1aqw3" path="res://art/collector_dead.png" id="4_ebec5"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://7f1f3vf61bhn" path="res://effects/goo_spray.tscn" id="8_ebec5"]
 [ext_resource type="AudioStream" uid="uid://dldakxsuayh0r" path="res://audio/player_death.mp3" id="10_8t03j"]
 [ext_resource type="Script" uid="uid://c638lssqxtywo" path="res://effects/ShakeCamera.cs" id="11_yllr7"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="12_pickup"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8t03j"]
 radius = 8.0
@@ -29,6 +30,7 @@ DeadLookFaceDown = ExtResource("5_yllr7")
 DeadLookSide = ExtResource("6_kb6p2")
 GooScene = ExtResource("7_wodsf")
 SprayScene = ExtResource("8_ebec5")
+PickupScene = ExtResource("12_pickup")
 
 [node name="Legs" type="Sprite2D" parent="." unique_id=884256833]
 texture = ExtResource("8_32hag")
@@ -41,11 +43,11 @@ shape = SubResource("CircleShape2D_8t03j")
 
 [node name="Alive" type="Node2D" parent="Visual" unique_id=1904984612]
 
-[node name="Sprite" type="Sprite2D" parent="Visual/Alive" unique_id=1155883437]
-texture = ExtResource("2_8t03j")
-
 [node name="Gun" parent="Visual/Alive" unique_id=20808233 instance=ExtResource("3_rgyib")]
-position = Vector2(25, 1.5)
+position = Vector2(16, 1.5)
+
+[node name="Sprite" type="Sprite2D" parent="Visual/Alive" unique_id=1155883437]
+texture = ExtResource("3_2ieo8")
 
 [node name="Corpse" type="Node2D" parent="Visual" unique_id=511698787]
 visible = false

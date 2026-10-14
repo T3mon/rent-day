@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://props/Door.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://props/door.png" id="2_tex"]
+[ext_resource type="AudioStream" path="res://audio/door_slam.wav" id="3_slam"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_panel"]
+size = Vector2(40, 4)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sweep"]
+size = Vector2(40, 6)
+
+[node name="Door" type="Node2D"]
+z_index = 3
+script = ExtResource("1_script")
+Look = ExtResource("2_tex")
+Length = 40.0
+
+[node name="Panel" type="AnimatableBody2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+sync_to_physics = false
+
+[node name="Shape" type="CollisionShape2D" parent="Panel"]
+position = Vector2(20, 0)
+shape = SubResource("RectangleShape2D_panel")
+
+[node name="Sweep" type="Area2D" parent="Panel"]
+collision_layer = 0
+collision_mask = 6
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="Panel/Sweep"]
+position = Vector2(20, 0)
+shape = SubResource("RectangleShape2D_sweep")
+
+[node name="SlamSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_slam")

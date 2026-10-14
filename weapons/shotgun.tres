@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://cppb6hmejk8wf"]
+
+[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://weapons/shotgun.png" id="2_look"]
+[ext_resource type="Texture2D" path="res://weapons/shotgun_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" path="res://audio/shotgun_shot.wav" id="4_sound"]
+[ext_resource type="AudioStream" path="res://audio/pickup_shotgun.wav" id="5_pickup"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "Shotgun"
+Look = ExtResource("2_look")
+FloorLook = ExtResource("3_floor")
+HoldOffset = Vector2(6.5, 0)
+Muzzle = Vector2(19.5, 0)
+Ammo = 4
+Cooldown = 0.55
+GoonCooldown = 1.1
+Pellets = 7
+Spread = 14.0
+BulletSpeed = 650.0
+SpeedVariation = 0.2
+Range = 260.0
+Shake = 0.6
+Kickback = 140.0
+ShotSound = ExtResource("4_sound")
+PickupSound = ExtResource("5_pickup")

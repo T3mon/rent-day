@@ -1,16 +1,18 @@
 [gd_scene format=3 uid="uid://b7u5akb2lckk5"]
 
 [ext_resource type="Script" uid="uid://brrrlr134er3u" path="res://enemies/Enemy.cs" id="1_fw1ev"]
-[ext_resource type="Texture2D" uid="uid://ce6mt1j4qgi1d" path="res://art/goon_a_pistol.png" id="2_28xqf"]
+[ext_resource type="Texture2D" path="res://art/goon_a_armed.png" id="2_28xqf"]
 [ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="3_4w5fm"]
 [ext_resource type="Texture2D" uid="uid://ysqq6p66so8h" path="res://art/goon_a_unarmed.png" id="3_g67el"]
 [ext_resource type="Texture2D" uid="uid://djld23ybxapf" path="res://art/goon_a_dead.png" id="4_ccbdt"]
 [ext_resource type="Texture2D" uid="uid://cix6qk5uftqpr" path="res://art/goon_a_dead_face.png" id="5_mgey2"]
 [ext_resource type="Texture2D" uid="uid://c5gc8d5x347t0" path="res://art/goon_a_dead_side.png" id="6_cjbay"]
 [ext_resource type="PackedScene" uid="uid://jh4e01xriksj" path="res://effects/goo.tscn" id="7_0h01o"]
-[ext_resource type="AudioStream" uid="uid://b5a280xgwbwcv" path="res://audio/enemy_death.wav" id="7_ccbdt"]
+[ext_resource type="AudioStream" path="res://audio/enemy_death.wav" id="7_ccbdt"]
 [ext_resource type="Texture2D" uid="uid://c2o0kwnq8dl3c" path="res://art/goon_a_legs.png" id="8_8cidi"]
 [ext_resource type="PackedScene" path="res://effects/goo_spray.tscn" id="8_g67el"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="9_pickup"]
+[ext_resource type="Resource" path="res://weapons/pistol.tres" id="10_pistol"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_28xqf"]
 radius = 8.0
@@ -28,6 +30,8 @@ DeadLookFaceDown = ExtResource("5_mgey2")
 DeadLookSide = ExtResource("6_cjbay")
 GooScene = ExtResource("7_0h01o")
 SprayScene = ExtResource("8_g67el")
+PickupScene = ExtResource("9_pickup")
+StartWeapon = ExtResource("10_pistol")
 
 [node name="Legs" type="Sprite2D" parent="." unique_id=716759592]
 texture = ExtResource("8_8cidi")
@@ -40,14 +44,11 @@ shape = SubResource("CircleShape2D_28xqf")
 
 [node name="Alive" type="Node2D" parent="Visual" unique_id=293324277]
 
+[node name="Gun" parent="Visual/Alive" unique_id=20808233 instance=ExtResource("3_4w5fm")]
+position = Vector2(16, 1.5)
+
 [node name="Sprite" type="Sprite2D" parent="Visual/Alive" unique_id=602088538]
 texture = ExtResource("2_28xqf")
-
-[node name="Gun" parent="Visual/Alive" unique_id=20808233 instance=ExtResource("3_4w5fm")]
-position = Vector2(25, 1.5)
-Cooldown = 0.6
-BulletMask = 3
-ShakeAmount = 0.0
 
 [node name="Corpse" type="Node2D" parent="Visual" unique_id=772269312]
 visible = false
@@ -58,3 +59,8 @@ texture = ExtResource("4_ccbdt")
 
 [node name="DeathSound" type="AudioStreamPlayer2D" parent="." unique_id=2047236817]
 stream = ExtResource("7_ccbdt")
+volume_db = -12.0
+
+[node name="Nav" type="NavigationAgent2D" parent="."]
+path_desired_distance = 6.0
+target_desired_distance = 8.0

@@ -15,10 +15,14 @@ public partial class Player : Character
 	[Export] public float LookAhead = 0.35f;    // 0 = camera stays on you, 0.5 = halfway to the mouse
 	[Export] public float MaxLookAhead = 90f;   // pixels
 
+	[Export] public float PickupRange = 20f;    // how close a gun on the floor must be to grab it
+	[Export] public float ThrowSpeed = 600f;    // pixels per second
+
 	private Camera2D _camera;
 
 	public override void _Ready()
 	{
+		StartWeapon = DevSettings.Current.StartWeapon ?? StartWeapon; // testing: start holding a gun
 		base._Ready();
 		_camera = GetNode<Camera2D>("Camera");
 	}
@@ -53,10 +57,30 @@ public partial class Player : Character
 
 		// Only the visuals turn toward the mouse; the physics body never spins.
 		Vector2 mouse = GetGlobalMousePosition();
+		Vector2 aim = (mouse - GlobalPosition).Normalized();
 		Visual.LookAt(mouse);
 		_camera.Position = ((mouse - GlobalPosition) * LookAhead).LimitLength(MaxLookAhead);
 
-		if (HasGun && Input.IsActionJustPressed("shoot"))
-			Gun.TryFire();
+		// Single-shot guns fire once per click; automatic ones keep firing while the button is held.
+		bool trigger = Gun.Data is { Automatic: true }
+			? Input.IsActionPressed("shoot")
+			: Input.IsActionJustPressed("shoot");
+		if (HasWeapon && trigger && Gun.TryFire())
+			Velocity -= aim * Gun.Data.Kickback;
+
+		// Grab: pick up the gun at your feet (dropping yours there), or throw yours if there's none.
+		if (Input.IsActionJustPressed("grab"))
+		{
+			WeaponPickup gunAtFeet = WeaponPickup.Nearest(GetTree(), GlobalPosition, PickupRange);
+			if (gunAtFeet != null)
+			{
+				DropWeapon(Vector2.Zero);
+				PickUp(gunAtFeet);
+			}
+			else if (HasWeapon)
+			{
+				DropWeapon(aim * ThrowSpeed + Velocity, thrown: true);
+			}
+		}
 	}
 }

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://b03f2uueuetc8"]
+
+[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://weapons/uzi.png" id="2_look"]
+[ext_resource type="Texture2D" path="res://weapons/uzi_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" path="res://audio/uzi_shot.wav" id="4_sound"]
+[ext_resource type="AudioStream" path="res://audio/pickup_uzi.wav" id="5_pickup"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "Uzi"
+Look = ExtResource("2_look")
+FloorLook = ExtResource("3_floor")
+HoldOffset = Vector2(3, 0)
+Muzzle = Vector2(9.5, 0)
+Ammo = 12
+Automatic = true
+Cooldown = 0.075
+GoonCooldown = 0.16
+Spread = 7.0
+BulletSpeed = 700.0
+SpeedVariation = 0.05
+Range = 500.0
+Shake = 0.2
+Kickback = 15.0
+ShotSound = ExtResource("4_sound")
+PickupSound = ExtResource("5_pickup")

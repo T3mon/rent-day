@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://bdh80ousndj8k"]
+
+[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://weapons/pistol.png" id="2_look"]
+[ext_resource type="Texture2D" path="res://weapons/pistol_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" path="res://audio/pistol.wav" id="4_sound"]
+[ext_resource type="AudioStream" path="res://audio/pickup_pistol.wav" id="5_pickup"]
+
+[resource]
+script = ExtResource("1_script")
+Look = ExtResource("2_look")
+FloorLook = ExtResource("3_floor")
+HoldOffset = Vector2(2.5, 0)
+Muzzle = Vector2(7.5, 0)
+ShotSound = ExtResource("4_sound")
+PickupSound = ExtResource("5_pickup")

@@ -31,7 +31,7 @@ public partial class Bullet : Area2D
 	private void OnBodyEntered(Node2D body)
 	{
 		// Anyone killable (player or goon) dies; a wall just stops the bullet.
-		if (body is IKillable target)
+		if (body is Character target)
 			target.Die(Transform.X);
 		else
 			Effects.Spawn(SparkScene, this, GlobalPosition, Rotation + Mathf.Pi); // sparks fly back off the wall

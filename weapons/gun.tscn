@@ -4,18 +4,29 @@
 [ext_resource type="PackedScene" uid="uid://crtqyvo06hpic" path="res://weapons/bullet.tscn" id="2_7d7d4"]
 [ext_resource type="Texture2D" uid="uid://jjhjdwax7eun" path="res://art/flash.png" id="3_4ut86"]
 [ext_resource type="PackedScene" path="res://effects/muzzle_smoke.tscn" id="3_7d7d4"]
-[ext_resource type="AudioStream" uid="uid://5s2aoxwtdbci" path="res://audio/pistol.wav" id="4_l2gxg"]
+[ext_resource type="AudioStream" uid="uid://d1u6qgp4co6me" path="res://audio/dry_fire.wav" id="5_empty"]
 
-[node name="Gun" type="Marker2D" unique_id=20808233]
+[node name="Gun" type="Node2D" unique_id=20808233]
 script = ExtResource("1_tan0m")
 BulletScene = ExtResource("2_7d7d4")
 SmokeScene = ExtResource("3_7d7d4")
 
-[node name="Flash" type="Sprite2D" parent="." unique_id=887263487]
+[node name="Look" type="Sprite2D" parent="."]
+
+[node name="Muzzle" type="Marker2D" parent="."]
+
+[node name="Flash" type="Sprite2D" parent="Muzzle"]
 visible = false
 position = Vector2(4, 0)
 texture = ExtResource("3_4ut86")
 
-[node name="ShotSound" type="AudioStreamPlayer2D" parent="." unique_id=1646283592]
-stream = ExtResource("4_l2gxg")
+[node name="ShotSound" type="AudioStreamPlayer2D" parent="."]
 volume_db = -10.0
+max_polyphony = 4
+
+[node name="EmptySound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_empty")
+volume_db = -4.0
+
+[node name="PickupSound" type="AudioStreamPlayer2D" parent="."]
+volume_db = -6.0
