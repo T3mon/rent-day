@@ -6,8 +6,8 @@ How enemies notice you, shoot and react. Timing values are in the goon scene and
 
 Set per goon in the level:
 - **Static:** stands guard facing one way. Reacts only to what it sees, never to gunshots. Returns to its post after a chase.
-- **Patrol:** walks straight and turns when blocked. Hears gunshots.
-- **Wander:** walks short random stretches, stops to look around, repeats. Hears gunshots.
+- **Patrol:** walks straight. When blocked, stops and turns left a little at a time until the way is clear and it faces straight along the walls again. Hears gunshots.
+- **Wander:** walks short stretches in random open directions, stops to look around, repeats. Hears gunshots.
 - **Stay in room** (option, patrol and wander): treats doorways as walls when on its own. A chase can still take it through doors, but it walks back to its room afterwards.
 
 ## Seeing you
@@ -28,9 +28,16 @@ Set per goon in the level:
 
 ## Chasing and searching
 
-- A goon that loses sight of you runs to the last place he saw or heard you.
+- A goon that loses sight of you runs to the last place he saw or heard you. Each goon picks a slightly different spot around it, so they don't pile up.
 - If you are not there, he searches briefly, then returns to his routine.
-- Goons avoid getting stuck on corners: if they stop making progress while trying to walk, they turn.
+- Goons route around walls and furniture with a little room to spare, so they never scrape corners. They go through doorways, pushing doors open.
+- The edge of the map is a wall to goons: they never walk off it.
+- A goon that stops making progress plans a new route; a patrolling or wandering one turns.
+
+## Level design for goons
+
+- Goons may not fit through a gap narrower than two floor tiles (32 px) between walls and furniture.
+- Doorways are fine: doors don't count as obstacles.
 
 ## Being hit
 
@@ -43,5 +50,5 @@ Set per goon in the level:
 
 ## Going for guns
 
-A goon with no gun runs to the nearest gun he can see and picks it up.
+A goon with no gun runs to the nearest gun he can see and picks it up. He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room.
 Goons with guns never run out of ammo.

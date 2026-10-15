@@ -21,12 +21,14 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
   clears (a hidden `SubViewport`), so splats cost nothing once they've landed. Splats are clipped
   to the floor they can reach without crossing a wall. Anything that bleeds calls the static
-  `GooCanvas.Splat` / `Spray` / `Bleed`; `Main` builds one per level, like the navigation map.
+  `GooCanvas.Splat` / `Spray` / `Bleed`; `Main` builds one per level, like the level grid.
 - **`audio/`**: sounds. A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
   listing its takes; it picks one and shifts the pitch a little on every play.
-- **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelNavigation.cs`** builds the
-  walkable map goons route on, when the level starts.
-- **`Main.cs`**: the top of the game: HUD, restart, camera limits, starts the navigation map.
+- **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelGrid.cs`** is the map goons
+  route on: 8 px squares, closed where a goon's body (plus a margin) would touch a wall, furniture or
+  the edge of the floor. Routes come from Godot's `AStarGrid2D` and are pulled straight wherever a
+  goon fits all the way. It checks the squares on first use, once the walls are solid to physics queries.
+- **`Main.cs`**: the top of the game: HUD, restart, camera limits, builds the level grid.
 - **`debug/`**: testing switches (`DevSettings.Current`), active in editor runs only.
 
 ## Where new things go
@@ -44,8 +46,9 @@ Gameplay rules are in [mechanics/](mechanics/).
 - Physics layers (named in Project Settings): world, player, enemies, bullets, furniture, doors.
   `core/Layers.cs` mirrors them in code. Furniture blocks walking only; doors block bullets and
   sight only.
-- Draw order, bottom to top: floor, goo, corpses and floor guns, walls/furniture/doors (bodies and goo
-  go under them), the living, bullets and effects. Set with each scene's z index.
+- Draw order, bottom to top: floor, goo, corpses and floor guns, furniture and doors (bodies and goo
+  go under them), the living, walls (over everyone, so brushing a wall never looks like being stuck
+  in it), bullets and effects. Set with each scene's z index.
 - Tuning values live in the Inspector (scene and data files), not in code.
 - Every goon's defaults are in `enemies/enemy.tscn`; set a single goon's values in the level.
 

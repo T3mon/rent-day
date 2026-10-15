@@ -1,15 +1,18 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace RentDay;
 
 // A goon. What he does until he notices you depends on his Behaviour:
 //   Static - stands guard facing one way. Reacts only to what he sees, never to gunshots.
-//   Patrol - walks straight ahead and turns 90 degrees left whenever something blocks his way.
+//   Patrol - walks straight ahead; when something blocks his way he turns left, bit by bit, until
+//            the way is clear and he faces straight along the walls again.
 //   Wander - walks a few steps in a random direction, stops, looks around, repeats.
 // Patrolling and wandering goons hear your gunshots and run to where the shot came from.
 // When a goon sees you he stops, turns to aim, and fires after a short reaction time: longer
 // when you're far away or behind him, with a little randomness. That delay is your window.
-// If he loses you, he runs to where he last saw or heard you. If you're not there, he
+// If he loses you, he runs to around where he last saw or heard you (each goon to a slightly
+// different spot, so they don't pile up), on a route around walls (see LevelGrid). If you're not there, he
 // looks around for a moment and goes back to his routine (a static goon returns to his post).
 // A goon whose gun got knocked away runs for the nearest gun he can see.
 //
@@ -38,9 +41,9 @@ public partial class Enemy : Character
 	[ExportGroup("Chase")]
 	[Export] public float ChaseSpeed = 130f;    // running after you
 	[Export] public float SearchTime = 1.5f;    // seconds he looks around an empty spot before giving up
+	[Export] public float SearchSpread = 12f;   // runs to a random spot this close to where he last saw or heard you
 
 	private Player _player;
-	private NavigationAgent2D _nav;
 	private bool _alerted;          // knows you're around: sees all around him, not just in front
 	private bool _seesYou;
 	private float _reactionLeft = -1f; // counting down to his first shot; below zero = not counting yet
@@ -54,6 +57,9 @@ public partial class Enemy : Character
 	private float _waitLeft;
 	private bool _lookedAround;
 	private float _stuckTime;
+	private List<Vector2> _route;   // corners left on his way to _goal; null = plan a new route
+	private Vector2 _goal;
+	private bool _turning;          // patrol: turning left until the way is clear
 
 	public override void _Ready()
 	{
@@ -63,7 +69,6 @@ public partial class Enemy : Character
 		_post = GlobalPosition;
 		_postAngle = Visual.Rotation;
 		_heading = Vector2.Right.Rotated(_postAngle);
-		_nav = GetNode<NavigationAgent2D>("Nav");
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
 	}
 
@@ -94,13 +99,14 @@ public partial class Enemy : Character
 			MoveAndSlide();
 			_alerted = true;
 			_reactionLeft = -1f;
+			_route = null; // he slid off his route
 			return;
 		}
 
 		if (_player == null || _player.IsDead)
 			Velocity = Vector2.Zero;
 		else if (!HasWeapon)
-			GoForAGun();
+			GoForAGun(dt);
 		else if (CanSeePlayer())
 			Fire(dt);
 		else if (_checkSpot is Vector2 spot)
@@ -146,7 +152,7 @@ public partial class Enemy : Character
 	private void Search(Vector2 spot, float dt)
 	{
 		_reactionLeft = -1f; // when he sees you again, he needs a moment again
-		if (RunTo(spot, ChaseSpeed))
+		if (RunTo(spot, ChaseSpeed, dt, SearchSpread))
 			return;
 
 		Velocity = Vector2.Zero;
@@ -168,7 +174,7 @@ public partial class Enemy : Character
 	{
 		if (_goingBack)
 		{
-			if (!RunTo(_post, WalkSpeed))
+			if (!RunTo(_post, WalkSpeed, dt))
 				_goingBack = false;
 			return;
 		}
@@ -177,7 +183,7 @@ public partial class Enemy : Character
 		{
 			case Routine.Static:
 				// Back to his post, then face the way he was facing.
-				if (!RunTo(_post, WalkSpeed))
+				if (!RunTo(_post, WalkSpeed, dt))
 				{
 					Velocity = Vector2.Zero;
 					Visual.Rotation = _postAngle;
@@ -185,9 +191,7 @@ public partial class Enemy : Character
 				break;
 
 			case Routine.Patrol:
-				if (Blocked(_heading, out _) || Stuck(dt))
-					_heading = _heading.Rotated(-Mathf.Pi / 2); // turn left
-				Walk(_heading);
+				Patrol(dt);
 				break;
 
 			case Routine.Wander:
@@ -196,16 +200,33 @@ public partial class Enemy : Character
 		}
 	}
 
+	// Straight ahead until something's in the way, then turn left 10 degrees a tick (standing
+	// still while it's blocked) until the way is clear and he faces straight along the walls again.
+	private void Patrol(float dt)
+	{
+		bool blocked = Blocked(_heading) || Stuck(dt);
+		if (blocked || _turning)
+		{
+			_heading = _heading.Rotated(-Mathf.DegToRad(10f));
+			float squared = Mathf.Snapped(_heading.Angle(), Mathf.Pi / 2);
+			_turning = blocked || Mathf.Abs(Mathf.AngleDifference(_heading.Angle(), squared)) > Mathf.DegToRad(5f);
+			if (!_turning)
+				_heading = Vector2.Right.Rotated(squared);
+		}
+		if (Blocked(_heading))
+			Velocity = Vector2.Zero;
+		else
+			Walk(_heading);
+	}
+
 	// Walk a few steps in a random direction, stop, look around, repeat.
 	private void Wander(float dt)
 	{
 		if (_walkLeft > 0)
 		{
 			_walkLeft -= dt;
-			if (Blocked(_heading, out Vector2 wall))
-				_heading = _heading.Bounce(wall); // bounce off walls, furniture (and doorways, if he stays in his room)
-			else if (Stuck(dt))
-				_heading = _heading.Rotated(Mathf.Pi * (float)GD.RandRange(0.5, 1.5)); // wedged: try another way
+			if (Blocked(_heading) || Stuck(dt))
+				_heading = OpenDirection(); // off walls, furniture (and doorways, if he stays in his room)
 			Walk(_heading);
 			if (_walkLeft <= 0)
 			{
@@ -224,13 +245,22 @@ public partial class Enemy : Character
 		}
 		if (_waitLeft <= 0)
 		{
-			_heading = Vector2.Right.Rotated(GD.Randf() * Mathf.Tau);
+			_heading = OpenDirection();
 			_walkLeft = (float)GD.RandRange(1.0, 3.0);
 		}
 	}
 
+	// A random direction he can walk in, if he finds one in a few tries.
+	private Vector2 OpenDirection()
+	{
+		Vector2 direction = Vector2.Right.Rotated(GD.Randf() * Mathf.Tau);
+		for (int tries = 0; tries < 8 && Blocked(direction); tries++)
+			direction = Vector2.Right.Rotated(GD.Randf() * Mathf.Tau);
+		return direction;
+	}
+
 	// Empty-handed: run to the nearest gun he can see and pick it up.
-	private void GoForAGun()
+	private void GoForAGun(float dt)
 	{
 		WeaponPickup nearest = WeaponPickup.Nearest(GetTree(), GlobalPosition, SightRange, ClearView);
 
@@ -243,7 +273,10 @@ public partial class Enemy : Character
 			return;
 		}
 
-		if (!RunTo(nearest.GlobalPosition, ChaseSpeed))
+		if (RunTo(nearest.GlobalPosition, ChaseSpeed, dt))
+			return;
+		Velocity = Vector2.Zero;
+		if (GlobalPosition.DistanceTo(nearest.GlobalPosition) <= 32f) // a gun can land where nobody fits, but never grab one from across the room
 		{
 			PickUp(nearest);
 			_reactionLeft = -1f;
@@ -256,25 +289,36 @@ public partial class Enemy : Character
 		Visual.Rotation = direction.Angle();
 	}
 
-	// Heads for a spot along a route around walls and furniture (the level's navigation map).
-	// Returns false once he has arrived.
-	private bool RunTo(Vector2 spot, float speed)
+	// Heads for a spot on a route around walls and furniture (see LevelGrid), planning a new
+	// route when the spot moves or he gets stuck. spread: aims for a random spot this close to it
+	// instead. Returns false once he has arrived, or if there's no way there.
+	private bool RunTo(Vector2 spot, float speed, float dt, float spread = 0f)
 	{
-		if (_nav.TargetPosition.DistanceTo(spot) > 2f)
-			_nav.TargetPosition = spot;
-		if (_nav.IsNavigationFinished())
+		if (_route == null || _goal.DistanceTo(spot) > 8f || (_route.Count > 0 && Stuck(dt)))
+		{
+			_goal = spot;
+			Vector2 near = spot + Vector2.Right.Rotated(GD.Randf() * Mathf.Tau) * spread * Mathf.Sqrt(GD.Randf());
+			_route = LevelGrid.Path(GlobalPosition, LevelGrid.IsOpen(near) ? near : spot);
+			_stuckTime = 0f;
+			if (_route == null) // the map isn't ready yet (the first frames)
+			{
+				Velocity = Vector2.Zero;
+				return true;
+			}
+		}
+
+		while (_route.Count > 0 && GlobalPosition.DistanceTo(_route[0]) < 3f)
+			_route.RemoveAt(0);
+		if (_route.Count == 0)
 			return false;
 
-		Vector2 toNext = _nav.GetNextPathPosition() - GlobalPosition;
-		if (toNext.Length() < 0.5f)
-			toNext = spot - GlobalPosition; // no route yet (first frame): head straight for it
+		Vector2 toNext = _route[0] - GlobalPosition;
 		Velocity = toNext.Normalized() * speed;
 		Visual.Rotation = toNext.Angle();
 		return true;
 	}
 
-	// Trying to walk, but hardly moving for a quarter of a second: he's caught on a corner
-	// the look-ahead below missed (it only checks straight ahead of his middle).
+	// Trying to walk, but hardly moving for a quarter of a second: he's caught on something.
 	// Call it only while he's meant to be walking.
 	private bool Stuck(float dt)
 	{
@@ -286,29 +330,21 @@ public partial class Enemy : Character
 		return true;
 	}
 
-	// Is a wall or piece of furniture right in front of him (or a doorway, if he stays in
-	// his room)? `normal` is the side it faces.
-	private bool Blocked(Vector2 direction, out Vector2 normal)
+	// Would a step this way bring his body up against a wall, furniture or the edge of the
+	// floor (or take him through a doorway, if he stays in his room)?
+	private bool Blocked(Vector2 direction)
 	{
-		Vector2 ahead = GlobalPosition + direction * 14f;
-		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, ahead, Layers.World | Layers.Furniture);
-		var hit = GetWorld2D().DirectSpaceState.IntersectRay(query);
-		if (hit.Count > 0)
-		{
-			normal = (Vector2)hit["normal"];
+		if (!LevelGrid.IsOpen(GlobalPosition + direction * 8f))
 			return true;
-		}
 
 		if (StayInRoom)
 		{
 			foreach (Node node in GetTree().GetNodesInGroup("doors"))
 			{
-				if (node is Door door && door.Crosses(GlobalPosition, ahead, out normal))
+				if (node is Door door && door.Crosses(GlobalPosition, GlobalPosition + direction * 14f, out _))
 					return true;
 			}
 		}
-
-		normal = Vector2.Zero;
 		return false;
 	}
 

@@ -41,7 +41,7 @@ public partial class GooCanvas : Node2D
 	// floorArea is in world pixels (the level's root sits at (0, 0)).
 	public static void Build(Node2D level, Rect2 floorArea)
 	{
-		level.AddChild(new GooCanvas { Name = "Goo", _area = floorArea, ZIndex = 5 }); // flying drops draw above everything
+		level.AddChild(new GooCanvas { Name = "Goo", _area = floorArea, ZIndex = 6 }); // flying drops draw above everything
 	}
 
 	// A splat `size` pixels across, `offset` away from `from` (where the goo comes from), but

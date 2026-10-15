@@ -56,7 +56,3 @@ texture = ExtResource("4_ccbdt")
 [node name="DeathSound" type="AudioStreamPlayer2D" parent="." unique_id=2047236817]
 stream = ExtResource("7_ccbdt")
 volume_db = -12.0
-
-[node name="Nav" type="NavigationAgent2D" parent="." unique_id=505898591]
-path_desired_distance = 6.0
-target_desired_distance = 8.0

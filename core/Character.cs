@@ -16,8 +16,9 @@ namespace RentDay;
 //   CollisionShape2D
 //   DeathSound
 //
-// Draw order (z index): floor 0, goo 1, corpses and guns on the floor 2, walls and
-// furniture and doors 3 (so bodies slide under them), the living 4, bullets and effects 5.
+// Draw order (z index): floor 0, goo 1, corpses and guns on the floor 2, furniture and
+// doors 3 (so bodies slide under them), the living 4, walls 5 (over everyone, so a body
+// brushing a wall never looks stuck in it), bullets and effects 6.
 public partial class Character : CharacterBody2D
 {
 	// Fired once, at the moment we die. Main listens to this.
