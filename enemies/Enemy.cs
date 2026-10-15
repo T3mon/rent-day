@@ -81,7 +81,7 @@ public partial class Enemy : Character
 	{
 		if (DevSettings.Current.ShowGoonInfo || _drawnInfo)
 			QueueRedraw();
-		if (IsDead)
+		if (IsDead || Pinned)
 			return;
 
 		float dt = (float)delta;

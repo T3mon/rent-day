@@ -13,6 +13,14 @@
 [ext_resource type="AudioStream" uid="uid://dldakxsuayh0r" path="res://audio/player_death.mp3" id="10_8t03j"]
 [ext_resource type="Script" uid="uid://c638lssqxtywo" path="res://effects/ShakeCamera.cs" id="11_yllr7"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="12_pickup"]
+[ext_resource type="AudioStream" path="res://audio/grab.ogg" id="14_grab"]
+[ext_resource type="AudioStream" path="res://audio/struggle.tres" id="15_struggle"]
+[ext_resource type="AudioStream" path="res://audio/body_fall.tres" id="16_fall"]
+[ext_resource type="AudioStream" path="res://audio/finish/final.wav" id="17_final"]
+[ext_resource type="AudioStream" path="res://audio/finish/blow_2.wav" id="19_crack"]
+[ext_resource type="AudioStream" path="res://audio/finish/blow_3.wav" id="20_crack"]
+[ext_resource type="AudioStream" path="res://audio/finish/blow_4.wav" id="21_crack"]
+[ext_resource type="AudioStream" path="res://audio/finish/blow_5.wav" id="22_crack"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8t03j"]
 radius = 8.0
@@ -23,6 +31,7 @@ collision_layer = 2
 collision_mask = 17
 motion_mode = 1
 script = ExtResource("1_oul6g")
+BlowCracks = Array[AudioStream]([ExtResource("19_crack"), ExtResource("20_crack"), ExtResource("21_crack"), ExtResource("22_crack")])
 ArmedLook = ExtResource("2_8t03j")
 UnarmedLook = ExtResource("3_2ieo8")
 DeadLook = ExtResource("4_ebec5")
@@ -64,3 +73,21 @@ MaxOffset = 6.0
 
 [node name="DeathSound" type="AudioStreamPlayer2D" parent="." unique_id=73432174]
 stream = ExtResource("10_8t03j")
+
+[node name="BlowSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="FinalBlowSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("17_final")
+volume_db = 0.0
+
+[node name="GrabSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("14_grab")
+volume_db = -4.0
+
+[node name="StruggleSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("15_struggle")
+volume_db = -10.0
+
+[node name="BodyFallSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("16_fall")
+volume_db = -6.0

@@ -6,18 +6,21 @@ Gameplay rules are in [mechanics/](mechanics/).
 ## The shape of the code
 
 - **`core/Character.cs`** is the shared body of the player and every goon: walking legs, the
-  gun in the hand, one-hit death, knockdown, alive and dead looks. Everything that happens
-  *to* a body lives here.
+  gun in the hand, one-hit death (with or without blood), knockdown, being held down (`Pinned`),
+  flinching under blows, alive and dead looks. Everything that happens *to* a body lives here.
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
-  keyboard/mouse control and the camera; the goon adds the AI (behaviours, sight, hearing,
-  chasing, route-finding).
+  keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the goon adds
+  the AI (behaviours, sight, hearing, chasing, route-finding).
 - **`weapons/`**: `WeaponData` is one gun's settings, saved as a data file per gun (`*.tres`).
   `Gun` is the gun in a hand and does the shooting. `Bullet` flies and hits. `WeaponPickup` is
   a gun on the floor or in the air (dropped or thrown).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
   bullets and sight and slam goons. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
 - **`effects/`**: goo, particles, screen shake (`ShakeCamera.Shake`), hit stop
-  (`HitStop.Freeze`), and `Effects.Spawn` for dropping an effect into the level.
+  (`HitStop.Freeze`), and `Effects.Spawn` for dropping an effect into the level (it returns the effect,
+  to resize it).
+- **`audio/`**: sounds. A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
+  listing its takes; it picks one and shifts the pitch a little on every play.
 - **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelNavigation.cs`** builds the
   walkable map goons route on, when the level starts.
 - **`Main.cs`**: the top of the game: HUD, restart, camera limits, starts the navigation map.

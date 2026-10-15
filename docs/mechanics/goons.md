@@ -35,10 +35,11 @@ Set per goon in the level:
 ## Being hit
 
 - Any hit kills a goon, unless it is a thrown gun.
-- A thrown gun knocks a goon down instead: he lies on the floor, squirms, and gets up after a while.
+- A thrown gun knocks a goon down instead: he lies on the floor, squirms, and gets up after a while. How long he stays down is random each time.
+- Bullets and thrown guns fly over a goon lying on the floor.
 - A knocked-down goon drops his gun, and will go for the nearest gun he can see.
 - Doors you push open can knock goons down. Doors goons push open do not (see [doors.md](doors.md)).
-- A knocked-down goon is still alive and is not yet a target for a finishing move (planned).
+- A knocked-down goon can be finished off, and a standing goon right in front of you can be taken out with a stealth kill (see [triggers.md](triggers.md)). A stealth kill leaves no goo.
 
 ## Going for guns
 

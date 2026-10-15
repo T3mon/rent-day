@@ -38,3 +38,23 @@ Each gun has its own pick-up sound, so you can tell what you grabbed by ear.
 - The camera always leans a little toward the cursor, so you see more of where you aim.
 - Holding Shift leans much further, to scout ahead. You always stay on screen, near the edge at most.
 - The lean follows the cursor's spot on the screen, so it eases in and out smoothly instead of running away.
+
+## Execute (`execute`, Space)
+
+One key, two takedowns. A goon standing right in front of you comes first; otherwise the nearest goon lying on the floor within reach.
+
+**Stealth kill** (a goon standing right in front of you, whichever way he faces):
+- You grab him and his gun flies out of his hands. He struggles for a moment, weaker and weaker, then goes limp.
+- No clicks needed.
+- Non-lethal style: no goo and no blood, he just slumps face down. He still counts as taken out.
+
+**Finishing a downed goon:**
+- You drop onto him and crouch over him.
+- Every click is one blow. A random number of blows is needed; clicks while a blow is still landing don't count.
+- Each blow cracks harder than the last, ending on the hardest crack right before the killing blow, which is a much bigger crush with the full splat.
+- Small goo splats build up under him with every blow.
+
+**Both:**
+- A gun in your hand is dropped beside you first.
+- You can't move or shoot until it's over, and other goons can still shoot you.
+- The goon can't act or get up while you're on him.

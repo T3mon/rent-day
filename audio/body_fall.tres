@@ -1,0 +1,16 @@
+[gd_resource type="AudioStreamRandomizer" format=3]
+
+[ext_resource type="AudioStream" path="res://audio/body_fall_1.ogg" id="1"]
+[ext_resource type="AudioStream" path="res://audio/body_fall_2.ogg" id="2"]
+[ext_resource type="AudioStream" path="res://audio/body_fall_3.ogg" id="3"]
+[ext_resource type="AudioStream" path="res://audio/body_fall_4.ogg" id="4"]
+[ext_resource type="AudioStream" path="res://audio/body_fall_5.ogg" id="5"]
+
+[resource]
+random_pitch = 1.1
+streams_count = 5
+stream_0/stream = ExtResource("1")
+stream_1/stream = ExtResource("2")
+stream_2/stream = ExtResource("3")
+stream_3/stream = ExtResource("4")
+stream_4/stream = ExtResource("5")

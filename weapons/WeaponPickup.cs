@@ -11,7 +11,6 @@ public partial class WeaponPickup : CharacterBody2D
 	[Export] public WeaponData Data;
 	[Export] public int Ammo = -1;              // -1 = a fresh gun, full of ammo
 	[Export] public float Friction = 700f;      // how quickly a sliding gun stops
-	[Export] public float KnockDownTime = 2.5f; // seconds a goon stays down after being hit
 
 	// Moving at least this fast (pixels per second), a thrown gun still hurts.
 	private const float DangerousSpeed = 150f;
@@ -73,10 +72,10 @@ public partial class WeaponPickup : CharacterBody2D
 		KinematicCollision2D hit = MoveAndCollide(Velocity * dt);
 		if (hit != null)
 		{
-			if (hit.GetCollider() is Enemy goon && _thrown && !goon.IsDown)
+			if (hit.GetCollider() is Enemy goon && _thrown)
 			{
 				// A thrown gun to the head: he goes down, the gun bounces off him.
-				goon.KnockDown(Velocity.Normalized(), KnockDownTime);
+				goon.KnockDown(Velocity.Normalized());
 				_hitSound.Play();
 				ShakeCamera.Shake(0.35f);
 				_thrown = false;

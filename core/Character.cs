@@ -36,6 +36,10 @@ public partial class Character : CharacterBody2D
 
 	[Export] public WeaponData StartWeapon;      // empty = starts empty-handed
 
+	// Seconds on the floor after a knock-down, picked at random in this range.
+	[Export] public float DownTimeMin = 1.7f;
+	[Export] public float DownTimeMax = 3.7f;
+
 	// The splat of neon goo left on the floor when we die, and the spray flying out on the hit.
 	[Export] public PackedScene GooScene;
 	[Export] public PackedScene SprayScene;
@@ -47,6 +51,9 @@ public partial class Character : CharacterBody2D
 
 	// Knocked to the floor (by a door or a thrown gun): lying there for a moment, then gets back up.
 	public bool IsDown { get; private set; }
+
+	// Held by someone finishing him off: he can't act or get up.
+	public bool Pinned { get; set; }
 
 	public Gun Gun { get; private set; }
 	public bool HasWeapon => Gun.Data != null;
@@ -69,6 +76,8 @@ public partial class Character : CharacterBody2D
 	private float _walked;
 	private float _downLeft;
 	private int _livingZ;
+	private uint _layer;
+	private Tween _flinch;
 
 	public override void _Ready()
 	{
@@ -134,7 +143,8 @@ public partial class Character : CharacterBody2D
 		if (IsDown)
 		{
 			// Squirming on the floor, so it's clear he isn't dead.
-			_downLeft -= (float)delta;
+			if (!Pinned)
+				_downLeft -= (float)delta;
 			_corpseBody.Rotation = Mathf.Sin(_downLeft * 14f) * 0.08f;
 			if (_downLeft <= 0)
 				GetUp();
@@ -155,8 +165,9 @@ public partial class Character : CharacterBody2D
 		_legs.Frame = WalkCycle[(int)(_walked / StepLength) % WalkCycle.Length];
 	}
 
-	// hitDirection is the way the bullet was flying.
-	public void Die(Vector2 hitDirection)
+	// hitDirection is the way the bullet was flying. Not lethal: knocked out cold for good
+	// (choked out), so no goo and no blood, he just slumps.
+	public void Die(Vector2 hitDirection, bool lethal = true)
 	{
 		if (IsDead)
 			return;
@@ -173,7 +184,8 @@ public partial class Character : CharacterBody2D
 
 		// Pick a random death pose (sometimes mirrored), fall the way the bullet
 		// was going, and swap the standing look for the corpse.
-		Texture2D[] poses = new[] { DeadLook, DeadLookFaceDown, DeadLookSide }.Where(t => t != null).ToArray();
+		Texture2D[] poses = (lethal ? new[] { DeadLook, DeadLookFaceDown, DeadLookSide } : new[] { DeadLookFaceDown })
+			.Where(t => t != null).ToArray();
 		if (poses.Length > 0)
 			_corpseBody.Texture = poses[GD.RandRange(0, poses.Length - 1)];
 		_corpseBody.FlipV = GD.Randf() < 0.5f;
@@ -183,9 +195,12 @@ public partial class Character : CharacterBody2D
 		ShowLying(true);
 
 		// Goo sprays out the way the bullet went, and a splat stays on the floor.
-		Effects.Spawn(SprayScene, this, GlobalPosition, hitDirection.Angle());
-		Effects.Spawn(GooScene, this, GlobalPosition + hitDirection * 6f,
-			hitDirection.Angle() + (float)GD.RandRange(-0.4, 0.4));
+		if (lethal)
+		{
+			Effects.Spawn(SprayScene, this, GlobalPosition, hitDirection.Angle());
+			Effects.Spawn(GooScene, this, GlobalPosition + hitDirection * 6f,
+				hitDirection.Angle() + (float)GD.RandRange(-0.4, 0.4));
+		}
 
 		// The body is knocked back a little in the direction of the shot.
 		CreateTween()
@@ -194,22 +209,40 @@ public partial class Character : CharacterBody2D
 			.SetEase(Tween.EaseType.Out);
 
 		// Make the kill land: kick the screen and freeze the game for a split second.
-		ShakeCamera.Shake(0.6f);
-		HitStop.Freeze(this);
-
-		_deathSound.Play();
+		// A quiet takedown stays quiet: whoever did it plays its sounds.
+		if (lethal)
+		{
+			ShakeCamera.Shake(0.6f);
+			HitStop.Freeze(this);
+			_deathSound.Play();
+		}
 		EmitSignal(SignalName.Died);
 	}
 
+	// A blow lands on us while we're held: the body jolts the way it was hit, and maybe bleeds.
+	public void Flinch(Vector2 direction, float strength, bool bleed)
+	{
+		_flinch?.Kill();
+		_flinch = CreateTween();
+		_flinch.TweenProperty(Visual, "position", direction * strength, 0.03);
+		_flinch.TweenProperty(Visual, "position", Vector2.Zero, 0.08);
+		if (bleed && Effects.Spawn(GooScene, this, GlobalPosition + direction * 4f, GD.Randf() * Mathf.Tau) is Node2D goo)
+			goo.Scale = Vector2.One * 0.6f;
+	}
+
 	// Knocked flat, sliding the way he was hit, and the gun flies out of his hand.
-	// Still alive: he gets up after `seconds`, unless someone finishes him off first.
-	public void KnockDown(Vector2 direction, float seconds)
+	// Still alive: he gets up after a while, unless someone finishes him off first.
+	public void KnockDown(Vector2 direction)
 	{
 		if (IsDead || IsDown)
 			return;
 		IsDown = true;
-		_downLeft = seconds;
+		_downLeft = (float)GD.RandRange(DownTimeMin, DownTimeMax);
 		Velocity = direction * 220f; // the subclass's physics slides him to a stop
+
+		// Bullets and thrown guns fly over someone lying on the floor. Deferred: we may be mid physics step.
+		_layer = CollisionLayer;
+		SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0u);
 
 		DropWeapon(Vector2.Right.Rotated(GD.Randf() * Mathf.Tau) * 160f);
 
@@ -222,6 +255,7 @@ public partial class Character : CharacterBody2D
 	private void GetUp()
 	{
 		IsDown = false;
+		CollisionLayer = _layer;
 		_corpseBody.Rotation = 0f;
 		ShowLying(false);
 	}

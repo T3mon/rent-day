@@ -33,7 +33,6 @@ public partial class Door : Node2D
 	[Export] public float Slowdown = 900f;    // degrees per second lost every second
 	[Export] public float SlamSpeed = 210f;   // faster than this it floors goons and ignores new pushes
 	[Export] public float MaxAngle = 135f;    // how far it opens either way (degrees); it bounces back off this
-	[Export] public float KnockDownTime = 2.5f; // seconds a slammed goon stays down
 
 	private float _length = 40f;
 	private float _angle; // degrees, 0 = closed
@@ -107,7 +106,7 @@ public partial class Door : Node2D
 				// Swinging hard: it passes through people, and floors a goon if you pushed it.
 				if (who is Enemy && _swungByPlayer)
 				{
-					who.KnockDown(_panel.GlobalTransform.Y.Normalized() * Mathf.Sign(_spin), KnockDownTime);
+					who.KnockDown(_panel.GlobalTransform.Y.Normalized() * Mathf.Sign(_spin));
 					_slamSound.Play();
 					ShakeCamera.Shake(0.45f);
 					HitStop.Freeze(this, 0.05f);
