@@ -1,6 +1,6 @@
 # Triggers, pick up and throw
 
-What the buttons do with guns. Control names refer to the Input Map in project settings.
+What the buttons do. Control names refer to the Input Map in project settings.
 
 ## Shoot (`shoot`, left mouse button)
 
@@ -32,3 +32,9 @@ Picking up a gun while holding one swaps them: the held gun lands at your feet.
 ## Pickup sound
 
 Each gun has its own pick-up sound, so you can tell what you grabbed by ear.
+
+## Look (`look`, Shift)
+
+- The camera always leans a little toward the cursor, so you see more of where you aim.
+- Holding Shift leans much further, to scout ahead. You always stay on screen, near the edge at most.
+- The lean follows the cursor's spot on the screen, so it eases in and out smoothly instead of running away.

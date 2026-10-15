@@ -12,8 +12,9 @@ public partial class Player : Character
 	[Export] public float Friction = 3000f;     // how quickly we stop when no key is held
 
 	// The camera leans toward the mouse, so you see further where you're aiming.
-	[Export] public float LookAhead = 0.35f;    // 0 = camera stays on you, 0.5 = halfway to the mouse
-	[Export] public float MaxLookAhead = 90f;   // pixels
+	// 0 = camera stays on you, 1 = it moves as far as the cursor is from the screen center.
+	[Export] public float LookAhead = 0.5f;
+	[Export] public float ShiftLookAhead = 1f;  // while holding "look" (Shift)
 
 	[Export] public float PickupRange = 20f;    // how close a gun on the floor must be to grab it
 	[Export] public float ThrowSpeed = 600f;    // pixels per second
@@ -59,7 +60,14 @@ public partial class Player : Character
 		Vector2 mouse = GetGlobalMousePosition();
 		Vector2 aim = (mouse - GlobalPosition).Normalized();
 		Visual.LookAt(mouse);
-		_camera.Position = ((mouse - GlobalPosition) * LookAhead).LimitLength(MaxLookAhead);
+
+		// Lean by the cursor's spot on the screen, not in the world: the world spot moves with
+		// the camera, so the lean would feed on itself.
+		Vector2 screen = GetViewportRect().Size;
+		Vector2 fromCenter = GetViewport().GetMousePosition() - screen / 2;
+		float lean = Input.IsActionPressed("look") ? ShiftLookAhead : LookAhead;
+		Vector2 limit = screen / 2 - new Vector2(24, 24); // you stay at least 24 px inside the screen
+		_camera.Position = (fromCenter * lean).Clamp(-limit, limit);
 
 		// Single-shot guns fire once per click; automatic ones keep firing while the button is held.
 		bool trigger = Gun.Data is { Automatic: true }
