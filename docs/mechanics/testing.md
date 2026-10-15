@@ -14,5 +14,6 @@ Available switches:
 - **Start weapon:** start the level holding a chosen gun.
 - **Infinite ammo:** your guns never run dry.
 - **Show goon info:** draws what each goon sees and where he is heading, and the noise radius of each shot.
+- **Red goo:** all goo is plain red blood instead of mixed colours.
 
 Planned: an in-game admin panel, tracked as issue #1.

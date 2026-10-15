@@ -40,10 +40,6 @@ public partial class Character : CharacterBody2D
 	[Export] public float DownTimeMin = 1.7f;
 	[Export] public float DownTimeMax = 3.7f;
 
-	// The splat of neon goo left on the floor when we die, and the spray flying out on the hit.
-	[Export] public PackedScene GooScene;
-	[Export] public PackedScene SprayScene;
-
 	// What a dropped or thrown gun becomes: a gun lying on the floor.
 	[Export] public PackedScene PickupScene;
 
@@ -61,6 +57,7 @@ public partial class Character : CharacterBody2D
 	protected Node2D Visual { get; private set; }
 
 	private const int CorpseZ = 2;
+	private const int GooSteps = 8; // footprints left after stepping in goo
 
 	// One step of the walk cycle per this many pixels travelled.
 	private const float StepLength = 7f;
@@ -74,6 +71,9 @@ public partial class Character : CharacterBody2D
 	private CollisionShape2D _collision;
 	private AudioStreamPlayer2D _deathSound;
 	private float _walked;
+	private int _step;
+	private int _gooSteps;
+	private bool _leftFoot;
 	private float _downLeft;
 	private int _livingZ;
 	private Tween _flinch;
@@ -155,13 +155,30 @@ public partial class Character : CharacterBody2D
 		{
 			_legs.Frame = 0; // standing
 			_walked = 0;
+			_step = 0;
 			return;
 		}
 
 		// Legs point where we're going, which may differ from where we aim.
 		_legs.Rotation = Velocity.Angle();
 		_walked += speed * (float)delta;
-		_legs.Frame = WalkCycle[(int)(_walked / StepLength) % WalkCycle.Length];
+		int step = (int)(_walked / StepLength);
+		_legs.Frame = WalkCycle[step % WalkCycle.Length];
+		for (; _step < step; _step++) // a slow frame can cover several steps: each gets its print, back along the path
+			Footstep(GlobalPosition - Velocity.Normalized() * (step - _step - 1) * StepLength);
+	}
+
+	// Walking through goo leaves a few footprints, fading out.
+	private void Footstep(Vector2 at)
+	{
+		if (GooCanvas.IsWet(at))
+			_gooSteps = GooSteps;
+		if (_gooSteps <= 0)
+			return;
+		_leftFoot = !_leftFoot;
+		Vector2 side = Vector2.Down.Rotated(_legs.Rotation) * (_leftFoot ? 2.5f : -2.5f);
+		GooCanvas.Footprint(at + side, _legs.Rotation, (float)_gooSteps / GooSteps);
+		_gooSteps--;
 	}
 
 	// hitDirection is the way the bullet was flying. Not lethal: knocked out cold for good
@@ -193,13 +210,9 @@ public partial class Character : CharacterBody2D
 		IsDown = false;
 		ShowLying(true);
 
-		// Goo sprays out the way the bullet went, and a splat stays on the floor.
+		// Goo bursts out the way the bullet went, splats, and pools under the body.
 		if (lethal)
-		{
-			Effects.Spawn(SprayScene, this, GlobalPosition, hitDirection.Angle());
-			Effects.Spawn(GooScene, this, GlobalPosition + hitDirection * 6f,
-				hitDirection.Angle() + (float)GD.RandRange(-0.4, 0.4));
-		}
+			GooCanvas.Bleed(GlobalPosition, hitDirection);
 
 		// The body is knocked back a little in the direction of the shot.
 		CreateTween()
@@ -225,8 +238,11 @@ public partial class Character : CharacterBody2D
 		_flinch = CreateTween();
 		_flinch.TweenProperty(Visual, "position", direction * strength, 0.03);
 		_flinch.TweenProperty(Visual, "position", Vector2.Zero, 0.08);
-		if (bleed && Effects.Spawn(GooScene, this, GlobalPosition + direction * 4f, GD.Randf() * Mathf.Tau) is Node2D goo)
-			goo.Scale = Vector2.One * 0.6f;
+		if (bleed)
+		{
+			GooCanvas.Splat(GlobalPosition, direction * 4f, (float)GD.RandRange(22.0, 32.0), GD.Randf() * Mathf.Tau);
+			GooCanvas.Spray(GlobalPosition, direction, 3, 0.9f, 40f, 160f);
+		}
 	}
 
 	// Knocked flat, sliding the way he was hit, and the gun flies out of his hand.

@@ -20,6 +20,7 @@ public partial class DevSettings : Resource
 
 	[ExportGroup("Show")]
 	[Export] public bool ShowGoonInfo;            // draw what each goon sees and where he's headed, and how far your shots carry
+	[Export] public bool RedGoo;                  // plain red blood instead of the mixed-colour goo
 
 	private const string FilePath = "res://debug/dev_settings.tres";
 	private static DevSettings _current;
@@ -38,6 +39,7 @@ public partial class DevSettings : Resource
 		if (StartWeapon != null) on.Add("START " + StartWeapon.Name.ToUpper());
 		if (InfiniteAmmo) on.Add("INF AMMO");
 		if (ShowGoonInfo) on.Add("GOON INFO");
+		if (RedGoo) on.Add("RED GOO");
 		return on.Count > 0 ? "DEV: " + string.Join("  ", on) : "";
 	}
 }

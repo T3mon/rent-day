@@ -7,10 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://djld23ybxapf" path="res://art/goon_a_dead.png" id="4_ccbdt"]
 [ext_resource type="Texture2D" uid="uid://cix6qk5uftqpr" path="res://art/goon_a_dead_face.png" id="5_mgey2"]
 [ext_resource type="Texture2D" uid="uid://c5gc8d5x347t0" path="res://art/goon_a_dead_side.png" id="6_cjbay"]
-[ext_resource type="PackedScene" uid="uid://jh4e01xriksj" path="res://effects/goo.tscn" id="7_0h01o"]
 [ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="7_ccbdt"]
 [ext_resource type="Texture2D" uid="uid://c2o0kwnq8dl3c" path="res://art/goon_a_legs.png" id="8_8cidi"]
-[ext_resource type="PackedScene" uid="uid://7f1f3vf61bhn" path="res://effects/goo_spray.tscn" id="8_g67el"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="9_pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="10_pistol"]
 
@@ -29,8 +27,6 @@ DeadLook = ExtResource("4_ccbdt")
 DeadLookFaceDown = ExtResource("5_mgey2")
 DeadLookSide = ExtResource("6_cjbay")
 StartWeapon = ExtResource("10_pistol")
-GooScene = ExtResource("7_0h01o")
-SprayScene = ExtResource("8_g67el")
 PickupScene = ExtResource("9_pickup")
 
 [node name="Legs" type="Sprite2D" parent="." unique_id=716759592]

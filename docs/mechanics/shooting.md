@@ -32,8 +32,18 @@ Settings a gun controls:
 
 - A muzzle flash, smoke puff and sound on every shot.
 - An empty gun plays a dry click and does not fire.
-- Killing a character gives a hit stop, a screen shake and a goo splat.
+- Killing a character gives a hit stop, a screen shake and goo (see below).
 - The ammo counter in the corner shows rounds left, or "empty".
+
+## Goo
+
+- A kill sprays drops the way the shot went. They slow down, stop at walls and land as small splats.
+- A big splat lands just past the body, with a smear the way it slid, and a pool spreads under it for a few seconds.
+- Goo stays on the floor it lands on: it can flow through an open doorway in front of it, never through or around a wall. Walls and furniture are drawn over it.
+- Each blow of an execution leaves a small splat and a few drops. Stealth kills leave none.
+- Walking through goo leaves footprints for a few steps, fading out. Goons leave them too.
+- Every splat gets its own fixed mix of two colours. Nothing cycles or changes colour over time.
+- Goo stays until the floor restarts.
 
 ## Noise
 

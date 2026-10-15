@@ -7,9 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dago7act1aqw3" path="res://art/collector_dead.png" id="4_ebec5"]
 [ext_resource type="Texture2D" uid="uid://dgre44csgcjuj" path="res://art/collector_dead_face.png" id="5_yllr7"]
 [ext_resource type="Texture2D" uid="uid://1ndkjhauh0kg" path="res://art/collector_dead_side.png" id="6_kb6p2"]
-[ext_resource type="PackedScene" uid="uid://jh4e01xriksj" path="res://effects/goo.tscn" id="7_wodsf"]
 [ext_resource type="Texture2D" uid="uid://d3hl4to3sdrm7" path="res://art/collector_legs.png" id="8_32hag"]
-[ext_resource type="PackedScene" uid="uid://7f1f3vf61bhn" path="res://effects/goo_spray.tscn" id="8_ebec5"]
 [ext_resource type="AudioStream" uid="uid://dldakxsuayh0r" path="res://audio/player_death.mp3" id="10_8t03j"]
 [ext_resource type="Script" uid="uid://c638lssqxtywo" path="res://effects/ShakeCamera.cs" id="11_yllr7"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="12_pickup"]
@@ -37,8 +35,6 @@ UnarmedLook = ExtResource("3_2ieo8")
 DeadLook = ExtResource("4_ebec5")
 DeadLookFaceDown = ExtResource("5_yllr7")
 DeadLookSide = ExtResource("6_kb6p2")
-GooScene = ExtResource("7_wodsf")
-SprayScene = ExtResource("8_ebec5")
 PickupScene = ExtResource("12_pickup")
 
 [node name="Legs" type="Sprite2D" parent="." unique_id=884256833]

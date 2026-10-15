@@ -36,6 +36,7 @@ public partial class Main : Node2D
 			var area = new Rect2I(cells.Position * tile, cells.Size * tile);
 			_player.SetCameraLimits(new Rect2I((Vector2I)floor.GlobalPosition + area.Position, area.Size));
 			LevelNavigation.Build(floor.GetParent<Node2D>(), new Rect2(floor.Position + area.Position, area.Size));
+			GooCanvas.Build(floor.GetParent<Node2D>(), new Rect2(floor.Position + area.Position, area.Size));
 		}
 	}
 

@@ -16,9 +16,12 @@ Gameplay rules are in [mechanics/](mechanics/).
   a gun on the floor or in the air (dropped or thrown).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
   bullets and sight and slam goons. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
-- **`effects/`**: goo, particles, screen shake (`ShakeCamera.Shake`), hit stop
-  (`HitStop.Freeze`), and `Effects.Spawn` for dropping an effect into the level (it returns the effect,
-  to resize it).
+- **`effects/`**: particles, screen shake (`ShakeCamera.Shake`), hit stop (`HitStop.Freeze`), and
+  `Effects.Spawn` for dropping an effect into the level.
+- **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
+  clears (a hidden `SubViewport`), so splats cost nothing once they've landed. Splats are clipped
+  to the floor they can reach without crossing a wall. Anything that bleeds calls the static
+  `GooCanvas.Splat` / `Spray` / `Bleed`; `Main` builds one per level, like the navigation map.
 - **`audio/`**: sounds. A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
   listing its takes; it picks one and shifts the pitch a little on every play.
 - **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelNavigation.cs`** builds the
