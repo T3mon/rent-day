@@ -86,6 +86,11 @@ public partial class Gun : Node2D
 		// What the bullets can hit. Goons never shoot each other.
 		uint mask = Layers.World | Layers.Doors | (HeldByGoon ? Layers.Player : Layers.Enemies);
 
+		// The barrel can poke through a wall the shooter is touching. Check the stretch from the
+		// shooter's center (Owner, never inside a wall) to the muzzle: whatever is in the way takes the shot.
+		var blocked = GetWorld2D().DirectSpaceState.IntersectRay(
+			PhysicsRayQueryParameters2D.Create(((Node2D)Owner).GlobalPosition, _muzzle.GlobalPosition, mask));
+
 		for (int i = 0; i < Data.Pellets; i++)
 		{
 			var bullet = BulletScene.Instantiate<Bullet>();
@@ -97,6 +102,11 @@ public partial class Gun : Node2D
 			GetTree().CurrentScene.AddChild(bullet);
 			bullet.GlobalPosition = _muzzle.GlobalPosition;
 			bullet.GlobalRotation = GlobalRotation + Mathf.DegToRad((float)GD.RandRange(-Data.Spread, Data.Spread));
+			if (blocked.Count > 0)
+			{
+				bullet.GlobalPosition = (Vector2)blocked["position"];
+				bullet.Hit((Node2D)blocked["collider"]);
+			}
 		}
 
 		_flashLeft = 0.05f;

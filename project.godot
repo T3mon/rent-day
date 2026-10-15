@@ -40,7 +40,6 @@ enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
 [gui]
 
 theme/default_font_antialiasing=0
-theme/custom_font="res://ui/Blox2.ttf"
 
 [input]
 

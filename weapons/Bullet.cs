@@ -14,13 +14,15 @@ public partial class Bullet : Area2D
 
 	public override void _Ready()
 	{
-		// Signal: "call OnBodyEntered whenever a solid body touches me".
-		BodyEntered += OnBodyEntered;
+		// Signal: "call Hit whenever a solid body touches me".
+		BodyEntered += Hit;
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
 		// Transform.X is the direction the bullet faces (rotation 0 = right).
+		// shortcut: only checks where the bullet lands each frame, so a bullet moving more than ~14 px
+		// per frame could skip an 8 px wall; sweep a ray from the last position if bullets get faster.
 		Position += Transform.X * Speed * (float)delta;
 
 		Lifetime -= (float)delta;
@@ -28,7 +30,7 @@ public partial class Bullet : Area2D
 			QueueFree();
 	}
 
-	private void OnBodyEntered(Node2D body)
+	public void Hit(Node2D body)
 	{
 		// Anyone killable (player or goon) dies; a wall just stops the bullet.
 		if (body is Character target)
