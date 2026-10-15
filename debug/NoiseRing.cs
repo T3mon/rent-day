@@ -10,7 +10,7 @@ public partial class NoiseRing : Node2D
 
 	public static void Show(Node from, Vector2 where, float radius)
 	{
-		var ring = new NoiseRing { _radius = radius, ZIndex = 5 };
+		var ring = new NoiseRing { _radius = radius, ZIndex = 6 };
 		from.GetTree().CurrentScene.AddChild(ring);
 		ring.GlobalPosition = where;
 	}

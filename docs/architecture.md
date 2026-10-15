@@ -41,7 +41,8 @@ Gameplay rules are in [mechanics/](mechanics/).
 - Physics layers (named in Project Settings): world, player, enemies, bullets, furniture, doors.
   `core/Layers.cs` mirrors them in code. Furniture blocks walking only; doors block bullets and
   sight only.
-- Draw order, bottom to top: floor, goo, corpses and floor guns, the living, bullets.
+- Draw order, bottom to top: floor, goo, corpses and floor guns, walls/furniture/doors (bodies and goo
+  go under them), the living, bullets and effects. Set with each scene's z index.
 - Tuning values live in the Inspector (scene and data files), not in code.
 - Every goon's defaults are in `enemies/enemy.tscn`; set a single goon's values in the level.
 

@@ -22,7 +22,7 @@ Settings a gun controls:
 - Bullets fly straight and stop at the first thing they hit.
 - Each bullet checks the whole stretch it flies every frame, so a fast bullet can't skip over a thin door.
 - Walls and doors stop bullets. Furniture does not. Bullets also push doors (see [doors.md](doors.md)).
-- Bullets fly over anyone lying on the floor, dead or knocked down.
+- Bullets fly over dead bodies, but a knocked-down goon can still be shot.
 - A shot is checked from the shooter's center to the muzzle, so a barrel poking through a wall
   can't shoot through it: the shot hits the wall (or whoever stands in between) right there.
 - Bullets damage characters on the enemy side only: the player's bullets hit goons, goon bullets hit the player. Goons never hit each other.

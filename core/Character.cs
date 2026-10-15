@@ -16,8 +16,8 @@ namespace RentDay;
 //   CollisionShape2D
 //   DeathSound
 //
-// Draw order (z index): floor 0, goo 1, corpses and guns on the floor 2,
-// the living 3, bullets 4.
+// Draw order (z index): floor 0, goo 1, corpses and guns on the floor 2, walls and
+// furniture and doors 3 (so bodies slide under them), the living 4, bullets and effects 5.
 public partial class Character : CharacterBody2D
 {
 	// Fired once, at the moment we die. Main listens to this.
@@ -76,7 +76,6 @@ public partial class Character : CharacterBody2D
 	private float _walked;
 	private float _downLeft;
 	private int _livingZ;
-	private uint _layer;
 	private Tween _flinch;
 
 	public override void _Ready()
@@ -240,10 +239,6 @@ public partial class Character : CharacterBody2D
 		_downLeft = (float)GD.RandRange(DownTimeMin, DownTimeMax);
 		Velocity = direction * 220f; // the subclass's physics slides him to a stop
 
-		// Bullets and thrown guns fly over someone lying on the floor. Deferred: we may be mid physics step.
-		_layer = CollisionLayer;
-		SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0u);
-
 		DropWeapon(Vector2.Right.Rotated(GD.Randf() * Mathf.Tau) * 160f);
 
 		_corpseBody.Texture = DeadLookFaceDown ?? DeadLook;
@@ -255,7 +250,6 @@ public partial class Character : CharacterBody2D
 	private void GetUp()
 	{
 		IsDown = false;
-		CollisionLayer = _layer;
 		_corpseBody.Rotation = 0f;
 		ShowLying(false);
 	}

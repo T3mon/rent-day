@@ -72,7 +72,7 @@ public partial class WeaponPickup : CharacterBody2D
 		KinematicCollision2D hit = MoveAndCollide(Velocity * dt);
 		if (hit != null)
 		{
-			if (hit.GetCollider() is Enemy goon && _thrown)
+			if (hit.GetCollider() is Enemy goon && _thrown && !goon.IsDown)
 			{
 				// A thrown gun to the head: he goes down, the gun bounces off him.
 				goon.KnockDown(Velocity.Normalized());

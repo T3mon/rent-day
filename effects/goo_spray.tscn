@@ -6,7 +6,7 @@
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
 [node name="GooSpray" type="CPUParticles2D" unique_id=1462627171]
-z_index = 4
+z_index = 5
 emitting = false
 amount = 80
 lifetime = 0.5

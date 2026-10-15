@@ -6,7 +6,7 @@
 colors = PackedColorArray(1, 1, 0.85, 1, 1, 0.55, 0.1, 0)
 
 [node name="WallSparks" type="CPUParticles2D"]
-z_index = 4
+z_index = 5
 emitting = false
 amount = 9
 lifetime = 0.25
