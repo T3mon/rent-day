@@ -91,6 +91,10 @@ public partial class Gun : Node2D
 		var blocked = GetWorld2D().DirectSpaceState.IntersectRay(
 			PhysicsRayQueryParameters2D.Create(((Node2D)Owner).GlobalPosition, _muzzle.GlobalPosition, mask));
 
+		// A shot fired right against a door shoves it at full swing.
+		if (blocked.Count > 0 && ((Node)blocked["collider"]).GetParent() is Door door)
+			door.Shove(GlobalTransform.X, door.SwingSpeed, !HeldByGoon);
+
 		for (int i = 0; i < Data.Pellets; i++)
 		{
 			var bullet = BulletScene.Instantiate<Bullet>();

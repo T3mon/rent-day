@@ -13,7 +13,7 @@ Set per goon in the level:
 ## Seeing you
 
 - Goons see in front of them within a range and a field of view.
-- Walls and closed doors block sight.
+- Walls and doors block sight (see [doors.md](doors.md)).
 - Once alerted, a goon sees all around.
 - A goon that sees you stops, turns to face you, and fires after a short reaction delay.
 - The delay is longer when you are far away or behind the goon, plus a little randomness. This delay is the player's window to act.
@@ -37,7 +37,7 @@ Set per goon in the level:
 - Any hit kills a goon, unless it is a thrown gun.
 - A thrown gun knocks a goon down instead: he lies on the floor, squirms, and gets up after a while.
 - A knocked-down goon drops his gun, and will go for the nearest gun he can see.
-- Doors you push open can knock goons down. Doors goons push open do not.
+- Doors you push open can knock goons down. Doors goons push open do not (see [doors.md](doors.md)).
 - A knocked-down goon is still alive and is not yet a target for a finishing move (planned).
 
 ## Going for guns

@@ -14,7 +14,8 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`weapons/`**: `WeaponData` is one gun's settings, saved as a data file per gun (`*.tres`).
   `Gun` is the gun in a hand and does the shooting. `Bullet` flies and hits. `WeaponPickup` is
   a gun on the floor or in the air (dropped or thrown).
-- **`props/Door.cs`**: swinging doors; blocks bullets and sight, knocks goons down.
+- **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
+  bullets and sight and slam goons. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
 - **`effects/`**: goo, particles, screen shake (`ShakeCamera.Shake`), hit stop
   (`HitStop.Freeze`), and `Effects.Spawn` for dropping an effect into the level.
 - **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelNavigation.cs`** builds the
@@ -47,6 +48,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   own copy in memory and can save it over the outside edit; this has wiped files before. If in
   doubt, close Godot without saving and reopen.
 - **C# changes need a build** before the editor or the game sees them.
+- **Fast things skip thin things.** A bullet moves further each frame than a door is thick, so
+  bullets check the whole stretch they fly, not just where they land.
 - **The game starts from `main.tscn`.** F6 runs just the open scene, for testing one piece.
 - **Testing switches stay local:** git ignores local changes to `debug/dev_settings.tres`, so the
   repository always holds a normal game.
