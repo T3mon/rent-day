@@ -2,20 +2,34 @@
 
 What the buttons do. Control names refer to the Input Map in project settings.
 
-## Shoot (`shoot`, left mouse button)
+## Attack (`shoot`, left mouse button)
+
+What you hold decides: a gun shoots, a bat or knife swings, empty hands punch.
 
 - **Single-shot guns:** one shot per click.
 - **Automatic guns:** fire repeatedly while the button is held.
-- Shooting is blocked while holding no gun, and while the gun's cooldown is still running.
+- Shooting is blocked while the gun's cooldown is still running.
 - With an empty gun, the trigger plays a dry click instead.
 - Shooting pushes you slightly backwards for guns that do this.
+
+## Melee: fists, bat, knife
+
+- Swings repeat while the button is held, each after a short wait. You can walk while swinging.
+- A swing hits every goon in a short box in front of you (about 35 px long, 22 px wide), once per swing, for as long as the swing lasts. A wall or door between you and him blocks the hit.
+- Everything is held on the right: a bat back over the right shoulder, a knife in the right hand, the right fist jabs. After each swing it returns to the same place.
+- **Fists:** knock a goon down; he drops his gun. Finish him with Execute. Punching a goon already on the floor does nothing.
+- **Bat:** kills. Slower swing, longer wait.
+- **Knife:** kills. The fastest swing.
+- A bat or knife swing kills a goon lying on the floor instantly.
+- Melee makes no noise: nobody hears it.
+- Bats and knives are picked up and thrown like guns. A thrown bat knocks a goon down; a thrown knife kills him.
 
 ## Grab (`grab`, right mouse button)
 
 One button does two jobs, depending on what is under your feet:
 
-1. **A gun lies within reach:** you pick it up. The gun you were holding drops where you stand, with its remaining ammo.
-2. **No gun within reach, and you hold one:** you throw it toward the mouse. A thrown gun can knock a goon down (see [goons.md](goons.md)).
+1. **A weapon lies within reach:** you pick it up. The one you were holding drops where you stand, with its remaining ammo.
+2. **Nothing within reach, and you hold one:** you throw it toward the mouse. A thrown weapon can knock a goon down; a thrown knife kills (see [goons.md](goons.md)).
 
 Throwing does nothing if you hold nothing.
 

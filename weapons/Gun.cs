@@ -68,7 +68,7 @@ public partial class Gun : Node2D
 	// Fires if the gun is ready. Returns true if bullets came out.
 	public bool TryFire()
 	{
-		if (Data == null || _cooldownLeft > 0)
+		if (Data == null || Data.Melee || _cooldownLeft > 0)
 			return false;
 
 		if (Ammo <= 0 && !HeldByGoon)

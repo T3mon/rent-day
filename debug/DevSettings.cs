@@ -17,6 +17,7 @@ public partial class DevSettings : Resource
 	[ExportGroup("You")]
 	[Export] public WeaponData StartWeapon;       // start the floor holding this gun (empty = empty-handed, as normal)
 	[Export] public bool InfiniteAmmo;            // your guns never run dry
+	[Export] public int StartFloor = 1;           // start on this floor (1 = the first, as normal)
 
 	[ExportGroup("Show")]
 	[Export] public bool ShowGoonInfo;            // draw what each goon sees and where he's headed, and how far your shots carry
@@ -38,6 +39,7 @@ public partial class DevSettings : Resource
 		if (!GoonsShoot) on.Add("NO GOON FIRE");
 		if (StartWeapon != null) on.Add("START " + StartWeapon.Name.ToUpper());
 		if (InfiniteAmmo) on.Add("INF AMMO");
+		if (StartFloor > 1) on.Add("FLOOR " + StartFloor);
 		if (ShowGoonInfo) on.Add("GOON INFO");
 		if (RedGoo) on.Add("RED GOO");
 		return on.Count > 0 ? "DEV: " + string.Join("  ", on) : "";

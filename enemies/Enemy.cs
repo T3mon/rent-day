@@ -11,10 +11,12 @@ namespace RentDay;
 // Patrolling and wandering goons hear your gunshots and run to where the shot came from.
 // When a goon sees you he stops, turns to aim, and fires after a short reaction time: longer
 // when you're far away or behind him, with a little randomness. That delay is your window.
+// After that he keeps firing at his gun's goon pace for as long as he sees you.
+// A goon with a bat or knife instead runs at you after that delay and swings once you're in reach.
 // If he loses you, he runs to around where he last saw or heard you (each goon to a slightly
 // different spot, so they don't pile up), on a route around walls (see LevelGrid). If you're not there, he
 // looks around for a moment and goes back to his routine (a static goon returns to his post).
-// A goon whose gun got knocked away runs for the nearest gun he can see.
+// A goon whose weapon got knocked away runs for the nearest weapon he can see.
 //
 // Change the defaults for every goon in enemies/enemy.tscn; change one goon in the level.
 public partial class Enemy : Character
@@ -40,6 +42,8 @@ public partial class Enemy : Character
 
 	[ExportGroup("Chase")]
 	[Export] public float ChaseSpeed = 130f;    // running after you
+	[Export] public float ChargeSpeed = 180f;   // with a bat or knife, running at you once he's seen you
+	[Export] public float SwingRange = 26f;     // he swings once you're this close
 	[Export] public float SearchTime = 1.5f;    // seconds he looks around an empty spot before giving up
 	[Export] public float SearchSpread = 12f;   // runs to a random spot this close to where he last saw or heard you
 
@@ -90,6 +94,7 @@ public partial class Enemy : Character
 			return;
 
 		float dt = (float)delta;
+		UpdateSwing(dt);
 		_seesYou = false;
 
 		if (IsDown)
@@ -129,9 +134,22 @@ public partial class Enemy : Character
 		_goingBack = false;
 
 		Velocity = Vector2.Zero;
-		float aim = (_player.GlobalPosition - GlobalPosition).Angle();
+		Vector2 toYou = _player.GlobalPosition - GlobalPosition;
+		float aim = toYou.Angle();
 		Visual.Rotation = Mathf.RotateToward(Visual.Rotation, aim, Mathf.DegToRad(TurnSpeed) * dt);
-		_reactionLeft -= dt;
+		_reactionLeft = Mathf.Max(_reactionLeft - dt, 0f); // one reaction: then he keeps at it at his weapon's pace while he sees you
+
+		if (Gun.Data.Melee)
+		{
+			if (_reactionLeft > 0f)
+				return;
+			if (toYou.Length() > SwingRange)
+				RunTo(_player.GlobalPosition, ChargeSpeed, dt);
+			Visual.Rotation = aim;
+			if (toYou.Length() <= SwingRange && DevSettings.Current.GoonsShoot)
+				TrySwing();
+			return;
+		}
 
 		bool onTarget = Mathf.Abs(Mathf.AngleDifference(Visual.Rotation, aim)) < Mathf.DegToRad(10f);
 		if (_reactionLeft <= 0f && onTarget && DevSettings.Current.GoonsShoot)
@@ -266,7 +284,7 @@ public partial class Enemy : Character
 
 		if (nearest == null)
 		{
-			// Nothing to grab: just watch you (fists come later).
+			// Nothing to grab: just watch you (goons never punch).
 			Velocity = Vector2.Zero;
 			if (CanSeePlayer())
 				Visual.LookAt(_player.GlobalPosition);

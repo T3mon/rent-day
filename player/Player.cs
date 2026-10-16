@@ -65,6 +65,7 @@ public partial class Player : Character
 			return;
 
 		float dt = (float)delta;
+		UpdateSwing(dt);
 		if (_victim != null)
 		{
 			Execute(dt);
@@ -95,11 +96,15 @@ public partial class Player : Character
 		Vector2 limit = screen / 2 - new Vector2(24, 24); // you stay at least 24 px inside the screen
 		_camera.Position = (fromCenter * lean).Clamp(-limit, limit);
 
-		// Single-shot guns fire once per click; automatic ones keep firing while the button is held.
-		bool trigger = Gun.Data is { Automatic: true }
+		// Guns shoot, bats and knives swing, empty hands punch. Single-shot guns fire once per
+		// click; automatic guns and swings keep going while the button is held.
+		bool swings = Gun.Data is null or { Melee: true };
+		bool trigger = Gun.Data is { Automatic: true } || swings
 			? Input.IsActionPressed("shoot")
 			: Input.IsActionJustPressed("shoot");
-		if (HasWeapon && trigger && Gun.TryFire())
+		if (trigger && swings)
+			TrySwing();
+		else if (trigger && HasWeapon && Gun.TryFire())
 			Velocity -= aim * Gun.Data.Kickback;
 
 		// Grab: pick up the gun at your feet (dropping yours there), or throw yours if there's none.

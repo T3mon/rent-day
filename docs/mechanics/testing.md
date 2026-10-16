@@ -12,6 +12,7 @@ Available switches:
 - **Goons hear shots:** off makes your gunshots alert nobody.
 - **Goons shoot:** off lets goons spot and aim at you but never fire.
 - **Start weapon:** start the level holding a chosen gun.
+- **Start floor:** start on a later floor (1 = the first, as normal).
 - **Infinite ammo:** your guns never run dry.
 - **Show goon info:** draws what each goon sees and where he is heading, and the noise radius of each shot.
 - **Red goo:** all goo is plain red blood instead of mixed colours.

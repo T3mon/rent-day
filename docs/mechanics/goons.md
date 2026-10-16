@@ -41,14 +41,20 @@ Set per goon in the level:
 
 ## Being hit
 
-- Any hit kills a goon, unless it is a thrown gun.
-- A thrown gun knocks a goon down instead: he lies on the floor, squirms, and gets up after a while. How long he stays down is random each time.
-- A goon lying on the floor can still be shot. A thrown gun slides past him.
+- Any hit kills a goon, unless it is a punch or a thrown weapon (except a knife).
+- A punch or a thrown gun or bat knocks a goon down instead: he lies on the floor, squirms, and gets up after a while. How long he stays down is random each time.
+- A goon lying on the floor can still be shot or killed with a bat or knife swing. A thrown weapon slides past him.
 - A knocked-down goon drops his gun, and will go for the nearest gun he can see.
 - Doors you push open can knock goons down. Doors goons push open do not (see [doors.md](doors.md)).
 - A knocked-down goon can be finished off, and a standing goon right in front of you can be taken out with a stealth kill (see [triggers.md](triggers.md)). A stealth kill leaves no goo.
 
+## Melee goons
+
+- A goon holding a bat or knife, once he sees you and his reaction time has passed, runs at you (faster than a goon running to a noise) and swings when you're close. His swing kills you.
+- He keeps coming as long as he sees you; if he loses you, he searches like any goon.
+- Otherwise he behaves like his routine says (static, patrol, wander).
+
 ## Going for guns
 
-A goon with no gun runs to the nearest gun he can see and picks it up. He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room.
+A goon with no weapon runs to the nearest weapon he can see (gun, bat or knife) and picks it up. Goons never punch. He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room.
 Goons with guns never run out of ammo.

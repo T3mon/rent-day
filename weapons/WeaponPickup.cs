@@ -3,9 +3,9 @@ using Godot;
 
 namespace RentDay;
 
-// A gun lying on the floor, or flying through the air after being thrown or
-// dropped. Stand on it and press "grab" to pick it up. A thrown gun knocks down
-// the first goon it hits, then clatters to the floor.
+// A weapon lying on the floor, or flying through the air after being thrown or
+// dropped. Stand on it and press "grab" to pick it up. A thrown weapon knocks down
+// the first goon it hits (a knife kills him), then clatters to the floor.
 public partial class WeaponPickup : CharacterBody2D
 {
 	[Export] public WeaponData Data;
@@ -75,7 +75,10 @@ public partial class WeaponPickup : CharacterBody2D
 			if (hit.GetCollider() is Enemy goon && _thrown && !goon.IsDown)
 			{
 				// A thrown gun to the head: he goes down, the gun bounces off him.
-				goon.KnockDown(Velocity.Normalized());
+				if (Data.KillsWhenThrown)
+					goon.Die(Velocity.Normalized());
+				else
+					goon.KnockDown(Velocity.Normalized());
 				_hitSound.Play();
 				ShakeCamera.Shake(0.35f);
 				_thrown = false;

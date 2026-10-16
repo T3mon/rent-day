@@ -4,8 +4,8 @@ using Godot;
 namespace RentDay;
 
 // Everything the player and the goons have in common: a body that faces where
-// it aims, legs that walk where it moves, a gun (or empty hands), and death
-// from a single hit. Player and Enemy build on this.
+// it aims, legs that walk where it moves, a weapon (or empty hands), melee swings,
+// and death from a single hit. Player and Enemy build on this.
 //
 // Expected children:
 //   Legs              - walking legs, turn toward the direction of movement
@@ -91,6 +91,7 @@ public partial class Character : CharacterBody2D
 		_deathSound = GetNode<AudioStreamPlayer2D>("DeathSound");
 		_corpseBody = GetNode<Sprite2D>("Visual/Corpse/Body");
 		_livingZ = ZIndex;
+		ReadyMelee();
 
 		if (LegsLook != null)
 			_legs.Texture = LegsLook;
@@ -101,7 +102,7 @@ public partial class Character : CharacterBody2D
 	public void Equip(WeaponData data, int ammo, bool playSound = false)
 	{
 		Gun.Equip(data, ammo, playSound);
-		Texture2D look = data != null ? ArmedLook : UnarmedLook;
+		Texture2D look = ArmsFor(data);
 		if (look != null)
 			_bodySprite.Texture = look;
 	}
@@ -150,6 +151,7 @@ public partial class Character : CharacterBody2D
 				GetUp();
 			return;
 		}
+		PoseArms((float)delta);
 
 		float speed = Velocity.Length();
 		if (speed < 10f)

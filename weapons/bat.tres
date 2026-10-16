@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://weapons/bat.png" id="2_look"]
+[ext_resource type="Texture2D" path="res://weapons/bat_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" path="res://audio/melee/bat_swing.wav" id="swing"]
+[ext_resource type="AudioStream" path="res://audio/melee/bat_hit.tres" id="hit"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "Bat"
+Look = ExtResource("2_look")
+FloorLook = ExtResource("3_floor")
+HoldOffset = Vector2(7.5, 0)
+Ammo = 0
+Cooldown = 0.42
+GoonCooldown = 0.5
+Melee = true
+SwingTime = 0.19
+SwingArc = 200.0
+Shake = 0.0
+ShotSound = ExtResource("swing")
+HitSound = ExtResource("hit")

@@ -11,6 +11,7 @@
 [ext_resource type="AudioStream" uid="uid://dldakxsuayh0r" path="res://audio/player_death.mp3" id="10_8t03j"]
 [ext_resource type="Script" uid="uid://c638lssqxtywo" path="res://effects/ShakeCamera.cs" id="11_yllr7"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="12_pickup"]
+[ext_resource type="Resource" path="res://weapons/fists.tres" id="23_fists"]
 [ext_resource type="AudioStream" path="res://audio/grab.ogg" id="14_grab"]
 [ext_resource type="AudioStream" path="res://audio/struggle.tres" id="15_struggle"]
 [ext_resource type="AudioStream" path="res://audio/body_fall.tres" id="16_fall"]
@@ -36,6 +37,7 @@ DeadLook = ExtResource("4_ebec5")
 DeadLookFaceDown = ExtResource("5_yllr7")
 DeadLookSide = ExtResource("6_kb6p2")
 PickupScene = ExtResource("12_pickup")
+Fists = ExtResource("23_fists")
 
 [node name="Legs" type="Sprite2D" parent="." unique_id=884256833]
 texture = ExtResource("8_32hag")
