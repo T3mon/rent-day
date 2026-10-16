@@ -20,10 +20,14 @@ public partial class Player : Character
 	[Export] public float PickupRange = 20f;    // how close a gun on the floor must be to grab it
 	[Export] public float ThrowSpeed = 600f;    // pixels per second
 
-	// Execute: finish off a goon lying on the floor with a few blows, one click each.
+	// Execute: finish off a goon lying on the floor. Bare fists (or holding a gun, which you drop):
+	// a few blows, one click each. A bat: its own blows, one click each, and you keep it. A knife:
+	// one slow cut across the throat, no clicks, and you keep it.
 	[Export] public float ExecuteRange = 32f;   // how close a downed goon must be
 	[Export] public float BlowTime = 0.2f;      // seconds per blow; clicks during a blow don't count
-	[Export] public AudioStream[] BlowCracks = []; // lightest first: every blow cracks harder, the last one before the kill hardest
+	[Export] public AudioStream[] BlowCracks = []; // fists: lightest first, every blow cracks harder, the last one before the kill hardest
+	[Export] public float CutTime = 0.78f;      // knife: seconds the whole cut takes
+	[Export] public float CutAt = 0.44f;        // knife: when it cuts
 
 	// Sneak kill: the same key on a goon standing right in front of you takes him out, no clicks.
 	[Export] public float SneakKillReach = 28f; // how far in front of you he may stand
@@ -32,6 +36,8 @@ public partial class Player : Character
 	private Camera2D _camera;
 	private AudioStreamPlayer2D _blowSound, _finalBlowSound, _grabSound, _struggleSound, _bodyFallSound;
 	private Enemy _victim; // the goon we're finishing off, if any
+	private WeaponData _finisher; // the bat or knife finishing him; null = fists
+	private float _cutAge;
 	private int _blowsLeft;
 	private float _blowLeft;
 	private float _sneakKillLeft;
@@ -127,7 +133,7 @@ public partial class Player : Character
 	}
 
 	// Grab a goon standing right in front of you, or else kneel on the nearest downed goon in reach.
-	// A gun in your hand is dropped beside you either way.
+	// A bat or knife finishes a downed goon itself; anything else in your hand is dropped beside you.
 	private void StartExecution()
 	{
 		var goons = GetTree().GetNodesInGroup("enemies").OfType<Enemy>().Where(goon => !goon.IsDead).ToList();
@@ -141,7 +147,9 @@ public partial class Player : Character
 			Visual.Rotation = (_victim.GlobalPosition - GlobalPosition).Angle();
 		Vector2 facing = Visual.GlobalTransform.X;
 		Vector2 aside = facing.Rotated(Mathf.Pi / 2f);
-		DropWeapon(aside * 120f);
+		_finisher = _victim.IsDown && Gun.Data is { Melee: true } ? Gun.Data : null;
+		if (_finisher == null)
+			DropWeapon(aside * 120f);
 		_victim.Pinned = true;
 		_victim.Velocity = Vector2.Zero;
 		Velocity = Vector2.Zero;
@@ -154,7 +162,8 @@ public partial class Player : Character
 			Visual.Scale = Vector2.One * 0.9f;
 			_bodyFallSound.Play();
 			ShakeCamera.Shake(0.15f);
-			_blowsLeft = GD.RandRange(2, 5);
+			_blowsLeft = _finisher?.FinishBlows ?? GD.RandRange(2, 5);
+			_cutAge = 0f;
 			_sneakKillLeft = 0f;
 		}
 		else
@@ -202,25 +211,58 @@ public partial class Player : Character
 			_bodyFallSound.Play();
 			ShakeCamera.Shake(0.15f);
 		}
+		else if (_finisher is { FinishBlows: 0 })
+		{
+			// A knife, no clicks: a moment on him, then one cut across the throat, blood squirting
+			// out to the side.
+			bool cuts = _cutAge < CutAt && _cutAge + dt >= CutAt;
+			_cutAge += dt;
+			if (cuts)
+			{
+				SwingPose();
+				_blowSound.Stream = _finisher.HitSound;
+				_blowSound.PitchScale = 1f;
+				_blowSound.Play();
+				ShakeCamera.Shake(0.3f);
+				_victim.Flinch(facing.Rotated(-Mathf.Pi / 2f), 2f, bleed: true);
+			}
+			if (_cutAge < CutTime)
+				return;
+			_victim.Die(facing);
+			HoldSwings(0.5f);
+		}
 		else
 		{
-			// Each click lands a blow: the arm snaps forward and eases back, harder every time.
-			Visual.Position = facing * 5f * Mathf.Pow(_blowLeft / BlowTime, 2f);
+			// Each click lands a blow, harder every time: with fists the arm snaps forward and
+			// eases back; a bat swings down on him.
+			if (_finisher == null)
+				Visual.Position = facing * 5f * Mathf.Pow(_blowLeft / BlowTime, 2f);
 			if (_blowLeft > 0f || !Input.IsActionJustPressed("shoot"))
 				return;
 			_blowLeft = BlowTime;
+			if (_finisher != null)
+				SwingPose();
 			if (--_blowsLeft > 0)
 			{
-				if (BlowCracks.Length > 0)
+				if (_finisher != null)
+					_blowSound.Stream = _finisher.HitSound;
+				else if (BlowCracks.Length > 0)
 					_blowSound.Stream = BlowCracks[Mathf.Max(BlowCracks.Length - _blowsLeft, 0)]; // climbs to the hardest right before the kill
 				_blowSound.PitchScale = (float)GD.RandRange(0.93, 1.07);
 				_blowSound.Play();
-				ShakeCamera.Shake(0.2f + 0.08f * (5 - _blowsLeft));
+				ShakeCamera.Shake(_finisher != null ? 0.4f : 0.2f + 0.08f * (5 - _blowsLeft));
 				HitStop.Freeze(this, 0.04f);
 				_victim.Flinch(facing, 2f, bleed: true);
 				return;
 			}
-			_finalBlowSound.Play();
+			if (_finisher != null)
+			{
+				_blowSound.Stream = _finisher.HitSound;
+				_blowSound.Play();
+				HoldSwings(0.17f);
+			}
+			else
+				_finalBlowSound.Play();
 			_victim.Die(facing); // the big splat, shake and freeze
 		}
 		Visual.Position = Vector2.Zero;

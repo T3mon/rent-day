@@ -106,6 +106,12 @@ public partial class Character
 		return true;
 	}
 
+	// Plays a swing without hitting anything (finishing a downed goon does its own hurting).
+	protected void SwingPose() => _swingAge = 0f;
+
+	// No swings for this many seconds.
+	protected void HoldSwings(float seconds) => _swingWait = Mathf.Max(_swingWait, seconds);
+
 	// Call every physics tick: while a swing is out, everyone in reach in front of us is hit,
 	// once per swing, unless a wall or door is in between.
 	protected void UpdateSwing(float dt)

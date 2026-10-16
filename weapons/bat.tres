@@ -19,5 +19,6 @@ Melee = true
 SwingTime = 0.19
 SwingArc = 200.0
 Shake = 0.0
+FinishBlows = 3
 ShotSound = ExtResource("swing")
 HitSound = ExtResource("hit")

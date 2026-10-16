@@ -62,13 +62,13 @@ One key, two takedowns. A goon standing right in front of you comes first; other
 - No clicks needed.
 - Non-lethal style: no goo and no blood, he just slumps face down. He still counts as taken out.
 
-**Finishing a downed goon:**
-- You drop onto him and crouch over him.
-- Every click is one blow. A random number of blows is needed; clicks while a blow is still landing don't count.
-- Each blow cracks harder than the last, ending on the hardest crack right before the killing blow, which is a much bigger crush with the full splat.
+**Finishing a downed goon:** you drop onto him and crouch over him. What happens depends on what you hold:
+- **Fists, or a gun** (dropped beside you first): every click is one blow. A random number of blows is needed (2 to 5); clicks while a blow is still landing don't count. Each blow cracks harder than the last, ending on the hardest crack right before the killing blow, which is a much bigger crush with the full splat.
+- **Bat:** every click swings the bat down on him. Always 3 blows. You keep the bat.
+- **Knife:** no clicks. A moment on him, then one cut across the throat, blood squirting to the side. You keep the knife.
 - Small goo splats build up under him with every blow.
 
 **Both:**
-- A gun in your hand is dropped beside you first.
+- A gun in your hand is dropped beside you first (a bat or knife too, for a stealth kill).
 - You can't move or shoot until it's over, and other goons can still shoot you.
 - The goon can't act or get up while you're on him.

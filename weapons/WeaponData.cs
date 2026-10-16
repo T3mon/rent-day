@@ -37,6 +37,7 @@ public partial class WeaponData : Resource
 	[Export] public float Reach = 35f;           // a swing hits up to this far in front of you, 22 px wide
 	[Export] public bool KillsWhenThrown;        // thrown, it kills instead of knocking down (knife)
 	[Export] public AudioStream HitSound;        // when a swing connects
+	[Export] public int FinishBlows;             // finishing a downed goon with it: clicks, one blow each (bat 3); 0 = one slow cut on its own (knife)
 
 	[ExportGroup("Feel")]
 	[Export] public float Shake = 0.35f;         // screen shake per shot or melee hit (yours only)
