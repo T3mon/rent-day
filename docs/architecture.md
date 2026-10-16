@@ -7,13 +7,23 @@ Gameplay rules are in [mechanics/](mechanics/).
 
 - **`core/Character.cs`** is the shared body of the player and every goon: walking legs, the
   weapon in the hand, one-hit death (with or without blood), knockdown, being held down (`Pinned`),
-  flinching under blows, alive and dead looks. Everything that happens *to* a body lives here.
+  flinching under blows, the lying layer (falling, knocked down, slumped against a wall, getting up,
+  dead). Everything that happens *to* a body lives here.
   Its melee half is **`core/CharacterMelee.cs`**: swings (`TrySwing`, hits checked each physics tick
-  in `UpdateSwing`) and the arms, drawn in code while a bat, knife or bare fists are in hand (the
-  body picture then has its hands removed; arm colours are read from the armed look).
-  **`core/CharacterMotion.cs`** holds small upper-body motions that are for the look only and never
-  change timing: leaning into a run and settling after a stop (with dust), a dip on pickups, a
+  in `UpdateSwing`).
+  **`core/CharacterMotion.cs`** is the upper body's look, which never changes timing: which animation
+  plays (walking in step with the legs or standing, per thing in hand, a goon's idle pose, and
+  one-offs over that via `Act`: swings, throws, pickups, a hand on a door, finishers), plus small
+  motions on top: leaning into a run and settling after a stop (with dust), a dip on pickups, a
   shoulder into doors, a throw's follow-through, a goon's startle when he spots you.
+- **Animations** are generated, not drawn: **`tools/anim/`** (Python, no packages) builds every
+  character's frames from body parts posed per frame, taking heads, hands and colours from the
+  hand-drawn sprites in `art/` (`<name>_armed`, `_unarmed`, `_legs`, `_dead*`). It writes
+  `art/anim/<name>/<animation>.png` and one `SpriteFrames` per character, `art/anim/<name>.tres`,
+  which is the character's `Look`. Poses and timings are in `tools/anim/anims.py`; rebuild with
+  `python tools/anim/build.py`. A new outfit: its four hand-drawn sprites in `art/`, its name in
+  `build.py`. A melee weapon's animations are named after it (`bat_swing`), so a new one needs
+  poses there too.
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
   keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the goon adds
   the AI (behaviours, sight, hearing, chasing, route-finding).
@@ -67,8 +77,9 @@ Gameplay rules are in [mechanics/](mechanics/).
 ## Lessons learned
 
 - **Close a scene or data file in Godot before editing it outside Godot.** The editor keeps its
-  own copy in memory and can save it over the outside edit; this has wiped files before. If in
-  doubt, close Godot without saving and reopen.
+  own copy in memory and can save it over the outside edit; this has wiped files before. A tab
+  in the background counts too: running the game saves open scenes. If in doubt, close Godot
+  without saving and reopen.
 - **C# changes need a build** before the editor or the game sees them.
 - **Fast things skip thin things.** A bullet moves further each frame than a door is thick, so
   bullets check the whole stretch they fly, not just where they land.

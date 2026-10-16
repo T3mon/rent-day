@@ -21,8 +21,9 @@ public partial class Player : Character
 	[Export] public float ThrowSpeed = 600f;    // pixels per second
 
 	// Execute: finish off a goon lying on the floor. Bare fists (or holding a gun, which you drop):
-	// a few blows, one click each. A bat: its own blows, one click each, and you keep it. A knife:
-	// one slow cut across the throat, no clicks, and you keep it.
+	// a few blows, one click each (a goon slumped against a wall: kicks to the head). A bat: its own
+	// blows, one click each, and you keep it. A knife: one slow cut across the throat, no clicks,
+	// and you keep it.
 	[Export] public float ExecuteRange = 32f;   // how close a downed goon must be
 	[Export] public float BlowTime = 0.2f;      // seconds per blow; clicks during a blow don't count
 	[Export] public AudioStream[] BlowCracks = []; // fists: lightest first, every blow cracks harder, the last one before the kill hardest
@@ -155,7 +156,16 @@ public partial class Player : Character
 		Velocity = Vector2.Zero;
 		_blowLeft = 0f;
 
-		if (_victim.IsDown)
+		if (_victim.Slumped)
+		{
+			// Step up to him where he sits against the wall.
+			Vector2 front = _victim.GlobalPosition - facing * 14f;
+			CreateTween().TweenProperty(this, "global_position", front, 0.08);
+			_blowsLeft = _finisher?.FinishBlows ?? GD.RandRange(2, 5);
+			_cutAge = 0f;
+			_sneakKillLeft = 0f;
+		}
+		else if (_victim.IsDown)
 		{
 			// Hop onto him and crouch over him.
 			CreateTween().TweenProperty(this, "global_position", _victim.GlobalPosition, 0.08);
@@ -176,7 +186,10 @@ public partial class Player : Character
 			HitStop.Freeze(this, 0.04f);
 			_sneakKillLeft = SneakKillTime;
 			_nextStruggle = 0.08f;
+			Act("choke");
 		}
+		if (_finisher is { FinishBlows: 0 })
+			Act("fin_knife"); // the whole cut, timed to CutAt and CutTime
 	}
 
 	// Measured along where you aim, like a reach in front of your chest.
@@ -208,6 +221,7 @@ public partial class Player : Character
 			if (_sneakKillLeft > 0f)
 				return;
 			_victim.Die(facing, lethal: false);
+			Act(null);
 			_bodyFallSound.Play();
 			ShakeCamera.Shake(0.15f);
 		}
@@ -219,7 +233,6 @@ public partial class Player : Character
 			_cutAge += dt;
 			if (cuts)
 			{
-				SwingPose();
 				_blowSound.Stream = _finisher.HitSound;
 				_blowSound.PitchScale = 1f;
 				_blowSound.Play();
@@ -233,15 +246,12 @@ public partial class Player : Character
 		}
 		else
 		{
-			// Each click lands a blow, harder every time: with fists the arm snaps forward and
-			// eases back; a bat swings down on him.
-			if (_finisher == null)
-				Visual.Position = facing * 5f * Mathf.Pow(_blowLeft / BlowTime, 2f);
+			// Each click lands a blow, harder every time: a punch, a kick to the head of a goon
+			// slumped against a wall, or the bat swung down on him.
 			if (_blowLeft > 0f || !Input.IsActionJustPressed("shoot"))
 				return;
 			_blowLeft = BlowTime;
-			if (_finisher != null)
-				SwingPose();
+			Act(_finisher != null ? "fin_bat" : _victim.Slumped ? "kick" : "fin_fists");
 			if (--_blowsLeft > 0)
 			{
 				if (_finisher != null)

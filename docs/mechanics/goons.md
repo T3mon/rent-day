@@ -9,6 +9,7 @@ Set per goon in the level:
 - **Patrol:** walks straight. When blocked, stops and turns left a little at a time until the way is clear and it faces straight along the walls again. Hears gunshots.
 - **Wander:** walks short stretches in random open directions, stops to look around, repeats. Hears gunshots.
 - **Stay in room** (option, patrol and wander): treats doorways as walls when on its own. A chase can still take it through doors, but it walks back to its room afterwards.
+- **Pose** (option, any behaviour): what he does while calm and standing still: smoke, phone, hide (crouched), sit, lean (back to a wall), talk. Only the look: he sees and reacts exactly as without it. Once alerted he drops it (a smoker flicks his cigarette away); it comes back when he gives up searching. A sitting goon can be placed on furniture (a couch): he gets up off it when alerted. A wanderer strikes his pose whenever he stops.
 
 ## Seeing you
 
@@ -43,6 +44,7 @@ Set per goon in the level:
 
 - Any hit kills a goon, unless it is a punch or a thrown weapon (except a knife).
 - A punch or a thrown gun or bat knocks a goon down instead: he lies on the floor, squirms, and gets up after a while. How long he stays down is random each time.
+- Knocked into a wall, he sits slumped against it, dazed, instead of lying flat. Same rules otherwise; finishing him with fists is kicks to the head.
 - A goon lying on the floor can still be shot or killed with a bat or knife swing. A thrown weapon slides past him.
 - A knocked-down goon drops his gun, and will go for the nearest gun he can see.
 - Doors you push open can knock goons down. Doors goons push open do not (see [doors.md](doors.md)).

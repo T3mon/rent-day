@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="SpriteFrames" path="res://art/anim/goon_b.tres" id="b_look"]
 [ext_resource type="TileSet" path="res://levels/floors2.tres" id="floors"]
 [ext_resource type="TileSet" path="res://levels/walls2.tres" id="walls"]
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="player"]
@@ -10,12 +11,6 @@
 [ext_resource type="Resource" path="res://weapons/pistol.tres" id="pistol"]
 [ext_resource type="Resource" path="res://weapons/shotgun.tres" id="shotgun"]
 [ext_resource type="Resource" path="res://weapons/uzi.tres" id="uzi"]
-[ext_resource type="Texture2D" path="res://art/goon_b_armed.png" id="b_armed"]
-[ext_resource type="Texture2D" path="res://art/goon_b_unarmed.png" id="b_unarmed"]
-[ext_resource type="Texture2D" path="res://art/goon_b_legs.png" id="b_legs"]
-[ext_resource type="Texture2D" path="res://art/goon_b_dead.png" id="b_dead"]
-[ext_resource type="Texture2D" path="res://art/goon_b_dead_face.png" id="b_dead_face"]
-[ext_resource type="Texture2D" path="res://art/goon_b_dead_side.png" id="b_dead_side"]
 [ext_resource type="PackedScene" path="res://props/armchair.tscn" id="p_armchair"]
 [ext_resource type="PackedScene" path="res://props/bathtub.tscn" id="p_bathtub"]
 [ext_resource type="PackedScene" path="res://props/bed.tscn" id="p_bed"]
@@ -226,68 +221,55 @@ Data = ExtResource("pistol")
 position = Vector2(712, 414)
 
 [node name="Enemy1" parent="." instance=ExtResource("enemy")]
-position = Vector2(110, 140)
-FacingDegrees = 90.0
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+position = Vector2(73, 140)
+FacingDegrees = 0.0
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("shotgun")
+Pose = 5
 
 [node name="Enemy2" parent="." instance=ExtResource("enemy")]
 position = Vector2(220, 120)
 FacingDegrees = 180.0
 StartWeapon = ExtResource("uzi")
+Pose = 1
 
 [node name="Enemy3" parent="." instance=ExtResource("enemy")]
 position = Vector2(372, 130)
 FacingDegrees = 270.0
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("pistol")
+Pose = 2
 
 [node name="Enemy4" parent="." instance=ExtResource("enemy")]
-position = Vector2(520, 130)
+position = Vector2(508, 84)
 FacingDegrees = 90.0
 StartWeapon = ExtResource("pistol")
+Pose = 4
 
 [node name="Enemy5" parent="." instance=ExtResource("enemy")]
-position = Vector2(660, 200)
+position = Vector2(682, 150)
 FacingDegrees = 180.0
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("uzi")
+Pose = 4
 
 [node name="Enemy6" parent="." instance=ExtResource("enemy")]
 position = Vector2(700, 110)
 Behaviour = 2
 StayInRoom = true
 StartWeapon = ExtResource("shotgun")
+Pose = 1
 
 [node name="Enemy7" parent="." instance=ExtResource("enemy")]
-position = Vector2(180, 230)
+position = Vector2(180, 282)
 FacingDegrees = 90.0
 StartWeapon = ExtResource("pistol")
+Pose = 4
 
 [node name="Enemy8" parent="." instance=ExtResource("enemy")]
 position = Vector2(280, 420)
 Behaviour = 1
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("uzi")
 
 [node name="Enemy9" parent="." instance=ExtResource("enemy")]
@@ -295,20 +277,18 @@ position = Vector2(120, 420)
 Behaviour = 2
 StayInRoom = true
 StartWeapon = ExtResource("pistol")
+Pose = 2
 
 [node name="Enemy10" parent="." instance=ExtResource("enemy")]
 position = Vector2(500, 300)
 FacingDegrees = 180.0
 StartWeapon = ExtResource("shotgun")
+Pose = 3
 
 [node name="Enemy11" parent="." instance=ExtResource("enemy")]
 position = Vector2(500, 440)
 Behaviour = 2
 StayInRoom = true
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("pistol")
+Pose = 1

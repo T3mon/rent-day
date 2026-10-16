@@ -1,16 +1,11 @@
 [gd_scene format=3 uid="uid://b7u5akb2lckk5"]
 
 [ext_resource type="Script" uid="uid://brrrlr134er3u" path="res://enemies/Enemy.cs" id="1_fw1ev"]
-[ext_resource type="Texture2D" uid="uid://ccrhxrt2dnx6t" path="res://art/goon_a_armed.png" id="2_28xqf"]
 [ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="3_4w5fm"]
-[ext_resource type="Texture2D" uid="uid://ysqq6p66so8h" path="res://art/goon_a_unarmed.png" id="3_g67el"]
-[ext_resource type="Texture2D" uid="uid://djld23ybxapf" path="res://art/goon_a_dead.png" id="4_ccbdt"]
-[ext_resource type="Texture2D" uid="uid://cix6qk5uftqpr" path="res://art/goon_a_dead_face.png" id="5_mgey2"]
-[ext_resource type="Texture2D" uid="uid://c5gc8d5x347t0" path="res://art/goon_a_dead_side.png" id="6_cjbay"]
 [ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="7_ccbdt"]
-[ext_resource type="Texture2D" uid="uid://c2o0kwnq8dl3c" path="res://art/goon_a_legs.png" id="8_8cidi"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="9_pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="10_pistol"]
+[ext_resource type="SpriteFrames" path="res://art/anim/goon_a.tres" id="anim"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_28xqf"]
 radius = 8.0
@@ -21,17 +16,13 @@ collision_layer = 4
 collision_mask = 17
 motion_mode = 1
 script = ExtResource("1_fw1ev")
-ArmedLook = ExtResource("2_28xqf")
-UnarmedLook = ExtResource("3_g67el")
-DeadLook = ExtResource("4_ccbdt")
-DeadLookFaceDown = ExtResource("5_mgey2")
-DeadLookSide = ExtResource("6_cjbay")
+Look = ExtResource("anim")
 StartWeapon = ExtResource("10_pistol")
 PickupScene = ExtResource("9_pickup")
 
-[node name="Legs" type="Sprite2D" parent="." unique_id=716759592]
-texture = ExtResource("8_8cidi")
-hframes = 3
+[node name="Legs" type="AnimatedSprite2D" parent="." unique_id=716759592]
+sprite_frames = ExtResource("anim")
+animation = &"legs"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=76881650]
 shape = SubResource("CircleShape2D_28xqf")
@@ -43,15 +34,17 @@ shape = SubResource("CircleShape2D_28xqf")
 [node name="Gun" parent="Visual/Alive" unique_id=20808233 instance=ExtResource("3_4w5fm")]
 position = Vector2(16, 1.5)
 
-[node name="Sprite" type="Sprite2D" parent="Visual/Alive" unique_id=602088538]
-texture = ExtResource("2_28xqf")
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual/Alive" unique_id=602088538]
+sprite_frames = ExtResource("anim")
+animation = &"gun_idle"
 
 [node name="Corpse" type="Node2D" parent="Visual" unique_id=772269312]
 visible = false
 
-[node name="Body" type="Sprite2D" parent="Visual/Corpse" unique_id=925413500]
+[node name="Body" type="AnimatedSprite2D" parent="Visual/Corpse" unique_id=925413500]
 position = Vector2(3, 0)
-texture = ExtResource("4_ccbdt")
+sprite_frames = ExtResource("anim")
+animation = &"lie_dead"
 
 [node name="DeathSound" type="AudioStreamPlayer2D" parent="." unique_id=2047236817]
 stream = ExtResource("7_ccbdt")

@@ -2,8 +2,10 @@ using Godot;
 
 namespace RentDay;
 
-// Small motions of the upper body, for the look only: they never change what anyone can do or
-// when. Leaning into a run and settling after a stop, with dust at the feet; a dip to pick
+// The upper body's look, which never changes what anyone can do or when. Its animation (from
+// Look): walking in step with the legs or standing, with whatever is in hand, and one-offs
+// over that (a swing, a throw, a pickup, a hand on a door, a finisher). And small motions on
+// top: leaning into a run and settling after a stop, with dust at the feet; a dip to pick
 // something up; a shoulder into a door; the body turning with a throw; a startle.
 public partial class Character
 {
@@ -12,22 +14,63 @@ public partial class Character
 	private const float LeanPerSpeed = 2.5f / 200f; // pixels the upper body leads by, per pixel per second of speed
 	private const float DustKick = 1800f;           // speed change (pixels per second, per second) that kicks up dust
 
+	// Standing still, this plays instead of the usual standing animation (a goon's smoke, phone...); null = none.
+	protected string IdlePose;
+
+	private string _action;               // the one-off animation playing, if any
 	private Vector2 _lean;                // where the upper body sits over the legs, in the level's frame
 	private Vector2 _leanSpeed;
 	private Vector2 _lastVelocity;
 	private float _dustWait;
-	private float _twist;                 // the upper body's turn in a swing (set in CharacterMelee)
 	private float _dip;                   // these run from 1 (just happened) down to 0
 	private float _push;
 	private float _startle;
 	private float _throwFollow;
 	private Vector2 _pushDirection;
 
-	// Walked into a door: a shoulder against it, toward `direction`.
+	// Which set of animations fits what's in hand: "" bare fists, "gun_", "bat_", "knife_".
+	private string Kind => Gun.Data == null ? "" : Gun.Data.Melee ? Gun.Data.Name.ToLowerInvariant() + "_" : "gun_";
+
+	// Plays a one-off animation of the upper body from the start; walking or standing takes over
+	// when it ends. A looping one (choke) plays until Act(null).
+	protected void Act(string animation)
+	{
+		_action = animation;
+		if (animation == null)
+			return;
+		_bodySprite.Play(animation);
+		_bodySprite.Frame = 0;
+	}
+
+	private void AnimateBody(bool moving)
+	{
+		if (_action != null && _bodySprite.IsPlaying())
+		{
+			Gun.Visible = false; // the one-offs show the hands, not a gun
+			return;
+		}
+		_action = null;
+		string pose = moving ? null : IdlePose;
+		Gun.Visible = Kind == "gun_" && pose == null; // bats and knives are part of the animation
+		_legs.Visible = pose != "sit";
+		if (moving)
+		{
+			_bodySprite.Animation = Kind + "walk";
+			_bodySprite.Pause();
+			_bodySprite.Frame = _legs.Frame; // the arms swing in step with the feet
+		}
+		else if (!_bodySprite.IsPlaying() || _bodySprite.Animation != (pose ?? Kind + "idle"))
+			_bodySprite.Play(pose ?? Kind + "idle");
+	}
+
+	// Walked into a door: a shoulder against it, toward `direction`, and an empty hand on it.
 	public void PushDoor(Vector2 direction)
 	{
 		_push = 1f;
 		_pushDirection = direction;
+		string hand = _pushDirection.Rotated(-Visual.GlobalRotation).Y >= 0f ? "push_r" : "push_l";
+		if (Kind == "" && _action != hand)
+			Act(hand);
 	}
 
 	// Just spotted someone: a jolt.
@@ -35,6 +78,7 @@ public partial class Character
 
 	private void MoveBody(float dt)
 	{
+		dt = Mathf.Min(dt, 1f / 30f); // a long frame (a level loading) would make the spring below blow up
 		// A spring pulls the upper body a little ahead in the direction we move: starting off it
 		// swings forward, stopping it overshoots and settles back.
 		_leanSpeed += ((Velocity * LeanPerSpeed - _lean) * 400f - _leanSpeed * 14f) * dt;
@@ -63,7 +107,7 @@ public partial class Character
 		Vector2 door = _pushDirection.Rotated(turn);
 		_alive.Position = _lean.Rotated(turn) + Vector2.Right * (2f * dip) + door * (3.5f * push)
 			- Vector2.Right * (2.5f * startle);
-		_alive.Rotation = _twist - 0.35f * _throwFollow * _throwFollow
+		_alive.Rotation = -0.35f * _throwFollow * _throwFollow
 			- 0.35f * push * (door.Y < 0f ? -1f : 1f); // the shoulder on the door's side leads
 		_alive.Scale = Vector2.One * (1f - 0.08f * dip + 0.2f * startle);
 	}

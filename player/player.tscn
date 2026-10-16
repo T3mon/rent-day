@@ -1,13 +1,7 @@
 [gd_scene format=3 uid="uid://vxvxhq660cmp"]
 
 [ext_resource type="Script" uid="uid://buqsfaam2a162" path="res://player/Player.cs" id="1_oul6g"]
-[ext_resource type="Texture2D" path="res://art/collector_armed.png" id="2_8t03j"]
-[ext_resource type="Texture2D" uid="uid://gpwbno4b8tgf" path="res://art/collector_unarmed.png" id="3_2ieo8"]
 [ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="3_rgyib"]
-[ext_resource type="Texture2D" uid="uid://dago7act1aqw3" path="res://art/collector_dead.png" id="4_ebec5"]
-[ext_resource type="Texture2D" uid="uid://dgre44csgcjuj" path="res://art/collector_dead_face.png" id="5_yllr7"]
-[ext_resource type="Texture2D" uid="uid://1ndkjhauh0kg" path="res://art/collector_dead_side.png" id="6_kb6p2"]
-[ext_resource type="Texture2D" uid="uid://d3hl4to3sdrm7" path="res://art/collector_legs.png" id="8_32hag"]
 [ext_resource type="AudioStream" uid="uid://dldakxsuayh0r" path="res://audio/player_death.mp3" id="10_8t03j"]
 [ext_resource type="Script" uid="uid://c638lssqxtywo" path="res://effects/ShakeCamera.cs" id="11_yllr7"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="12_pickup"]
@@ -20,6 +14,7 @@
 [ext_resource type="AudioStream" path="res://audio/finish/blow_3.wav" id="20_crack"]
 [ext_resource type="AudioStream" path="res://audio/finish/blow_4.wav" id="21_crack"]
 [ext_resource type="AudioStream" path="res://audio/finish/blow_5.wav" id="22_crack"]
+[ext_resource type="SpriteFrames" path="res://art/anim/collector.tres" id="anim"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8t03j"]
 radius = 8.0
@@ -31,17 +26,13 @@ collision_mask = 17
 motion_mode = 1
 script = ExtResource("1_oul6g")
 BlowCracks = Array[AudioStream]([ExtResource("19_crack"), ExtResource("20_crack"), ExtResource("21_crack"), ExtResource("22_crack")])
-ArmedLook = ExtResource("2_8t03j")
-UnarmedLook = ExtResource("3_2ieo8")
-DeadLook = ExtResource("4_ebec5")
-DeadLookFaceDown = ExtResource("5_yllr7")
-DeadLookSide = ExtResource("6_kb6p2")
+Look = ExtResource("anim")
 PickupScene = ExtResource("12_pickup")
 Fists = ExtResource("23_fists")
 
-[node name="Legs" type="Sprite2D" parent="." unique_id=884256833]
-texture = ExtResource("8_32hag")
-hframes = 3
+[node name="Legs" type="AnimatedSprite2D" parent="." unique_id=884256833]
+sprite_frames = ExtResource("anim")
+animation = &"legs"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=826710886]
 shape = SubResource("CircleShape2D_8t03j")
@@ -53,15 +44,17 @@ shape = SubResource("CircleShape2D_8t03j")
 [node name="Gun" parent="Visual/Alive" unique_id=20808233 instance=ExtResource("3_rgyib")]
 position = Vector2(16, 1.5)
 
-[node name="Sprite" type="Sprite2D" parent="Visual/Alive" unique_id=1155883437]
-texture = ExtResource("3_2ieo8")
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual/Alive" unique_id=1155883437]
+sprite_frames = ExtResource("anim")
+animation = &"idle"
 
 [node name="Corpse" type="Node2D" parent="Visual" unique_id=511698787]
 visible = false
 
-[node name="Body" type="Sprite2D" parent="Visual/Corpse" unique_id=1418027627]
+[node name="Body" type="AnimatedSprite2D" parent="Visual/Corpse" unique_id=1418027627]
 position = Vector2(3, 0)
-texture = ExtResource("4_ebec5")
+sprite_frames = ExtResource("anim")
+animation = &"lie_dead"
 
 [node name="Camera" type="Camera2D" parent="." unique_id=99021898]
 position_smoothing_enabled = true

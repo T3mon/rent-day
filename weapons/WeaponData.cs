@@ -10,7 +10,7 @@ namespace RentDay;
 public partial class WeaponData : Resource
 {
 	[ExportGroup("Looks")]
-	[Export] public string Name = "Pistol";
+	[Export] public string Name = "Pistol";      // a melee weapon's animations are named after it (bat_swing...), see tools/anim
 	[Export] public Texture2D Look;              // drawn in the hand
 	[Export] public Texture2D FloorLook;         // drawn on the floor (with a light rim, so it stands out)
 	[Export] public Vector2 HoldOffset;          // where the picture's centre sits, measured from the hand
@@ -31,9 +31,6 @@ public partial class WeaponData : Resource
 	[Export] public bool Melee;                  // swung, not fired: no ammo, no bullets, no noise (Cooldown is the wait between swings)
 	[Export] public bool Lethal = true;          // off: a hit knocks down instead of killing (fists)
 	[Export] public float SwingTime = 0.2f;      // seconds a swing hits whatever comes in reach
-	[Export] public float SwingArc = 200f;       // degrees the hands sweep around the front in a swing; 0 = a straight jab (fists)
-	[Export] public float SwingLead = -65f;      // degrees the weapon points ahead of the hands as a swing starts: below 0 trails behind (a bat held back)
-	[Export] public bool TwoHanded = true;       // both hands on it (bat); otherwise the other hand stays by the shoulder
 	[Export] public float Reach = 35f;           // a swing hits up to this far in front of you, 22 px wide
 	[Export] public bool KillsWhenThrown;        // thrown, it kills instead of knocking down (knife)
 	[Export] public AudioStream HitSound;        // when a swing connects

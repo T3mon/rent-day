@@ -1,11 +1,6 @@
 [gd_scene format=4 uid="uid://clpbgcc7akhl8"]
 
-[ext_resource type="Texture2D" uid="uid://b787fk3k0nxli" path="res://art/goon_b_armed.png" id="b_armed"]
-[ext_resource type="Texture2D" uid="uid://cyiwkp7lxksfb" path="res://art/goon_b_dead.png" id="b_dead"]
-[ext_resource type="Texture2D" uid="uid://dx5r5cevf0ls7" path="res://art/goon_b_dead_face.png" id="b_dead_face"]
-[ext_resource type="Texture2D" uid="uid://botbv5j8onaxy" path="res://art/goon_b_dead_side.png" id="b_dead_side"]
-[ext_resource type="Texture2D" uid="uid://cri8ty42tuujy" path="res://art/goon_b_legs.png" id="b_legs"]
-[ext_resource type="Texture2D" uid="uid://7ktng2mb45b5" path="res://art/goon_b_unarmed.png" id="b_unarmed"]
+[ext_resource type="SpriteFrames" path="res://art/anim/goon_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
 [ext_resource type="TileSet" uid="uid://dl52ylehkerep" path="res://levels/floors2.tres" id="floors"]
@@ -271,33 +266,26 @@ position = Vector2(88, 478)
 position = Vector2(400, 290)
 FacingDegrees = 180.0
 StartWeapon = ExtResource("shotgun")
+Pose = 1
 
 [node name="Enemy2" parent="." unique_id=1994176142 instance=ExtResource("enemy")]
-position = Vector2(520, 270)
-FacingDegrees = 90.0
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+position = Vector2(500, 316)
+FacingDegrees = 180.0
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("uzi")
+Pose = 4
 
 [node name="Enemy3" parent="." unique_id=2108573094 instance=ExtResource("enemy")]
 position = Vector2(360, 340)
 Behaviour = 2
 StayInRoom = true
+Pose = 2
 
 [node name="Enemy4" parent="." unique_id=1230330976 instance=ExtResource("enemy")]
 position = Vector2(196, 250)
 Behaviour = 1
 FacingDegrees = 90.0
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
 
 [node name="Enemy5" parent="." unique_id=1850314921 instance=ExtResource("enemy")]
 position = Vector2(600, 400)
@@ -305,45 +293,37 @@ Behaviour = 1
 FacingDegrees = 270.0
 
 [node name="Enemy6" parent="." unique_id=2020981138 instance=ExtResource("enemy")]
-position = Vector2(180, 120)
+position = Vector2(128, 78)
+FacingDegrees = 90.0
+Pose = 4
 
 [node name="Enemy7" parent="." unique_id=1278803494 instance=ExtResource("enemy")]
 position = Vector2(330, 110)
 Behaviour = 2
 StayInRoom = true
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
+Pose = 1
 
 [node name="Enemy8" parent="." unique_id=1830342158 instance=ExtResource("enemy")]
 position = Vector2(640, 120)
-FacingDegrees = 90.0
+FacingDegrees = 0.0
 StartWeapon = ExtResource("shotgun")
+Pose = 6
 
 [node name="Enemy9" parent="." unique_id=510319831 instance=ExtResource("enemy")]
-position = Vector2(110, 300)
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+position = Vector2(73, 300)
+FacingDegrees = 0.0
+Look = ExtResource("b_look")
 StartWeapon = ExtResource("uzi")
+Pose = 5
 
 [node name="Enemy10" parent="." unique_id=749932998 instance=ExtResource("enemy")]
-position = Vector2(680, 250)
-Behaviour = 2
-StayInRoom = true
+position = Vector2(668, 120)
+FacingDegrees = 180.0
+Pose = 6
 
 [node name="Enemy11" parent="." unique_id=371050180 instance=ExtResource("enemy")]
 position = Vector2(592, 457)
 FacingDegrees = 270.0
-ArmedLook = ExtResource("b_armed")
-UnarmedLook = ExtResource("b_unarmed")
-LegsLook = ExtResource("b_legs")
-DeadLook = ExtResource("b_dead")
-DeadLookFaceDown = ExtResource("b_dead_face")
-DeadLookSide = ExtResource("b_dead_side")
+Look = ExtResource("b_look")
+Pose = 2

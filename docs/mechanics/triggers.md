@@ -64,6 +64,7 @@ One key, two takedowns. A goon standing right in front of you comes first; other
 
 **Finishing a downed goon:** you drop onto him and crouch over him. What happens depends on what you hold:
 - **Fists, or a gun** (dropped beside you first): every click is one blow. A random number of blows is needed (2 to 5); clicks while a blow is still landing don't count. Each blow cracks harder than the last, ending on the hardest crack right before the killing blow, which is a much bigger crush with the full splat.
+- A goon slumped against a wall: you step up to him instead of crouching on him, and with fists (or a gun) every blow is a kick to the head. He dies slumped over.
 - **Bat:** every click swings the bat down on him. Always 3 blows. You keep the bat.
 - **Knife:** no clicks. A moment on him, then one cut across the throat, blood squirting to the side. You keep the knife.
 - Small goo splats build up under him with every blow.

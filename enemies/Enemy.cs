@@ -17,17 +17,21 @@ namespace RentDay;
 // different spot, so they don't pile up), on a route around walls (see LevelGrid). If you're not there, he
 // looks around for a moment and goes back to his routine (a static goon returns to his post).
 // A goon whose weapon got knocked away runs for the nearest weapon he can see.
+// Knocked down into a wall, he sits slumped against it instead of lying flat.
+// Pose is only the look: what he does while calm and standing still (smoking, on the phone...).
 //
 // Change the defaults for every goon in enemies/enemy.tscn; change one goon in the level.
 public partial class Enemy : Character
 {
 	public enum Routine { Static, Patrol, Wander }
+	public enum Idle { None, Smoke, Phone, Hide, Sit, Lean, Talk }
 
 	[ExportGroup("Routine")]
 	[Export] public Routine Behaviour = Routine.Static;
 	[Export] public float FacingDegrees = 0f;   // where he looks at the start (0 = right, 90 = down); a patroller sets off this way
 	[Export] public bool StayInRoom;            // patrol and wander only: never walks out through a doorway on his own
 	[Export] public float WalkSpeed = 55f;      // patrolling and wandering, pixels per second
+	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking
 
 	[ExportGroup("Senses")]
 	[Export] public float SightRange = 300f;    // pixels
@@ -91,7 +95,10 @@ public partial class Enemy : Character
 		if (DevSettings.Current.ShowGoonInfo || _drawnInfo)
 			QueueRedraw();
 		if (IsDead || Pinned)
+		{
+			IdlePose = null;
 			return;
+		}
 
 		float dt = (float)delta;
 		UpdateSwing(dt);
@@ -101,7 +108,11 @@ public partial class Enemy : Character
 		{
 			// Knocked flat: slide to a stop. When he gets up, he knows you're around.
 			Velocity = Velocity.MoveToward(Vector2.Zero, 900f * dt);
+			Vector2 sliding = Velocity;
 			MoveAndSlide();
+			if (!Slumped && GetLastSlideCollision() is { } bump && sliding.Dot(bump.GetNormal()) < -60f
+				&& (PhysicsServer2D.BodyGetCollisionLayer(bump.GetColliderRid()) & Layers.World) != 0)
+				Slump(bump.GetNormal());
 			_alerted = true;
 			_reactionLeft = -1f;
 			_route = null; // he slid off his route
@@ -118,6 +129,13 @@ public partial class Enemy : Character
 			Search(spot, dt);
 		else
 			FollowRoutine(dt);
+
+		string pose = Pose == Idle.None || _alerted || Velocity != Vector2.Zero ? null : Pose.ToString().ToLowerInvariant();
+		if (Pose == Idle.Sit) // sitting on furniture: he can be in it until something alerts him, then he gets up off it
+			CollisionMask = _alerted ? CollisionMask | Layers.Furniture : CollisionMask & ~Layers.Furniture;
+		if (IdlePose == "smoke" && pose == null && _alerted) // flicks the cigarette away
+			Shell.Eject(this, GlobalPosition + Vector2.Down.Rotated(Visual.GlobalRotation) * 12f, Visual.GlobalRotation, Colors.White);
+		IdlePose = pose;
 
 		MoveAndSlide();
 	}
@@ -203,8 +221,8 @@ public partial class Enemy : Character
 		switch (Behaviour)
 		{
 			case Routine.Static:
-				// Back to his post, then face the way he was facing.
-				if (!RunTo(_post, WalkSpeed, dt))
+				// Back to his post, then face the way he was facing. (At it, no route: a post on furniture he sits on has none.)
+				if (GlobalPosition.DistanceTo(_post) < 4f || !RunTo(_post, WalkSpeed, dt))
 				{
 					Velocity = Vector2.Zero;
 					Visual.Rotation = _postAngle;

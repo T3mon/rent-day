@@ -1,4 +1,3 @@
-using System.Linq;
 using Godot;
 
 namespace RentDay;
@@ -7,12 +6,12 @@ namespace RentDay;
 // it aims, legs that walk where it moves, a weapon (or empty hands), melee swings,
 // and death from a single hit. Player and Enemy build on this.
 //
-// Expected children:
+// Expected children (the three sprites all play this character's Look):
 //   Legs              - walking legs, turn toward the direction of movement
 //   Visual            - rotates to face where we aim
 //     Alive/Gun       - the gun in the hand, drawn under the body
-//     Alive/Sprite    - the standing body
-//     Corpse/Body     - the dead look, hidden until we die
+//     Alive/Sprite    - the standing body (see CharacterMotion for which animation plays when)
+//     Corpse/Body     - lying on the floor: falling, knocked down, slumped, getting up, dead
 //   CollisionShape2D
 //   DeathSound
 //
@@ -24,16 +23,9 @@ public partial class Character : CharacterBody2D
 	// Fired once, at the moment we die. Main listens to this.
 	[Signal] public delegate void DiedEventHandler();
 
-	// Looks. Leave a slot empty to keep what the scene shows; fill them on a
-	// placed goon to give him a different outfit.
-	[Export] public Texture2D ArmedLook;         // one arm out, holding whatever gun
-	[Export] public Texture2D UnarmedLook;
-	[Export] public Texture2D LegsLook;
-
-	// Death poses: one is picked at random each time, so bodies don't all look alike.
-	[Export] public Texture2D DeadLook;          // on the back
-	[Export] public Texture2D DeadLookFaceDown;
-	[Export] public Texture2D DeadLookSide;      // curled up on the side
+	// Every animation of this character (art/anim/<name>.tres, made by tools/anim/build.py).
+	// Set it on a placed goon to give him a different outfit.
+	[Export] public SpriteFrames Look;
 
 	[Export] public WeaponData StartWeapon;      // empty = starts empty-handed
 
@@ -60,13 +52,13 @@ public partial class Character : CharacterBody2D
 	private const int CorpseZ = 2;
 	private const int GooSteps = 8; // footprints left after stepping in goo
 
-	// One step of the walk cycle (and one footprint) per this many pixels travelled.
+	// One footprint per this many pixels travelled; the legs' walk cycle (8 frames) takes four.
 	private const float StepLength = 20f;
-	private static readonly int[] WalkCycle = { 1, 0, 2, 0 };
+	private const int DeadFaceDown = 1; // lie_dead's frames: on the back, face down, on the side
 
-	private Sprite2D _bodySprite;
-	private Sprite2D _corpseBody;
-	private Sprite2D _legs;
+	private AnimatedSprite2D _bodySprite;
+	private AnimatedSprite2D _corpseBody;
+	private AnimatedSprite2D _legs;
 	private Node2D _alive;
 	private Node2D _corpse;
 	private CollisionShape2D _collision;
@@ -76,6 +68,8 @@ public partial class Character : CharacterBody2D
 	private int _gooSteps;
 	private bool _leftFoot;
 	private float _downLeft;
+	private bool _slumped;       // knocked into a wall: sitting against it
+	private int _deadPose;       // lie_dead's frame shown once the fall is over
 	private int _livingZ;
 	private Tween _flinch;
 
@@ -83,18 +77,24 @@ public partial class Character : CharacterBody2D
 	{
 		Visual = GetNode<Node2D>("Visual");
 		Gun = GetNode<Gun>("Visual/Alive/Gun");
-		_bodySprite = GetNode<Sprite2D>("Visual/Alive/Sprite");
-		_legs = GetNode<Sprite2D>("Legs");
+		_bodySprite = GetNode<AnimatedSprite2D>("Visual/Alive/Sprite");
+		_legs = GetNode<AnimatedSprite2D>("Legs");
 		_alive = GetNode<Node2D>("Visual/Alive");
 		_corpse = GetNode<Node2D>("Visual/Corpse");
 		_collision = GetNode<CollisionShape2D>("CollisionShape2D");
 		_deathSound = GetNode<AudioStreamPlayer2D>("DeathSound");
-		_corpseBody = GetNode<Sprite2D>("Visual/Corpse/Body");
+		_corpseBody = GetNode<AnimatedSprite2D>("Visual/Corpse/Body");
 		_livingZ = ZIndex;
 		ReadyMelee();
 
-		if (LegsLook != null)
-			_legs.Texture = LegsLook;
+		if (Look != null)
+			_bodySprite.SpriteFrames = _legs.SpriteFrames = _corpseBody.SpriteFrames = Look;
+		_legs.Animation = "legs";
+		_corpseBody.AnimationFinished += () =>
+		{
+			if (_corpseBody.Animation == "lie_fall") // landed: the pose he stays in
+				ShowOnFloor("lie_dead", _deadPose);
+		};
 		Equip(StartWeapon, StartWeapon?.Ammo ?? 0);
 	}
 
@@ -102,9 +102,7 @@ public partial class Character : CharacterBody2D
 	public void Equip(WeaponData data, int ammo, bool playSound = false)
 	{
 		Gun.Equip(data, ammo, playSound);
-		Texture2D look = ArmsFor(data);
-		if (look != null)
-			_bodySprite.Texture = look;
+		ResetSwing();
 	}
 
 	// Picks up a gun lying on the floor.
@@ -113,6 +111,7 @@ public partial class Character : CharacterBody2D
 		Equip(pickup.Data, pickup.Ammo, playSound: true);
 		pickup.QueueFree();
 		_dip = 1f; // reaching down for it
+		Act("pickup");
 	}
 
 	// Lets go of our gun: it becomes a gun on the floor, sliding at `velocity`.
@@ -135,7 +134,10 @@ public partial class Character : CharacterBody2D
 
 		Equip(null, 0);
 		if (thrown)
+		{
 			_throwFollow = 1f; // the arm follows through
+			Act("throw");
+		}
 	}
 
 	// Runs every drawn frame: purely visual, so it doesn't need to be in step with physics.
@@ -146,15 +148,18 @@ public partial class Character : CharacterBody2D
 
 		if (IsDown)
 		{
-			// Squirming on the floor, so it's clear he isn't dead.
 			if (!Pinned)
 				_downLeft -= (float)delta;
-			_corpseBody.Rotation = Mathf.Sin(_downLeft * 14f) * 0.08f;
+			// Getting up takes as long as its animation, finishing right when he's back on his feet.
+			string getUp = _slumped ? "lie_slump_getup" : "lie_getup";
+			if (!Pinned && _downLeft <= Seconds(getUp) && _corpseBody.Animation != getUp)
+				ShowOnFloor(getUp);
+			else if (!_slumped && _corpseBody.Animation == "lie_dead")
+				_corpseBody.Rotation = Mathf.Sin(_downLeft * 14f) * 0.08f; // squirming, so it's clear he isn't dead
 			if (_downLeft <= 0)
 				GetUp();
 			return;
 		}
-		PoseArms((float)delta);
 		MoveBody((float)delta);
 
 		float speed = Velocity.Length();
@@ -163,16 +168,18 @@ public partial class Character : CharacterBody2D
 			_legs.Frame = 0; // standing
 			_walked = 0;
 			_step = 0;
-			return;
 		}
-
-		// Legs point where we're going, which may differ from where we aim.
-		_legs.Rotation = Velocity.Angle();
-		_walked += speed * (float)delta;
-		int step = (int)(_walked / StepLength);
-		_legs.Frame = WalkCycle[step % WalkCycle.Length];
-		for (; _step < step; _step++) // a slow frame can cover several steps: each gets its print, back along the path
-			Footstep(GlobalPosition - Velocity.Normalized() * (step - _step - 1) * StepLength);
+		else
+		{
+			// Legs point where we're going, which may differ from where we aim.
+			_legs.Rotation = Velocity.Angle();
+			_walked += speed * (float)delta;
+			_legs.Frame = (int)(_walked * 4f / StepLength) % _legs.SpriteFrames.GetFrameCount("legs");
+			int step = (int)(_walked / StepLength);
+			for (; _step < step; _step++) // a slow frame can cover several steps: each gets its print, back along the path
+				Footstep(GlobalPosition - Velocity.Normalized() * (step - _step - 1) * StepLength);
+		}
+		AnimateBody(speed >= 10f);
 	}
 
 	// Walking through goo leaves a few footprints, fading out.
@@ -205,15 +212,21 @@ public partial class Character : CharacterBody2D
 		// changing collisions in the middle of checking them.
 		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
 
-		// Pick a random death pose (sometimes mirrored), fall the way the bullet
-		// was going, and swap the standing look for the corpse.
-		Texture2D[] poses = (lethal ? new[] { DeadLook, DeadLookFaceDown, DeadLookSide } : new[] { DeadLookFaceDown })
-			.Where(t => t != null).ToArray();
-		if (poses.Length > 0)
-			_corpseBody.Texture = poses[GD.RandRange(0, poses.Length - 1)];
-		_corpseBody.FlipV = GD.Randf() < 0.5f;
+		// Already on the floor: he stays as he lies (slumped against a wall, he slumps over).
+		// Standing: he falls the way the bullet was going, into a random death pose (sometimes
+		// mirrored); choked out, face down.
 		_corpseBody.Rotation = 0f;
-		Visual.Rotation = hitDirection.Angle();
+		if (_slumped)
+			ShowOnFloor("lie_dead_lean");
+		else if (IsDown)
+			ShowOnFloor("lie_dead", DeadFaceDown);
+		else
+		{
+			_deadPose = lethal ? GD.RandRange(0, _corpseBody.SpriteFrames.GetFrameCount("lie_dead") - 1) : DeadFaceDown;
+			_corpseBody.FlipV = GD.Randf() < 0.5f;
+			Visual.Rotation = hitDirection.Angle();
+			ShowOnFloor("lie_fall");
+		}
 		IsDown = false;
 		ShowLying(true);
 
@@ -221,11 +234,14 @@ public partial class Character : CharacterBody2D
 		if (lethal)
 			GooCanvas.Bleed(GlobalPosition, hitDirection);
 
-		// The body is knocked back a little in the direction of the shot.
-		CreateTween()
-			.TweenProperty(this, "global_position", GlobalPosition + hitDirection * 8f, 0.2)
-			.SetTrans(Tween.TransitionType.Cubic)
-			.SetEase(Tween.EaseType.Out);
+		// The body is knocked back a little in the direction of the shot (not into the wall he sits against).
+		if (!_slumped)
+		{
+			CreateTween()
+				.TweenProperty(this, "global_position", GlobalPosition + hitDirection * 8f, 0.2)
+				.SetTrans(Tween.TransitionType.Cubic)
+				.SetEase(Tween.EaseType.Out);
+		}
 
 		// Make the kill land: kick the screen and freeze the game for a split second.
 		// A quiet takedown stays quiet: whoever did it plays its sounds.
@@ -264,17 +280,52 @@ public partial class Character : CharacterBody2D
 
 		DropWeapon(Vector2.Right.Rotated(GD.Randf() * Mathf.Tau) * 160f);
 
-		_corpseBody.Texture = DeadLookFaceDown ?? DeadLook;
+		_deadPose = DeadFaceDown;
 		_corpseBody.FlipV = GD.Randf() < 0.5f;
 		Visual.Rotation = direction.Angle();
+		ShowOnFloor("lie_fall");
 		ShowLying(true);
+	}
+
+	// Knocked down into a wall (`away` points out of it): he sits slumped against it, dazed,
+	// instead of lying flat. He gets up the same as from the floor.
+	public bool Slumped => IsDown && _slumped;
+
+	protected void Slump(Vector2 away)
+	{
+		_slumped = true;
+		Velocity = Vector2.Zero;
+		Visual.Rotation = away.Angle();
+		_corpseBody.Rotation = 0f;
+		ShowOnFloor("lie_slump");
 	}
 
 	private void GetUp()
 	{
 		IsDown = false;
+		_slumped = false;
 		_corpseBody.Rotation = 0f;
 		ShowLying(false);
+	}
+
+	// The lying layer plays `animation` from the start, or shows just its frame `frame`.
+	private void ShowOnFloor(string animation, int frame = -1)
+	{
+		_corpseBody.Play(animation);
+		if (frame < 0)
+			return;
+		_corpseBody.Pause();
+		_corpseBody.Frame = frame;
+	}
+
+	// How long one run of an animation takes.
+	private float Seconds(string animation)
+	{
+		SpriteFrames frames = _corpseBody.SpriteFrames;
+		float total = 0f;
+		for (int i = 0; i < frames.GetFrameCount(animation); i++)
+			total += (float)frames.GetFrameDuration(animation, i);
+		return total / (float)frames.GetAnimationSpeed(animation);
 	}
 
 	// Lying on the floor (dead or knocked down) vs. standing.

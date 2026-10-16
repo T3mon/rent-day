@@ -27,5 +27,8 @@ The building is played floor by floor, bottom to top.
 - Leave a gun near where you arrive, for a player who comes up empty-handed.
 - Stairs are walked onto, not around: keep furniture off them and leave a free approach.
 - Mix the goon behaviours: guards facing doorways, patrollers in corridors, wanderers in rooms.
+- Give guards and wanderers something to do (Pose, see [goons.md](goons.md)): sitters on a couch or
+  chair (facing = 90 + the seat's rotation; seats face down at rotation 0), leaners with their back
+  to a wall, talkers in pairs facing each other. Patrollers never stand still, so they never pose.
 - Give rooms more than one way in where you can, so there are routes around a guard.
 - Doors follow [doors.md](doors.md); gaps for goons follow [goons.md](goons.md).
