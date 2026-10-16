@@ -127,7 +127,10 @@ public partial class Enemy : Character
 	{
 		_seesYou = true;
 		if (_reactionLeft < 0f)
+		{
 			_reactionLeft = ReactionFor(_player.GlobalPosition);
+			Startle(); // just the look: the reaction time stays the same
+		}
 		_alerted = true;
 		_checkSpot = _player.GlobalPosition;
 		_searchLeft = SearchTime;

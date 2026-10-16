@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://bdh80ousndj8k"]
 
-[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
-[ext_resource type="Texture2D" path="res://weapons/pistol.png" id="2_look"]
-[ext_resource type="Texture2D" path="res://weapons/pistol_floor.png" id="3_floor"]
-[ext_resource type="AudioStream" path="res://audio/pistol.wav" id="4_sound"]
-[ext_resource type="AudioStream" path="res://audio/pickup_pistol.wav" id="5_pickup"]
+[ext_resource type="Script" uid="uid://bsqyeexacgudx" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://q6j2eor2brx1" path="res://weapons/pistol.png" id="2_look"]
+[ext_resource type="Texture2D" uid="uid://b4rrv7mpitcmo" path="res://weapons/pistol_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" uid="uid://5s2aoxwtdbci" path="res://audio/pistol.wav" id="4_sound"]
+[ext_resource type="AudioStream" uid="uid://d0p32unjq1x5a" path="res://audio/pickup_pistol.wav" id="5_pickup"]
 
 [resource]
 script = ExtResource("1_script")

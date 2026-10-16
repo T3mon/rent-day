@@ -121,6 +121,7 @@ public partial class Door : Node2D
 			{
 				_spin = -side * (who is Player && _leftRight ? PlayerSwingSpeedLeftRight : SwingSpeed);
 				_swungByPlayer = who is Player;
+				who.PushDoor(_panel.GlobalTransform.Y.Normalized() * -side);
 			}
 			else if (Mathf.Sign(_spin) == side)
 				_spin = 0f; // drifting into someone standing still: it comes to rest against them

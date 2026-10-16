@@ -117,6 +117,7 @@ public partial class Gun : Node2D
 		_shotSound.PitchScale = Data.ShotPitch * (float)GD.RandRange(0.95, 1.05); // never the exact same bang twice
 		_shotSound.Play();
 		Effects.Spawn(SmokeScene, this, _muzzle.GlobalPosition, GlobalRotation);
+		Shell.Eject(this, GlobalPosition, GlobalRotation, Data.ShellColor);
 
 		if (!HeldByGoon)
 		{

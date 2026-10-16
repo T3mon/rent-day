@@ -25,3 +25,4 @@ Shake = 0.6
 Kickback = 140.0
 ShotSound = ExtResource("4_sound")
 PickupSound = ExtResource("5_pickup")
+ShellColor = Color(0.75, 0.16, 0.16, 1)

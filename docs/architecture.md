@@ -11,6 +11,9 @@ Gameplay rules are in [mechanics/](mechanics/).
   Its melee half is **`core/CharacterMelee.cs`**: swings (`TrySwing`, hits checked each physics tick
   in `UpdateSwing`) and the arms, drawn in code while a bat, knife or bare fists are in hand (the
   body picture then has its hands removed; arm colours are read from the armed look).
+  **`core/CharacterMotion.cs`** holds small upper-body motions that are for the look only and never
+  change timing: leaning into a run and settling after a stop (with dust), a dip on pickups, a
+  shoulder into doors, a throw's follow-through, a goon's startle when he spots you.
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
   keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the goon adds
   the AI (behaviours, sight, hearing, chasing, route-finding).
@@ -22,8 +25,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   call `Main.NextFloor`. Rules in [mechanics/floors.md](mechanics/floors.md).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
   bullets and sight and slam goons. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
-- **`effects/`**: particles, screen shake (`ShakeCamera.Shake`), hit stop (`HitStop.Freeze`), and
-  `Effects.Spawn` for dropping an effect into the level.
+- **`effects/`**: particles, screen shake (`ShakeCamera.Shake`), hit stop (`HitStop.Freeze`),
+  `Effects.Spawn` for dropping an effect into the level, and spent casings (`Shell.Eject`, one per shot).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
   clears (a hidden `SubViewport`), so splats cost nothing once they've landed. Splats are clipped
   to the floor they can reach without crossing a wall. Anything that bleeds calls the static

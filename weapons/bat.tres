@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="WeaponData" format=3]
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://cpxggc76wa3it"]
 
-[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
-[ext_resource type="Texture2D" path="res://weapons/bat.png" id="2_look"]
-[ext_resource type="Texture2D" path="res://weapons/bat_floor.png" id="3_floor"]
-[ext_resource type="AudioStream" path="res://audio/melee/bat_swing.wav" id="swing"]
+[ext_resource type="Script" uid="uid://bsqyeexacgudx" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://l10l7pp0wv2o" path="res://weapons/bat.png" id="2_look"]
+[ext_resource type="Texture2D" uid="uid://dyr22lvmjl683" path="res://weapons/bat_floor.png" id="3_floor"]
 [ext_resource type="AudioStream" path="res://audio/melee/bat_hit.tres" id="hit"]
+[ext_resource type="AudioStream" uid="uid://cdeyay4lfufj2" path="res://audio/melee/bat_swing.wav" id="swing"]
 
 [resource]
 script = ExtResource("1_script")
@@ -17,8 +17,7 @@ Cooldown = 0.42
 GoonCooldown = 0.5
 Melee = true
 SwingTime = 0.19
-SwingArc = 200.0
-Shake = 0.0
-FinishBlows = 3
-ShotSound = ExtResource("swing")
 HitSound = ExtResource("hit")
+FinishBlows = 3
+Shake = 0.0
+ShotSound = ExtResource("swing")

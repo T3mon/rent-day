@@ -21,6 +21,7 @@ public partial class Character
 	private static readonly int[] HandRows = { 16, 17, 18, 19, 36, 37, 38, 39 };
 	private static readonly Dictionary<Texture2D, Texture2D> BareLooks = new();
 	private static readonly Color Ink = new(0.04f, 0.02f, 0.07f);
+	private static readonly Color Smear = new(1f, 0.97f, 0.9f, 0.4f);
 
 	private WeaponData _swung;                   // the weapon (or fists) of the swing that's out
 	private float _swingLeft;
@@ -36,6 +37,7 @@ public partial class Character
 	private Vector2 _grip;                       // the weapon hand (fists: the punching hand)
 	private Vector2 _offHand;
 	private float _gripAngle;                    // where the weapon points
+	private float _swingE;                       // how far through the swing the weapon is (0 = at rest)
 
 	// Bare fists, or a bat or knife, in hand: then the arms are drawn, not part of the body picture.
 	private WeaponData HeldMelee => Gun.Data is { Melee: true } ? Gun.Data : Gun.Data == null ? Fists : null;
@@ -61,7 +63,7 @@ public partial class Character
 	{
 		_swingLeft = 0f;
 		_swingAge = float.MaxValue;
-		_alive.Rotation = 0f;
+		_twist = 0f;
 		bool arms = HeldMelee != null;
 		Gun.Visible = data != null && !arms;     // a bat or knife is drawn in the hands instead
 		_arms.Visible = arms;
@@ -162,12 +164,20 @@ public partial class Character
 
 		if (weapon.SwingArc <= 0f)
 		{
-			// Fists: the right hand jabs out and back, the left stays by the shoulder.
+			// Fists: the right hand jabs out and back (or follows through after a throw), the left
+			// stays by the shoulder.
 			float t = Mathf.Clamp(_swingAge / swing, 0f, 1f);
-			float jab = t < 0.3f ? t / 0.3f : 1f - (t - 0.3f) / 0.7f;
+			float jab = Mathf.Max(t < 0.3f ? t / 0.3f : 1f - (t - 0.3f) / 0.7f, _throwFollow);
 			_grip = RestHand.Lerp(new Vector2(14f, 3f), jab);
 			_offHand = RestHand * new Vector2(1f, -1f);
-			_alive.Rotation = -0.15f * jab; // a little turn into the punch
+			_twist = -0.15f * jab; // a little turn into the punch
+
+			// Walking into a door: the hand on its side presses against it.
+			Vector2 door = _pushDirection.Rotated(-Visual.GlobalRotation);
+			if (door.Y >= 0f)
+				_grip += door * (7f * Bump(_push));
+			else
+				_offHand += door * (7f * Bump(_push));
 		}
 		else
 		{
@@ -177,14 +187,45 @@ public partial class Character
 			float e = _swingAge < swing ? 1f - Mathf.Pow(1f - _swingAge / swing, 3f)
 				: _swingAge < swing + back ? 1f - Mathf.SmoothStep(0f, 1f, (_swingAge - swing) / back)
 				: 0f;
-			float hands = Mathf.DegToRad(weapon.SwingArc / 2f) * (2f * e - 1f);
-			float lead = Mathf.DegToRad(weapon.SwingLead) * (1f - 2f * e);
-			_grip = Vector2.Right.Rotated(-hands) * GripRadius;
-			_gripAngle = -(hands + lead);
+			_swingE = e;
+			(_grip, _gripAngle) = WeaponPose(weapon, e);
 			_offHand = weapon.TwoHanded ? _grip - Vector2.Right.Rotated(_gripAngle) * 3f : RestHand * new Vector2(1f, -1f);
-			_alive.Rotation = -0.25f * Mathf.Sin(Mathf.Pi * e); // the body turns into the swing
+			_twist = -0.25f * Mathf.Sin(Mathf.Pi * e); // the body turns into the swing
 		}
 		_arms.QueueRedraw();
+	}
+
+	// Where the weapon hand is and where the weapon points, e of the way through a swing (0 = at rest).
+	private static (Vector2 Grip, float Angle) WeaponPose(WeaponData weapon, float e)
+	{
+		float hands = Mathf.DegToRad(weapon.SwingArc / 2f) * (2f * e - 1f);
+		float lead = Mathf.DegToRad(weapon.SwingLead) * (1f - 2f * e);
+		return (Vector2.Right.Rotated(-hands) * GripRadius, -(hands + lead));
+	}
+
+	// A pale smear over the path the weapon just swept, only while it moves fast; older is fainter.
+	private void DrawSmear(WeaponData weapon)
+	{
+		if (_swingAge >= weapon.SwingTime || _swingE < 0.08f || _swingE > 0.9f)
+			return;
+		float near = weapon.HoldOffset.X - weapon.Look.GetWidth() / 2f + 3f;
+		float far = weapon.HoldOffset.X + weapon.Look.GetWidth() / 2f;
+		float from = Mathf.Max(0f, _swingE - 0.35f);
+		const int steps = 6;
+		Vector2 lastNear = default, lastFar = default;
+		for (int i = 0; i <= steps; i++)
+		{
+			(Vector2 grip, float angle) = WeaponPose(weapon, Mathf.Lerp(from, _swingE, (float)i / steps));
+			Vector2 nearAt = grip + Vector2.Right.Rotated(angle) * near;
+			Vector2 farAt = grip + Vector2.Right.Rotated(angle) * far;
+			if (i > 0)
+			{
+				Color color = Smear with { A = Smear.A * i / steps };
+				_arms.DrawColoredPolygon([lastFar, farAt, nearAt], color);
+				_arms.DrawColoredPolygon([lastFar, nearAt, lastNear], color);
+			}
+			(lastNear, lastFar) = (nearAt, farAt);
+		}
 	}
 
 	private void DrawArms()
@@ -194,6 +235,7 @@ public partial class Character
 			return;
 		if (weapon.Look != null)
 		{
+			DrawSmear(weapon);
 			_arms.DrawSetTransform(_grip, _gripAngle);
 			_arms.DrawTexture(weapon.Look, weapon.HoldOffset - weapon.Look.GetSize() / 2f);
 			_arms.DrawSetTransform(Vector2.Zero, 0f);

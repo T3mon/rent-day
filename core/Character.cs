@@ -60,8 +60,8 @@ public partial class Character : CharacterBody2D
 	private const int CorpseZ = 2;
 	private const int GooSteps = 8; // footprints left after stepping in goo
 
-	// One step of the walk cycle per this many pixels travelled.
-	private const float StepLength = 7f;
+	// One step of the walk cycle (and one footprint) per this many pixels travelled.
+	private const float StepLength = 20f;
 	private static readonly int[] WalkCycle = { 1, 0, 2, 0 };
 
 	private Sprite2D _bodySprite;
@@ -112,6 +112,7 @@ public partial class Character : CharacterBody2D
 	{
 		Equip(pickup.Data, pickup.Ammo, playSound: true);
 		pickup.QueueFree();
+		_dip = 1f; // reaching down for it
 	}
 
 	// Lets go of our gun: it becomes a gun on the floor, sliding at `velocity`.
@@ -133,6 +134,8 @@ public partial class Character : CharacterBody2D
 		GetTree().CurrentScene.CallDeferred(Node.MethodName.AddChild, pickup);
 
 		Equip(null, 0);
+		if (thrown)
+			_throwFollow = 1f; // the arm follows through
 	}
 
 	// Runs every drawn frame: purely visual, so it doesn't need to be in step with physics.
@@ -152,6 +155,7 @@ public partial class Character : CharacterBody2D
 			return;
 		}
 		PoseArms((float)delta);
+		MoveBody((float)delta);
 
 		float speed = Velocity.Length();
 		if (speed < 10f)

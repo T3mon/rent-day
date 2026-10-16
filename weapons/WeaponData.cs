@@ -46,4 +46,5 @@ public partial class WeaponData : Resource
 	[Export] public AudioStream ShotSound;       // the bang, or the whoosh of a swing
 	[Export] public float ShotPitch = 1f;        // the same sound pitched down sounds bigger, up sounds smaller
 	[Export] public AudioStream PickupSound;     // played when you grab it (slide rack, pump...)
+	[Export] public Color ShellColor = new(0.85f, 0.68f, 0.3f); // the spent casing each shot throws out (brass; a shotgun's are red)
 }
