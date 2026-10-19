@@ -356,7 +356,11 @@ def lying_animations():
     L['slump'] = [('slump', 500), ('slump2', 500)]
     L['slump_getup'] = [('slump_up1', 90), ('slump_up2', 90), ('crouch', 80)]
     L['dead_lean'] = [('dead_lean', 1000)]
-    L['dead'] = [(0, 1000), (1, 1000), (2, 1000)]
+    L['dead'] = [(0, 1000), (1, 1000), (2, 1000),
+                 # sprawled on the back: arms flung up, legs wide
+                 (dict(torso_len=16, head_x=12, legs=((-8, 3.5, -19, 11), (-8, -3.5, -18, -12)), hands=((15, 13), (14, -15))), 1000),
+                 # crumpled face down: one knee drawn up, an arm under the body
+                 (dict(torso_len=15, head_x=11, legs=((-7, 3.5, -12, 11), (-7, -3.5, -19, -3)), hands=((3, 4), (9, -13)), back=False), 1000)]
     return L
 
 

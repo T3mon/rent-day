@@ -8,7 +8,7 @@ import math, os
 from pngio import read_png, png
 
 PROJECT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..') + '/'
-ART = PROJECT + 'art/'
+ART = PROJECT + 'art/anim/'  # each character's hand-drawn sprites sit in its own folder: art/anim/<name>/<name>_*.png
 INK = (11, 6, 18, 255)
 CLEAR = (0, 0, 0, 0)
 SIZE, C = 72, 36  # frames are 72x72 so swung weapons fit; the old sprites were 56x56 around (28, 28)
@@ -23,9 +23,9 @@ class Character:
 
     def __init__(self, name):
         self.name = name
-        _, _, self.unarmed = read_png(f'{ART}{name}_unarmed.png')
-        _, _, self.armed = read_png(f'{ART}{name}_armed.png')
-        _, _, self.legs = read_png(f'{ART}{name}_legs.png')
+        _, _, self.unarmed = read_png(f'{ART}{name}/{name}_unarmed.png')
+        _, _, self.armed = read_png(f'{ART}{name}/{name}_armed.png')
+        _, _, self.legs = read_png(f'{ART}{name}/{name}_legs.png')
         u, a = self.unarmed, self.armed
         self.jacket_dark, self.jacket, self.jacket_light = u[20][21], u[22][24], u[22][23]
         self.sleeve, self.sleeve_dark, self.skin = a[30][38], a[29][38], a[29][43]
@@ -47,7 +47,7 @@ class Character:
         # Lying bodies (old sprites are 56x42 around (28, 21)): back, face down, on the side.
         self.corpses = []
         for kind in ('dead', 'dead_face', 'dead_side'):
-            _, _, c = read_png(f'{ART}{name}_{kind}.png')
+            _, _, c = read_png(f'{ART}{name}/{name}_{kind}.png')
             self.corpses.append({(x - 28, y - 21): c[y][x] for y in range(42) for x in range(56) if c[y][x][3]})
         d = self.corpses[0]
         self.pants, self.pants_lit, self.shoe_dark = d[(12 - 28, 13 - 21)], d[(12 - 28, 14 - 21)], d[(5 - 28, 12 - 21)]

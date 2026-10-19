@@ -54,6 +54,6 @@ LOOPS = {'idle', 'walk', 'gun_idle', 'gun_walk', 'bat_idle', 'bat_walk', 'knife_
          'smoke', 'phone', 'hide', 'sit', 'lean', 'talk', 'lie_slump'}
 
 if __name__ == '__main__':
-    for name in ('collector', 'goon_a', 'goon_b'):
+    for name in ('collector', 'goon_a', 'goon_b', 'goon_c', 'goon_d'):
         anims = build(name)
         print(name, len(anims), 'animations', sum(len(f) for f, m, s in anims.values()), 'frames')
