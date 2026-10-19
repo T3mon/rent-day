@@ -97,7 +97,7 @@ public partial class Character
 
 		_dip = Mathf.MoveToward(_dip, 0f, dt / 0.18f);
 		_push = Mathf.MoveToward(_push, 0f, dt / 0.3f);
-		_startle = Mathf.MoveToward(_startle, 0f, dt / 0.3f);
+		_startle = Mathf.MoveToward(_startle, 0f, dt / 0.2f);
 		_throwFollow = Mathf.MoveToward(_throwFollow, 0f, dt / 0.25f);
 
 		float turn = -Visual.GlobalRotation;
@@ -106,10 +106,10 @@ public partial class Character
 		float startle = Pop(_startle);
 		Vector2 door = _pushDirection.Rotated(turn);
 		_alive.Position = _lean.Rotated(turn) + Vector2.Right * (2f * dip) + door * (3.5f * push)
-			- Vector2.Right * (2.5f * startle);
+			- Vector2.Right * (1f * startle);
 		_alive.Rotation = -0.35f * _throwFollow * _throwFollow
 			- 0.35f * push * (door.Y < 0f ? -1f : 1f); // the shoulder on the door's side leads
-		_alive.Scale = Vector2.One * (1f - 0.08f * dip + 0.2f * startle);
+		_alive.Scale = Vector2.One * (1f - 0.08f * dip + 0.08f * startle);
 	}
 
 	// 0 -> 1 -> 0 while `left` runs from 1 down to 0.
