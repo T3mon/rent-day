@@ -29,6 +29,7 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/stretch/scale_mode="integer"
 mouse_cursor/custom_image="uid://fmpck7743b5x"
+mouse_cursor/custom_image_hotspot=Vector2(17, 17)
 
 [dotnet]
 
