@@ -53,6 +53,14 @@ Each gun has its own pick-up sound, so you can tell what you grabbed by ear.
 - Holding Shift leans much further, to scout ahead. You always stay on screen, near the edge at most.
 - The lean follows the cursor's spot on the screen, so it eases in and out smoothly instead of running away.
 
+## Pause (`ui_cancel`, Esc)
+
+Opens the Esc menu over the frozen floor: resume, save game, load game, settings, quit to the main menu. The game stays paused until it closes; Esc goes back one page, and from the first page resumes.
+
+## Quick save and load (`quick_save` F5, `quick_load` F9)
+
+F5 saves to the one quick save; F9 loads it. See [saves.md](saves.md).
+
 ## Execute (`execute`, Space)
 
 One key, two takedowns. A goon standing right in front of you comes first; otherwise the nearest goon lying on the floor within reach.

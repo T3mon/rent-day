@@ -1,11 +1,14 @@
+using System;
 using System.Linq;
 using Godot;
 
 namespace RentDay;
 
-// The top of the game. Plays the floors in order: kill every goon on a floor and its stairs
+// The top of a run. Plays the floors in order: kill every goon on a floor and its stairs
 // up open; walk onto them and you're on the next floor, holding the gun you came with.
-// Holds the on-screen messages and ammo counter, and handles restarting.
+// Holds the on-screen messages and ammo counter, and handles restarting. Every floor start is
+// autosaved; Esc opens the Esc menu (TapeMenu), F5 quick-saves, F9 loads the quick save.
+// A run starts from the main menu through Begin (a new game or a save).
 public partial class Main : Node2D
 {
 	[Export] public PackedScene[] Floors = [];
@@ -15,10 +18,14 @@ public partial class Main : Node2D
 	private static WeaponData _carried;  // the gun you came up the stairs with, and its rounds
 	private static int _carriedAmmo;
 	private static bool _arriving;
+	private static readonly PackedScene Menu = GD.Load<PackedScene>(TapeMenu.ScenePath);
+
+	public static ulong FloorStarted { get; private set; } // engine ticks when this floor began
 
 	private Label _message;
 	private Label _ammo;
 	private ColorRect _fade;
+	private Label _note;
 	private Player _player;
 	private int _shownAmmo = int.MinValue;
 	private bool _leaving;
@@ -27,7 +34,8 @@ public partial class Main : Node2D
 	public override void _Ready()
 	{
 		if (_floor < 0)
-			_floor = Mathf.Clamp(DevSettings.Current.StartFloor - 1, 0, Floors.Length - 1);
+			_floor = DevSettings.Current.StartFloor - 1;
+		_floor = Mathf.Clamp(_floor, 0, Floors.Length - 1); // a save may name a floor that's gone
 		var level = Floors[_floor].Instantiate<Node2D>();
 		AddChild(level);
 		MoveChild(level, 0);
@@ -42,6 +50,12 @@ public partial class Main : Node2D
 		if (_arriving)
 			CreateTween().TweenProperty(_fade, "modulate:a", 0f, 0.3);
 		_arriving = false;
+
+		// Short notes in the top left corner, in the menu's tape lettering: "QUICK SAVED".
+		_note = new Label { Position = new Vector2(16, 6), Visible = false };
+		_note.AddThemeFontOverride("font", GD.Load<Font>("res://ui/fonts/VT323-Regular.ttf"));
+		_note.AddThemeFontSizeOverride("font_size", 16);
+		GetNode("HUD").AddChild(_note);
 
 		// Testing switches that are on (debug/dev_settings.tres), so they're never mistaken for bugs.
 		GetNode<Label>("HUD/DevInfo").Text = DevSettings.Current.ActiveSummary();
@@ -65,6 +79,57 @@ public partial class Main : Node2D
 			LevelGrid.Build(level, new Rect2(floor.Position + area.Position, area.Size));
 			GooCanvas.Build(level, new Rect2(floor.Position + area.Position, area.Size));
 		}
+
+		FloorStarted = Time.GetTicksMsec();
+		SaveGame.Write(SaveGame.Auto, Checkpoint());
+	}
+
+	// Starts a run: a new game (the first floor, or the testing start floor), or the floor a save
+	// was made on, holding the gun it was made with.
+	public static void Begin(SceneTree tree, SaveGame.Data save = null)
+	{
+		_floor = save != null ? save.Floor - 1 : -1;
+		_carried = save != null ? SaveGame.WeaponOf(save) : null;
+		_carriedAmmo = _carried != null ? save.Ammo : 0;
+		_arriving = true;
+		tree.Paused = false;
+		tree.ChangeSceneToFile("res://main.tscn");
+	}
+
+	// What a save holds: this floor, and the gun you came onto it with (loading starts the floor over).
+	public static SaveGame.Data Checkpoint() =>
+		new(SaveGame.Version, _floor + 1, _carried?.ResourcePath, _carried != null ? _carriedAmmo : 0, DateTime.Now);
+
+	public override void _UnhandledInput(InputEvent e)
+	{
+		if (e.IsActionPressed("ui_cancel"))
+		{
+			GetViewport().SetInputAsHandled();
+			var menu = Menu.Instantiate<TapeMenu>();
+			menu.Paused = true;
+			GetNode("HUD").AddChild(menu);
+			GetTree().Paused = true;
+		}
+		else if (e.IsActionPressed("quick_save"))
+			Note(SaveGame.Write(SaveGame.Quick, Checkpoint()) ? "QUICK SAVED" : "COULD NOT SAVE");
+		else if (e.IsActionPressed("quick_load"))
+		{
+			if (SaveGame.Read(SaveGame.Quick) is { } save)
+				Begin(GetTree(), save);
+			else
+				Note("NO QUICK SAVE YET");
+		}
+	}
+
+	private void Note(string text)
+	{
+		_note.Text = text;
+		_note.Visible = true;
+		GetTree().CreateTimer(1.5).Timeout += () =>
+		{
+			if (IsInstanceValid(_note) && _note.Text == text) // a newer note stays up
+				_note.Visible = false;
+		};
 	}
 
 	public override void _Process(double delta)

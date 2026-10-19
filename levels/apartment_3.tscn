@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://clpbgcc7akhl8"]
 
-[ext_resource type="SpriteFrames" path="res://art/anim/goon_b.tres" id="b_look"]
+[ext_resource type="SpriteFrames" uid="uid://d20v4gwbeqpxu" path="res://art/anim/goon_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
 [ext_resource type="TileSet" uid="uid://dl52ylehkerep" path="res://levels/floors2.tres" id="floors"]
@@ -265,15 +265,15 @@ position = Vector2(88, 478)
 [node name="Enemy1" parent="." unique_id=1702476340 instance=ExtResource("enemy")]
 position = Vector2(400, 290)
 FacingDegrees = 180.0
-StartWeapon = ExtResource("shotgun")
 Pose = 1
+StartWeapon = ExtResource("shotgun")
 
 [node name="Enemy2" parent="." unique_id=1994176142 instance=ExtResource("enemy")]
 position = Vector2(500, 316)
 FacingDegrees = 180.0
+Pose = 4
 Look = ExtResource("b_look")
 StartWeapon = ExtResource("uzi")
-Pose = 4
 
 [node name="Enemy3" parent="." unique_id=2108573094 instance=ExtResource("enemy")]
 position = Vector2(360, 340)
@@ -292,6 +292,11 @@ position = Vector2(600, 400)
 Behaviour = 1
 FacingDegrees = 270.0
 
+[node name="Enemy13" parent="." unique_id=1931120906 instance=ExtResource("enemy")]
+position = Vector2(457, 197)
+Behaviour = 1
+FacingDegrees = 270.0
+
 [node name="Enemy6" parent="." unique_id=2020981138 instance=ExtResource("enemy")]
 position = Vector2(128, 78)
 FacingDegrees = 90.0
@@ -301,21 +306,19 @@ Pose = 4
 position = Vector2(330, 110)
 Behaviour = 2
 StayInRoom = true
-Look = ExtResource("b_look")
 Pose = 1
+Look = ExtResource("b_look")
 
 [node name="Enemy8" parent="." unique_id=1830342158 instance=ExtResource("enemy")]
 position = Vector2(640, 120)
-FacingDegrees = 0.0
-StartWeapon = ExtResource("shotgun")
 Pose = 6
+StartWeapon = ExtResource("shotgun")
 
 [node name="Enemy9" parent="." unique_id=510319831 instance=ExtResource("enemy")]
 position = Vector2(73, 300)
-FacingDegrees = 0.0
+Pose = 5
 Look = ExtResource("b_look")
 StartWeapon = ExtResource("uzi")
-Pose = 5
 
 [node name="Enemy10" parent="." unique_id=749932998 instance=ExtResource("enemy")]
 position = Vector2(668, 120)
@@ -325,5 +328,11 @@ Pose = 6
 [node name="Enemy11" parent="." unique_id=371050180 instance=ExtResource("enemy")]
 position = Vector2(592, 457)
 FacingDegrees = 270.0
-Look = ExtResource("b_look")
 Pose = 2
+Look = ExtResource("b_look")
+
+[node name="Enemy12" parent="." unique_id=1932258654 instance=ExtResource("enemy")]
+position = Vector2(238, 421)
+FacingDegrees = 270.0
+Pose = 1
+StartWeapon = ExtResource("shotgun")

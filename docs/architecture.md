@@ -47,7 +47,13 @@ Gameplay rules are in [mechanics/](mechanics/).
   route on: 8 px squares, closed where a goon's body (plus a margin) would touch a wall, furniture or
   the edge of the floor. Routes come from Godot's `AStarGrid2D` and are pulled straight wherever a
   goon fits all the way. It checks the squares on first use, once the walls are solid to physics queries.
-- **`Main.cs`**: the top of the game: loads the current floor from its `Floors` list, carries your gun
+- **`ui/TapeMenu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
+  drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
+  beside them). Settings are placeholders: they keep their values while the game runs, nothing more.
+- **`core/SaveGame.cs`**: saves as JSON files in `Documents/My Games/Rent Day/Saves` (the game's own
+  storage on other systems). `Main.Begin` starts a run (a new game or a save); `Main.Checkpoint` is
+  what a save holds. Rules in [mechanics/saves.md](mechanics/saves.md).
+- **`Main.cs`**: the top of a run: loads the current floor from its `Floors` list, carries your gun
   up the stairs (static fields outlive the scene reload), HUD, restart, camera limits, builds the level grid.
 - **`debug/`**: testing switches (`DevSettings.Current`), active in editor runs only.
 
@@ -83,7 +89,8 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **C# changes need a build** before the editor or the game sees them.
 - **Fast things skip thin things.** A bullet moves further each frame than a door is thick, so
   bullets check the whole stretch they fly, not just where they land.
-- **The game starts from `main.tscn`.** F6 runs just the open scene, for testing one piece.
+- **The game starts from the main menu (`ui/menu.tscn`);** New game or Continue loads `main.tscn`.
+  F6 runs just the open scene, for testing one piece (running `main.tscn` that way skips the menu).
 - **Testing switches stay local:** git ignores local changes to `debug/dev_settings.tres`, so the
   repository always holds a normal game.
 - **No other game's name anywhere in the repository** (code, comments, commits, docs).
