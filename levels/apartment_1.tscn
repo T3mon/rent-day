@@ -1,6 +1,5 @@
 [gd_scene format=4 uid="uid://bfo8jitqkgar8"]
 
-[ext_resource type="SpriteFrames" path="res://art/anim/goon_b.tres" id="b_look"]
 [ext_resource type="TileSet" uid="uid://dl52ylehkerep" path="res://levels/floors2.tres" id="1_r"]
 [ext_resource type="TileSet" uid="uid://86rw1012ihw" path="res://levels/walls2.tres" id="2_r"]
 [ext_resource type="PackedScene" uid="uid://vxvxhq660cmp" path="res://player/player.tscn" id="4_r"]
@@ -18,7 +17,8 @@
 [ext_resource type="PackedScene" path="res://props/desk.tscn" id="28_r"]
 [ext_resource type="PackedScene" path="res://props/office_chair.tscn" id="29_r"]
 [ext_resource type="PackedScene" path="res://props/car.tscn" id="31_r"]
-[ext_resource type="Resource" path="res://weapons/bat.tres" id="bat"]
+[ext_resource type="Resource" uid="uid://cpxggc76wa3it" path="res://weapons/bat.tres" id="bat"]
+[ext_resource type="SpriteFrames" uid="uid://d20v4gwbeqpxu" path="res://art/anim/goon_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
 [ext_resource type="Resource" path="res://weapons/knife.tres" id="knife"]
@@ -309,8 +309,8 @@ StartWeapon = ExtResource("bat")
 [node name="Enemy5" parent="." unique_id=391870420 instance=ExtResource("enemy")]
 position = Vector2(520, 360)
 FacingDegrees = 270.0
-StartWeapon = ExtResource("shotgun")
 Pose = 4
+StartWeapon = ExtResource("shotgun")
 
 [node name="Enemy6" parent="." unique_id=2065888808 instance=ExtResource("enemy")]
 position = Vector2(262, 368)
@@ -341,5 +341,10 @@ Behaviour = 1
 position = Vector2(712, 150)
 Behaviour = 2
 StayInRoom = true
-StartWeapon = ExtResource("uzi")
 Pose = 1
+StartWeapon = ExtResource("uzi")
+
+[node name="Enemy11" parent="." unique_id=1931120906 instance=ExtResource("enemy")]
+position = Vector2(841, 450)
+Pose = 1
+StartWeapon = ExtResource("bat")
