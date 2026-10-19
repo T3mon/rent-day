@@ -25,9 +25,10 @@ window/size/viewport_width=400
 window/size/viewport_height=225
 window/size/window_width_override=1600
 window/size/window_height_override=900
-window/stretch/mode="viewport"
+window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/stretch/scale_mode="integer"
+mouse_cursor/custom_image="uid://fmpck7743b5x"
 
 [dotnet]
 
@@ -123,3 +124,4 @@ rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.05, 0.008, 0.13, 1)
+2d/snap/snap_2d_transforms_to_pixel=true

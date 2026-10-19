@@ -78,6 +78,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   go under them), the living, walls (over everyone, so brushing a wall never looks like being stuck
   in it), bullets and effects. Set with each scene's z index.
 - Tuning values live in the Inspector (scene and data files), not in code.
+- **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in
+  levels (floors, walls, props, goons, goo), so the pointer always stands out.
 - Every goon's defaults are in `enemies/enemy.tscn`; set a single goon's values in the level.
 
 ## Lessons learned

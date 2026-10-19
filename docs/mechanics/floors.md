@@ -26,6 +26,7 @@ The building is played floor by floor, bottom to top.
 - Put the stairs up far from where you arrive, so the floor has to be crossed.
 - Leave a gun near where you arrive, for a player who comes up empty-handed.
 - Stairs are walked onto, not around: keep furniture off them and leave a free approach.
+- No green anywhere in a level: green is the crosshair's colour, and it must always stand out.
 - Mix the goon behaviours: guards facing doorways, patrollers in corridors, wanderers in rooms.
 - Give guards and wanderers something to do (Pose, see [goons.md](goons.md)): sitters on a couch or
   chair (facing = 90 + the seat's rotation; seats face down at rotation 0), leaners with their back
