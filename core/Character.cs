@@ -247,7 +247,7 @@ public partial class Character : CharacterBody2D
 		// A quiet takedown stays quiet: whoever did it plays its sounds.
 		if (lethal)
 		{
-			ShakeCamera.Shake(0.6f);
+			ShakeCamera.Shake(this is Player ? 3.3f : 2.3f); // your own death kicks hardest
 			HitStop.Freeze(this);
 			_deathSound.Play();
 		}

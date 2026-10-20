@@ -35,7 +35,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   call `Main.NextFloor`. Rules in [mechanics/floors.md](mechanics/floors.md).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
   bullets and sight and slam goons. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
-- **`effects/`**: particles, screen shake (`ShakeCamera.Shake`), hit stop (`HitStop.Freeze`),
+- **`effects/`**: particles, screen shake (`ShakeCamera.Shake(pixels)`), hit stop (`HitStop.Freeze`),
   `Effects.Spawn` for dropping an effect into the level, and spent casings (`Shell.Eject`, one per shot).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
   clears (a hidden `SubViewport`), so splats cost nothing once they've landed. Splats are clipped

@@ -14,7 +14,7 @@ Settings a gun controls:
 - **Spread:** random angle on each bullet.
 - **Speed and range:** each bullet has its own speed (with optional variation) and a maximum distance.
 - **Cooldown:** minimum time between shots, separate values for the player and for goons.
-- **Feel:** screen shake, recoil push-back on the shooter, sound pitch.
+- **Feel:** screen shake (in pixels, your shots only), recoil push-back on the shooter, sound pitch.
 - **Noise:** how far a shot can be heard.
 
 ## Hitting things
@@ -33,6 +33,10 @@ Settings a gun controls:
 - A muzzle flash, smoke puff and sound on every shot.
 - An empty gun plays a dry click and does not fire.
 - Killing a character gives a hit stop, a screen shake and goo (see below).
+- **Screen shake:** a hit sets how many pixels the picture may jump; it fades in a straight line
+  (10 px a second, the camera's Fade), and a smaller hit never cuts a bigger shake short. Every hit
+  shows: 1 px for an uzi shot, a punch or a grab, 1.7 for a shotgun, 2.3 for a kill, 3.3 for your own
+  death (the biggest).
 - The ammo counter in the corner shows rounds left, or "empty".
 
 ## Goo

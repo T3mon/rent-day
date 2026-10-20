@@ -80,7 +80,7 @@ public partial class WeaponPickup : CharacterBody2D
 				else
 					goon.KnockDown(Velocity.Normalized());
 				_hitSound.Play();
-				ShakeCamera.Shake(0.35f);
+				ShakeCamera.Shake(1.3f);
 				_thrown = false;
 				Velocity = -Velocity * 0.2f;
 			}

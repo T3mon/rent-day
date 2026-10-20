@@ -108,7 +108,7 @@ public partial class Door : Node2D
 				{
 					who.KnockDown(_panel.GlobalTransform.Y.Normalized() * Mathf.Sign(_spin));
 					_slamSound.Play();
-					ShakeCamera.Shake(0.45f);
+					ShakeCamera.Shake(1.3f);
 					HitStop.Freeze(this, 0.05f);
 				}
 				continue;

@@ -171,7 +171,7 @@ public partial class Player : Character
 			CreateTween().TweenProperty(this, "global_position", _victim.GlobalPosition, 0.08);
 			Visual.Scale = Vector2.One * 0.9f;
 			_bodyFallSound.Play();
-			ShakeCamera.Shake(0.15f);
+			ShakeCamera.Shake(1f);
 			_blowsLeft = _finisher?.FinishBlows ?? GD.RandRange(2, 5);
 			_cutAge = 0f;
 			_sneakKillLeft = 0f;
@@ -182,7 +182,7 @@ public partial class Player : Character
 			_victim.DropWeapon(-aside * 150f);
 			CreateTween().TweenProperty(_victim, "global_position", GlobalPosition + facing * 12f, 0.08);
 			_grabSound.Play();
-			ShakeCamera.Shake(0.3f);
+			ShakeCamera.Shake(1f);
 			HitStop.Freeze(this, 0.04f);
 			_sneakKillLeft = SneakKillTime;
 			_nextStruggle = 0.08f;
@@ -223,7 +223,7 @@ public partial class Player : Character
 			_victim.Die(facing, lethal: false);
 			Act(null);
 			_bodyFallSound.Play();
-			ShakeCamera.Shake(0.15f);
+			ShakeCamera.Shake(1f);
 		}
 		else if (_finisher is { FinishBlows: 0 })
 		{
@@ -236,7 +236,7 @@ public partial class Player : Character
 				_blowSound.Stream = _finisher.HitSound;
 				_blowSound.PitchScale = 1f;
 				_blowSound.Play();
-				ShakeCamera.Shake(0.3f);
+				ShakeCamera.Shake(1f);
 				_victim.Flinch(facing.Rotated(-Mathf.Pi / 2f), 2f, bleed: true);
 			}
 			if (_cutAge < CutTime)
@@ -260,7 +260,7 @@ public partial class Player : Character
 					_blowSound.Stream = BlowCracks[Mathf.Max(BlowCracks.Length - _blowsLeft, 0)]; // climbs to the hardest right before the kill
 				_blowSound.PitchScale = (float)GD.RandRange(0.93, 1.07);
 				_blowSound.Play();
-				ShakeCamera.Shake(_finisher != null ? 0.4f : 0.2f + 0.08f * (5 - _blowsLeft));
+				ShakeCamera.Shake(_finisher != null ? 1.5f : 1f + 0.3f * (5 - _blowsLeft));
 				HitStop.Freeze(this, 0.04f);
 				_victim.Flinch(facing, 2f, bleed: true);
 				return;

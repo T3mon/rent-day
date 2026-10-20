@@ -3,23 +3,22 @@ using Godot;
 namespace RentDay;
 
 // The player's camera, with screen shake. Any script can call
-// ShakeCamera.Shake(0.3f) without needing to find the camera first.
+// ShakeCamera.Shake(2f) without needing to find the camera first.
 //
-// Shake works with "trauma": every hit adds some (0..1), it fades over time,
-// and the camera jitters by trauma squared, so small hits stay subtle while
-// big ones really kick.
+// A hit sets how far the picture may jump, in pixels (a bigger shake already going wins).
+// It jumps at random within that every frame and fades in a straight line, so even a small hit
+// shows and a big one lasts longer (2 px fades in 0.2 s).
 public partial class ShakeCamera : Camera2D
 {
-	[Export] public float MaxOffset = 8f; // pixels of jitter at full trauma
-	[Export] public float Decay = 2.5f;   // trauma lost per second
+	[Export] public float Fade = 10f; // pixels of shake lost per second
 
 	private static ShakeCamera _active;
-	private float _trauma;
+	private float _shake;
 
-	public static void Shake(float amount)
+	public static void Shake(float pixels)
 	{
 		if (_active != null)
-			_active._trauma = Mathf.Min(1f, _active._trauma + amount);
+			_active._shake = Mathf.Max(_active._shake, pixels);
 	}
 
 	public override void _EnterTree() => _active = this;
@@ -32,12 +31,11 @@ public partial class ShakeCamera : Camera2D
 
 	public override void _Process(double delta)
 	{
-		_trauma = Mathf.Max(0f, _trauma - Decay * (float)delta);
-		float strength = _trauma * _trauma * MaxOffset;
+		_shake = Mathf.Max(0f, _shake - Fade * (float)delta);
 
 		// Whole pixels only, so the pixel art stays crisp while shaking.
 		Offset = new Vector2(
-			Mathf.Round((float)GD.RandRange(-1.0, 1.0) * strength),
-			Mathf.Round((float)GD.RandRange(-1.0, 1.0) * strength));
+			Mathf.Round((float)GD.RandRange(-_shake, _shake)),
+			Mathf.Round((float)GD.RandRange(-_shake, _shake)));
 	}
 }

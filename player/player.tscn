@@ -59,7 +59,6 @@ animation = &"lie_dead"
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
 script = ExtResource("11_yllr7")
-MaxOffset = 6.0
 
 [node name="DeathSound" type="AudioStreamPlayer2D" parent="." unique_id=73432174]
 

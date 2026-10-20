@@ -12,6 +12,6 @@ Cooldown = 0.33
 Melee = true
 Lethal = false
 SwingTime = 0.23
-Shake = 0.3
+Shake = 1.0
 ShotSound = ExtResource("swing")
 HitSound = ExtResource("hit")

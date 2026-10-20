@@ -37,7 +37,7 @@ public partial class WeaponData : Resource
 	[Export] public int FinishBlows;             // finishing a downed goon with it: clicks, one blow each (bat 3); 0 = one slow cut on its own (knife)
 
 	[ExportGroup("Feel")]
-	[Export] public float Shake = 0.35f;         // screen shake per shot or melee hit (yours only)
+	[Export] public float Shake = 1f;            // screen shake per shot or melee hit, in pixels (yours only)
 	[Export] public float Kickback;              // pushes you backwards per shot, pixels per second
 	[Export] public float Noise = 240f;          // patrolling and wandering goons this close hear your shot, through walls
 	[Export] public AudioStream ShotSound;       // the bang, or the whoosh of a swing
