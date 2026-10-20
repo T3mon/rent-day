@@ -19,9 +19,10 @@ public partial class TapeMenu : Control
 	private static readonly Color Ink = new("07030f"), Soft = new("d8d2e8"), Dim = new("8f88a6"), Red = new("ff2a6d"), Cyan = new("2de2e6");
 	private static readonly Color Faint = new(1f, 1f, 1f, 0.3f);
 
-	private enum View { Main, Pause, Load, Settings, Confirm }
+	private enum View { Main, Pause, Load, Settings, Confirm, Music }
 
-	private static readonly string[] PauseItems = { "RESUME", "SAVE GAME", "LOAD GAME", "SETTINGS", "QUIT TO MENU" };
+	private static readonly string[] PauseItems = { "RESUME", "SAVE GAME", "LOAD GAME", "MUSIC", "SETTINGS", "QUIT TO MENU" };
+	private static readonly string[] MusicRows = { "PLAYER", "SHUFFLE", "LOOP", "VOLUME", "BACK" }; // PLAYER: back, pause, next
 
 	// Settings are placeholders for now: they keep their values while the game runs, nothing more.
 	private record Row(string Label, string Key, string Kind, params string[] Choices);
@@ -46,7 +47,7 @@ public partial class TapeMenu : Control
 		("MOVE", null, null), (null, "MOVE UP", "move_up"), (null, "MOVE DOWN", "move_down"), (null, "MOVE LEFT", "move_left"),
 		(null, "MOVE RIGHT", "move_right"), (null, "LOOK AHEAD", "look"),
 		("GAME", null, null), (null, "RESTART FLOOR", "restart"), (null, "PAUSE", "ui_cancel"), (null, "QUICK SAVE", "quick_save"),
-		(null, "QUICK LOAD", "quick_load"),
+		(null, "QUICK LOAD", "quick_load"), (null, "NEXT SONG", "next_song"),
 	};
 	private static readonly (string Label, string Action)[] KeyRows = Keys.Where(k => k.Group == null).Select(k => (k.Label, k.Action)).ToArray();
 
@@ -70,6 +71,8 @@ public partial class TapeMenu : Control
 		_view = Paused ? View.Pause : View.Main;
 		_opened = Time.GetTicksMsec();
 		_saves = SaveGame.All();
+		if (!Paused)
+			Music.Menu(this);
 		if (Paused) // the frozen floor behind, washed out
 		{
 			var wash = new ColorRect { ShowBehindParent = true, MouseFilter = MouseFilterEnum.Ignore, Material = new ShaderMaterial { Shader = GD.Load<Shader>("res://ui/tape_pause.gdshader") } };
@@ -91,10 +94,11 @@ public partial class TapeMenu : Control
 		View.Pause => PauseItems.Length,
 		View.Load => _saves.Count + 1,
 		View.Settings => (_tab == ControlsTab ? KeyRows.Length : Rows[_tab].Length) + 1,
+		View.Music => Music.Songs.Length + MusicRows.Length, // the song list, then the player's rows
 		_ => 2,
 	};
 
-	private bool IsBack(int i) => _view is View.Load or View.Settings && i == Count() - 1;
+	private bool IsBack(int i) => _view is View.Load or View.Settings or View.Music && i == Count() - 1;
 
 	private void Activate()
 	{
@@ -114,6 +118,10 @@ public partial class TapeMenu : Control
 					case "NEW GAME": Main.Begin(GetTree()); break;
 					case "LOAD" or "LOAD GAME": _saves = SaveGame.All(); Go(View.Load); break;
 					case "SETTINGS": Go(View.Settings); break;
+					case "MUSIC":
+						Go(View.Music);
+						_sel = Math.Max(Music.Current, 0); // starts on the song playing
+						break;
 					case "QUIT": GetTree().Quit(); break;
 					case "RESUME": Resume(); break;
 					case "SAVE GAME":
@@ -137,6 +145,12 @@ public partial class TapeMenu : Control
 					Toast("KEY CHANGES COME LATER");
 				else
 					Change(Rows[_tab][_sel], 1, wrap: true);
+				break;
+			case View.Music:
+				if (_sel < Music.Songs.Length)
+					Music.PlaySong(_sel);
+				else
+					MusicRow(_sel - Music.Songs.Length, 1, enter: true);
 				break;
 			case View.Confirm:
 				if (_sel == 1)
@@ -225,6 +239,8 @@ public partial class TapeMenu : Control
 	{
 		if (_view == View.Confirm)
 			_sel = 1 - _sel;
+		else if (_view == View.Music && !IsBack(_sel) && _sel >= Music.Songs.Length)
+			MusicRow(_sel - Music.Songs.Length, dir, enter: false);
 		else if (_view != View.Settings || IsBack(_sel))
 			return;
 		else if (_sel == -1)
@@ -244,6 +260,8 @@ public partial class TapeMenu : Control
 				_sel = hover.Tab >= 0 ? -1 : hover.Index;
 				if (hover.Col >= 0)
 					_col = hover.Col;
+				if (motion.ButtonMask.HasFlag(MouseButtonMask.Left) && IsVolumeRow(hover.Index)) // dragging along the volume bar
+					VolumeAt(motion.Position.X);
 			}
 			return;
 		}
@@ -265,7 +283,12 @@ public partial class TapeMenu : Control
 			_sel = hit.Index;
 			if (hit.Col >= 0)
 				_col = hit.Col;
-			Activate();
+			if (IsVolumeRow(hit.Index))
+				VolumeAt(button.Position.X);
+			else if (_view == View.Music && hit.Index == Music.Songs.Length) // the player row: back, pause or next by where you click
+				MusicRow(0, button.Position.X < 260 ? -1 : button.Position.X < 300 ? 0 : 1, enter: false);
+			else
+				Activate();
 		}
 	}
 
@@ -292,6 +315,7 @@ public partial class TapeMenu : Control
 			case View.Pause: DrawPause(now); break;
 			case View.Load: DrawLoad(now); break;
 			case View.Settings: DrawSettings(now); break;
+			case View.Music: DrawMusic(now); break;
 			default: DrawConfirm(now); break;
 		}
 		Tape(now);
@@ -485,6 +509,147 @@ public partial class TapeMenu : Control
 			int len = r <= 2 ? r + 1 : 5 - r;
 			R(right - 8 - w - 6 - len, y - 9 + r, len, 1, ink);
 			R(right - 3, y - 9 + r, len, 1, ink);
+		}
+	}
+
+	// The MUSIC page: the floor song playing, and back / pause / next, shuffle, loop, volume.
+	private static void MusicRow(int row, int dir, bool enter)
+	{
+		switch (MusicRows[row])
+		{
+			case "PLAYER":
+				if (enter || dir == 0)
+					Music.TogglePause();
+				else
+					Music.Skip(dir);
+				break;
+			case "SHUFFLE": Music.SetShuffle(!Music.Shuffle); break;
+			case "LOOP": Music.SetLoop(!Music.Loop); break;
+			case "VOLUME":
+				if (!enter) // left and right; a click or drag sets it on the bar (VolumeAt)
+					Music.SetVolume(Music.Volume + dir);
+				break;
+		}
+	}
+
+	private void DrawMusic(ulong now)
+	{
+		const int shown = 8, top = 80;
+		int songs = Music.Songs.Length;
+		Corner(now);
+		R(0, 34, W, 186, new Color(0f, 0f, 0f, 0.62f));
+		Osd("MUSIC", 34, 56, Colors.White);
+
+		// left: the floor songs; pick one to play it
+		if (_sel < songs) // keep the picked song in view
+			_scroll = Math.Clamp(_scroll, _sel - shown + 1, _sel);
+		_scroll = Math.Clamp(_scroll, 0, Math.Max(0, songs - shown));
+		for (int i = _scroll; i < Math.Min(songs, _scroll + shown); i++)
+		{
+			float y = top + (i - _scroll) * 15;
+			string title = Music.Songs[i].Replace('_', ' ').ToUpperInvariant();
+			bool on = _sel == i, playing = Music.OnFloorSong && Music.Current == i;
+			if (on)
+			{
+				R(28, y - 12, 172, 15, Colors.White);
+				Tri(33, y - 10, Ink);
+				Text(title, 46, y, _osd, 16, Ink);
+			}
+			else
+				Osd(title, 46, y, playing ? Colors.White : Soft);
+			if (playing) // what's playing: a little bar, or a pause sign
+			{
+				Color mark = on ? Ink : new Color("ff2bd6");
+				if (Music.Paused)
+				{
+					R(186, y - 10, 2, 8, mark);
+					R(190, y - 10, 2, 8, mark);
+				}
+				else
+				{
+					for (int b = 0; b < 3; b++)
+						R(184 + b * 3, y - 2 - (int)(3 + 3 * Mathf.Sin(now / 120f + b * 2)), 2, (int)(3 + 3 * Mathf.Sin(now / 120f + b * 2)) + 1, mark);
+				}
+			}
+			_hits.Add((new Rect2(28, y - 12, 172, 15), i, -1, -1));
+		}
+		Text("N  NEXT SONG, ANY TIME", 34, 212, _small, 8, Dim);
+
+		// right: what's playing, then the controls
+		const float x = 214, right = 370;
+		if (Music.OnFloorSong)
+		{
+			Text("NOW PLAYING", x, 58, _small, 8, Dim);
+			Osd(Music.Title, x, 76, Colors.White);
+			float len = Mathf.Max(Music.Length, 1f), at = Mathf.Min(Music.Position, len);
+			R(x, 84, right - x, 3, new Color(1f, 1f, 1f, 0.2f));
+			R(x, 84, Mathf.Round((right - x) * at / len), 3, Colors.White);
+			Text(Clock(at), x, 99, _small, 8, Dim);
+			Text(Clock(len), right, 99, _small, 8, Dim, HorizontalAlignment.Right);
+		}
+		else
+			Osd("FLOOR CLEARED", x, 76, Dim);
+		for (int i = 0; i < MusicRows.Length; i++)
+		{
+			string row = MusicRows[i];
+			int index = songs + i;
+			bool on = _sel == index;
+			float y = 126 + i * 15 + (row == "BACK" ? 6 : 0);
+			Color ink = on ? Ink : Soft;
+			if (on)
+			{
+				R(x - 6, y - 12, right - x + 8, 15, Colors.White);
+				Tri(x - 1, y - 10, Ink);
+			}
+			if (row == "PLAYER")
+			{
+				TriLeft(x + 18, y - 10, ink); TriLeft(x + 23, y - 10, ink); // back
+				if (Music.Paused)
+					Tri(x + 58, y - 10, ink);
+				else
+				{
+					R(x + 58, y - 10, 3, 9, ink);
+					R(x + 63, y - 10, 3, 9, ink);
+				}
+				Tri(x + 98, y - 10, ink); Tri(x + 103, y - 10, ink); // next
+			}
+			else
+			{
+				if (on) Text(row, x + 12, y, _osd, 16, Ink); else Osd(row, x + 12, y, Soft);
+				string value = row switch { "SHUFFLE" => Music.Shuffle ? "ON" : "OFF", "LOOP" => Music.Loop ? "ON" : "OFF", _ => "" };
+				if (value != "")
+				{
+					if (on) Text(value, right, y, _osd, 16, Ink, HorizontalAlignment.Right); else Osd(value, right, y, Colors.White, HorizontalAlignment.Right);
+				}
+				if (row == "VOLUME")
+				{
+					for (int k = 0; k < 10; k++)
+						R(VolumeBar + k * 8, y - 10, 6, 9, k < Music.Volume ? (on ? Ink : Colors.White) : on ? new Color("c9c3d8") : new Color(1f, 1f, 1f, 0.2f));
+				}
+			}
+			_hits.Add((new Rect2(x - 6, y - 12, right - x + 8, 15), index, -1, -1));
+		}
+	}
+
+	private const float VolumeBar = 292; // where the volume bar's first block starts; each block is 8 wide
+
+	private bool IsVolumeRow(int index) => _view == View.Music && index == Music.Songs.Length + Array.IndexOf(MusicRows, "VOLUME");
+
+	// The block clicked becomes the volume (left of the first block: silent).
+	private static void VolumeAt(float x)
+	{
+		if (x >= VolumeBar - 6)
+			Music.SetVolume((int)Mathf.Floor((x - VolumeBar) / 8f) + 1);
+	}
+
+	private static string Clock(float seconds) => $"{(int)seconds / 60}:{(int)seconds % 60:00}";
+
+	private void TriLeft(float x, float y, Color color)
+	{
+		for (int r = 0; r < 9; r++)
+		{
+			int len = r <= 4 ? r + 1 : 9 - r;
+			R(x + 5 - len, y + r, len, 1, color);
 		}
 	}
 

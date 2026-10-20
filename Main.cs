@@ -26,6 +26,7 @@ public partial class Main : Node2D
 	private Label _ammo;
 	private ColorRect _fade;
 	private Label _note;
+	private int _songShown;
 	private Player _player;
 	private int _shownAmmo = int.MinValue;
 	private bool _leaving;
@@ -82,6 +83,8 @@ public partial class Main : Node2D
 
 		FloorStarted = Time.GetTicksMsec();
 		SaveGame.Write(SaveGame.Auto, Checkpoint());
+		_songShown = Music.Started;
+		Music.Floor(this, _floor); // keeps playing through a death or a restart
 	}
 
 	// Starts a run: a new game (the first floor, or the testing start floor), or the floor a save
@@ -110,6 +113,8 @@ public partial class Main : Node2D
 			GetNode("HUD").AddChild(menu);
 			GetTree().Paused = true;
 		}
+		else if (e.IsActionPressed("next_song"))
+			Music.Skip(1);
 		else if (e.IsActionPressed("quick_save"))
 			Note(SaveGame.Write(SaveGame.Quick, Checkpoint()) ? "QUICK SAVED" : "COULD NOT SAVE");
 		else if (e.IsActionPressed("quick_load"))
@@ -146,6 +151,11 @@ public partial class Main : Node2D
 		}
 
 		UpdateAmmo();
+		if (Music.Started != _songShown) // a new floor song: say what's playing
+		{
+			_songShown = Music.Started;
+			Note("NOW PLAYING  " + Music.Title);
+		}
 	}
 
 	// Up the stairs: fade out and load the next floor.
@@ -179,6 +189,7 @@ public partial class Main : Node2D
 	{
 		if (_player.IsDead || !GetTree().GetNodesInGroup("enemies").All(node => ((Enemy)node).IsDead))
 			return;
+		Music.Clear();
 		if (_floor == Floors.Length - 1)
 		{
 			_won = true;

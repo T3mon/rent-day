@@ -61,6 +61,10 @@ Opens the Esc menu over the frozen floor: resume, save game, load game, settings
 
 F5 saves to the one quick save; F9 loads it. See [saves.md](saves.md).
 
+## Next song (`next_song`, N)
+
+Skips to the next floor song, without pausing. See [music.md](music.md).
+
 ## Execute (`execute`, Space)
 
 One key, two takedowns. A goon standing right in front of you comes first; otherwise the nearest goon lying on the floor within reach.

@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://b5nk61ym4p0po"]
 
 [ext_resource type="Script" uid="uid://5ye6kv37knnw" path="res://Main.cs" id="1_h2yge"]
-[ext_resource type="PackedScene" uid="uid://bfo8jitqkgar8" path="res://levels/apartment_1.tscn" id="floor_1"]
-[ext_resource type="PackedScene" path="res://levels/apartment_2.tscn" id="floor_2"]
-[ext_resource type="PackedScene" path="res://levels/apartment_3.tscn" id="floor_3"]
-[ext_resource type="PackedScene" path="res://levels/apartment_4.tscn" id="floor_4"]
 [ext_resource type="Material" uid="uid://dxjesfdeveoy4" path="res://art/trip_material.tres" id="3_1bvp3"]
 [ext_resource type="FontFile" uid="uid://bavbtyv50qn1p" path="res://ui/Blox2.ttf" id="4_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://bfo8jitqkgar8" path="res://levels/apartment_1.tscn" id="floor_1"]
+[ext_resource type="PackedScene" uid="uid://hf2lqivia5a7" path="res://levels/apartment_2.tscn" id="floor_2"]
+[ext_resource type="PackedScene" uid="uid://clpbgcc7akhl8" path="res://levels/apartment_3.tscn" id="floor_3"]
+[ext_resource type="PackedScene" uid="uid://bkrqreaniqesd" path="res://levels/apartment_4.tscn" id="floor_4"]
 
 [node name="Main" type="Node2D" unique_id=1826785528]
 script = ExtResource("1_h2yge")
-Floors = Array[PackedScene]([ExtResource("floor_1"), ExtResource("floor_2"), ExtResource("floor_3"), ExtResource("floor_4")])
+Floors = [ExtResource("floor_1"), ExtResource("floor_2"), ExtResource("floor_3"), ExtResource("floor_4")]
 
 [node name="Trip" type="CanvasLayer" parent="." unique_id=182106927]
 
@@ -55,7 +55,6 @@ theme_override_colors/font_shadow_color = Color(0.039215688, 0.019607844, 0.0627
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 16
-vertical_alignment = 2
 
 [node name="DevInfo" type="Label" parent="HUD" unique_id=1983475957]
 anchors_preset = 1

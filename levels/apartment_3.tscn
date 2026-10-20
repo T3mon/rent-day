@@ -264,13 +264,6 @@ Data = ExtResource("uzi")
 [node name="Player" parent="." unique_id=1214512477 instance=ExtResource("player")]
 position = Vector2(88, 478)
 
-[node name="Enemy1" parent="." unique_id=1702476340 instance=ExtResource("enemy")]
-position = Vector2(400, 290)
-FacingDegrees = 180.0
-Pose = 1
-Look = ExtResource("32_tff4c")
-StartWeapon = ExtResource("shotgun")
-
 [node name="Enemy2" parent="." unique_id=1994176142 instance=ExtResource("enemy")]
 position = Vector2(500, 316)
 FacingDegrees = 180.0

@@ -50,6 +50,8 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`ui/TapeMenu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
   drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
   beside them). Settings are placeholders: they keep their values while the game runs, nothing more.
+- **`core/Music.cs`**: all music, one player that outlives scene changes (menu song, floor songs, the
+  clear song, skip, shuffle, loop, volume). Rules in [mechanics/music.md](mechanics/music.md).
 - **`core/SaveGame.cs`**: saves as JSON files in `Documents/My Games/Rent Day/Saves` (the game's own
   storage on other systems). `Main.Begin` starts a run (a new game or a save); `Main.Checkpoint` is
   what a save holds. Rules in [mechanics/saves.md](mechanics/saves.md).
