@@ -29,6 +29,12 @@ public static class Music
 	public static float Position => _player != null && _player.IsInsideTree() ? _player.GetPlaybackPosition() : 0f;
 	public static float Length => (float)(_player?.Stream?.GetLength() ?? 0);
 
+	// The floor songs and the clear song are read in the background when the player is made, then kept in
+	// memory (about 3 MB each): the first read of a song off a slow drive (an SD card) stalled the game.
+	// shortcut: every song held at once; stream them from disk if the list grows past a few dozen.
+	private static readonly AudioStream[] Loaded = new AudioStream[Songs.Length];
+	private static AudioStream _clearSong;
+
 	private static AudioStreamPlayer _player;
 	private static int _floor = -1; // the floor the song belongs to; -1 = the menu
 	private static bool _cleared;
@@ -41,7 +47,7 @@ public static class Music
 		Ready(from);
 		_floor = -1;
 		if (_player.Stream?.ResourcePath != MenuSong)
-			Start(Looping(MenuSong));
+			Start(Looping(GD.Load<AudioStreamMP3>(MenuSong)));
 	}
 
 	// A floor (0 = the first) is starting: keep the song through a death or restart, else the next one.
@@ -72,7 +78,7 @@ public static class Music
 		if (_player == null || _cleared)
 			return;
 		_cleared = true;
-		Start(Looping(ClearSong));
+		Start(_clearSong ??= Looping((AudioStreamMP3)Take(ClearSong)));
 	}
 
 	public static void Skip(int dir)
@@ -110,7 +116,7 @@ public static class Music
 
 	private static void StartSong()
 	{
-		Start(GD.Load<AudioStream>($"{FloorFolder}/{Songs[Current]}.mp3"));
+		Start(Loaded[Current] ??= (AudioStream)Take(SongPath(Current)));
 		Started++;
 	}
 
@@ -124,9 +130,15 @@ public static class Music
 			_player.CallDeferred(AudioStreamPlayer.MethodName.Play);
 	}
 
-	private static AudioStream Looping(string path)
+	private static string SongPath(int song) => $"{FloorFolder}/{Songs[song]}.mp3";
+
+	// A song read in the background, or read now if it isn't in yet (a floor right at start-up). Never waits
+	// on LoadThreadedGet: that runs deferred calls early, before the player is added to the tree.
+	private static Resource Take(string path) =>
+		ResourceLoader.LoadThreadedGetStatus(path) == ResourceLoader.ThreadLoadStatus.Loaded ? ResourceLoader.LoadThreadedGet(path) : GD.Load(path);
+
+	private static AudioStream Looping(AudioStreamMP3 stream)
 	{
-		var stream = GD.Load<AudioStreamMP3>(path);
 		stream.Loop = true;
 		return stream;
 	}
@@ -148,6 +160,9 @@ public static class Music
 			}
 		};
 		from.GetTree().Root.CallDeferred(Node.MethodName.AddChild, _player);
+		for (int i = 0; i < Songs.Length; i++)
+			ResourceLoader.LoadThreadedRequest(SongPath(i));
+		ResourceLoader.LoadThreadedRequest(ClearSong);
 		if (!InputMap.HasAction("next_song")) // shortcut: added here, not in Project Settings; move it there when keys get rebindable (#8)
 		{
 			InputMap.AddAction("next_song");
