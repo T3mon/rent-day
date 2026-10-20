@@ -84,6 +84,15 @@ Gameplay rules are in [mechanics/](mechanics/).
   levels (floors, walls, props, goons, goo), so the pointer always stands out.
 - Every goon's defaults are in `enemies/enemy.tscn`; set a single goon's values in the level.
 
+## Icon and builds
+
+- **Icon:** `icon.png` is the game's icon (window, taskbar); `icon.ico` is the exe's icon on Windows,
+  with a simplified 16 px version for small views. Both are set in Project Settings → Application → Config.
+- **A Windows build:** Project → Export → "Windows Desktop" (`export_presets.cfg`). It writes
+  `RentDay.exe`, `RentDay.pck` and a `data_RentDay_windows_x86_64` folder; send all three together.
+  From the command line, Godot's console exe with `--headless --export-release "Windows Desktop" <path to RentDay.exe>`
+  does the same, but may not exit on its own after it's done.
+
 ## Lessons learned
 
 - **Close a scene or data file in Godot before editing it outside Godot.** The editor keeps its
@@ -95,6 +104,10 @@ Gameplay rules are in [mechanics/](mechanics/).
   bullets check the whole stretch they fly, not just where they land.
 - **The game starts from the main menu (`ui/menu.tscn`);** New game or Continue loads `main.tscn`.
   F6 runs just the open scene, for testing one piece (running `main.tscn` that way skips the menu).
+- **Disk reads can stall the game.** A first read of a file off a slow drive (an SD card) took up
+  to half a second, so anything loaded mid-play (songs) is read in the background up front.
+- **Never wait on `ResourceLoader.LoadThreadedGet` before a load is done.** While it waits it runs
+  deferred calls early (a deferred `AddChild` failed that way); check `LoadThreadedGetStatus` first.
 - **Testing switches stay local:** git ignores local changes to `debug/dev_settings.tres`, so the
   repository always holds a normal game.
 - **No other game's name anywhere in the repository** (code, comments, commits, docs).
