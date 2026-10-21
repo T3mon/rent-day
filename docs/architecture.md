@@ -52,7 +52,9 @@ Gameplay rules are in [mechanics/](mechanics/).
   beside them). Settings are placeholders: they keep their values while the game runs, nothing more.
   It is also the loading screen: `TapeMenu.LoadScene` reads a scene (with every floor in it, and all
   the music) a few pieces a frame while the game waits paused under it, then switches. It only shows
-  if that takes a moment (over 0.25 s), then stays at least 0.6 s. Its pictures are in `ui/loading/`,
+  if that takes a moment (over 0.25 s), then stays at least 0.6 s. The first load of a run also draws
+  every shader once, hidden under it, so no effect stutters the first time it shows up mid-play (the
+  graphics driver builds a shader the first time it's drawn). Its pictures are in `ui/loading/`,
   one at random each time, filling the screen (cropped to fit). Make them 400 x 225, the game screen's
   size in pixels, so each picture pixel is one game pixel; a bigger one is shrunk on screen and loses
   its crisp pixels.
@@ -75,6 +77,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   arrival stairs), added to Main's `Floors` in `main.tscn`.
 - A new testing switch: a field in `DevSettings`, an `if` where it matters, and a line in
   `ActiveSummary()`.
+- A new shader: its path in `TapeMenu.Shaders` too, so the loading screen builds it up front (else it
+  may stutter the first time it shows).
 
 ## Conventions
 

@@ -222,8 +222,10 @@ public partial class TapeMenu : Control
 	// Not Godot's background loading (LoadThreadedRequest): in 4.7 it crashed the game handing over a
 	// scene with C# in it.
 	private const string ArtFolder = "res://ui/loading"; // its pictures: one at random each time, best at 400 x 225
-	private const ulong ShowAfter = 250, ShowAtLeast = 600, FrameBudget = 12; // milliseconds
+	private const ulong ShowAfter = 250, ShowAtLeast = 600, FrameBudget = 12, WarmTime = 100; // milliseconds
 	private static PackedScene _held;
+	private static bool _warm; // the effects' shaders are built (once a run)
+	private ulong _warmUntil;
 	private string _loading; // the scene being read; null on a menu
 	private ulong _shownAt;  // when the loading screen came up; 0 = not yet
 	private readonly Stack<(string Path, bool Opened)> _todo = new(); // Opened: what it needs is queued above it
@@ -252,7 +254,9 @@ public partial class TapeMenu : Control
 			_shownAt = now;
 		bool done = ReadSome(now + FrameBudget);
 		_progress = Math.Max(_progress, (float)_done / _total);
-		if (!done || _shownAt > 0 && Time.GetTicksMsec() - _shownAt < ShowAtLeast)
+		if (done && !_warm)
+			WarmUp(now);
+		if (!done || now < _warmUntil || _shownAt > 0 && Time.GetTicksMsec() - _shownAt < ShowAtLeast)
 			return;
 		SceneTree tree = GetTree();
 		tree.Paused = false;
@@ -301,6 +305,37 @@ public partial class TapeMenu : Control
 				_total++;
 			}
 		}
+	}
+
+	// Something drawn for the first time mid-play (the goo painting, the Esc menu's wash, smoke and sparks,
+	// the stairs' arrow) stalls that frame while the graphics driver builds its shader. So the first load
+	// of a run draws each once, a dot under the loading screen: every shader in the project, a particle
+	// (drawn many at once, its own build) and a shape drawn in code.
+	// Listed by hand: walking the project's folders for them took over half a second. A new shader goes here.
+	private static readonly string[] Shaders =
+		{ "res://art/goo_canvas.gdshader", "res://art/goo_stamp.gdshader", "res://art/trip.gdshader", "res://ui/tape_pause.gdshader" };
+
+	private void WarmUp(ulong now)
+	{
+		foreach (string shader in Shaders)
+			Under(new ColorRect { Size = Vector2.One, Material = new ShaderMaterial { Shader = GD.Load<Shader>(shader) } });
+		Under(new CpuParticles2D { Amount = 1, Preprocess = 0.1f, Position = Vector2.One });
+		var shape = new Control { Size = Vector2.One };
+		shape.Draw += () =>
+		{
+			Vector2[] dot = [Vector2.Zero, Vector2.Right, Vector2.One];
+			shape.DrawColoredPolygon(dot, Ink);
+			shape.DrawPolyline(dot, Ink, 1f);
+		};
+		Under(shape);
+		_warm = true;
+		_warmUntil = now + WarmTime; // a few frames drawn with them
+	}
+
+	private void Under(Node node) // with the loading screen's layer, drawn first so the screen covers it
+	{
+		GetParent().AddChild(node);
+		GetParent().MoveChild(node, 0);
 	}
 
 	public override void _Input(InputEvent e)
