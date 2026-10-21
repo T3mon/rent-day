@@ -12,8 +12,8 @@ public static class Effects
 		if (scene == null)
 			return;
 		var fx = scene.Instantiate<Node2D>();
+		fx.Position = position;
+		fx.Rotation = rotation;
 		from.GetTree().CurrentScene.AddChild(fx);
-		fx.GlobalPosition = position;
-		fx.GlobalRotation = rotation;
 	}
 }
