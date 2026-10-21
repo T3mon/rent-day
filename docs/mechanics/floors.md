@@ -7,7 +7,7 @@ The building is played floor by floor, bottom to top.
 - A floor is clear when every goon on it is dead. A knocked-down goon still counts as alive.
 - While any goon is alive, the stairs up do nothing.
 - When the floor is clear, "FLOOR CLEAR" shows for a moment and a pink arrow bobs over the stairs up.
-- Walking onto the open stairs fades to black and starts the next floor, on the stairs you came up.
+- Walking onto the open stairs fades to black and starts the next floor, on the stairs you came up. No loading: every floor was read in on the loading screen.
 
 ## What carries over
 

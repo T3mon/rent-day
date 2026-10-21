@@ -50,6 +50,12 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`ui/TapeMenu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
   drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
   beside them). Settings are placeholders: they keep their values while the game runs, nothing more.
+  It is also the loading screen: `TapeMenu.LoadScene` reads a scene (with every floor in it, and all
+  the music) a few pieces a frame while the game waits paused under it, then switches. It only shows
+  if that takes a moment (over 0.25 s), then stays at least 0.6 s. Its pictures are in `ui/loading/`,
+  one at random each time, filling the screen (cropped to fit). Make them 400 x 225, the game screen's
+  size in pixels, so each picture pixel is one game pixel; a bigger one is shrunk on screen and loses
+  its crisp pixels.
 - **`core/Music.cs`**: all music, one player that outlives scene changes (menu song, floor songs, the
   clear song, skip, shuffle, loop, volume). Rules in [mechanics/music.md](mechanics/music.md).
 - **`core/SaveGame.cs`**: saves as JSON files in `Documents/My Games/Rent Day/Saves` (the game's own
@@ -83,6 +89,9 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in
   levels (floors, walls, props, goons, goo), so the pointer always stands out.
 - Every goon's defaults are in `enemies/enemy.tscn`; set a single goon's values in the level.
+- **Change scenes with `TapeMenu.LoadScene`** (or `Main.Begin` for a run), never `ChangeSceneToFile`:
+  that reads the scene on the spot and freezes the game. The scene it loaded stays in memory, so the
+  stairs and restarts (which reload the same scene) never touch the disk.
 
 ## Icon and builds
 
@@ -105,9 +114,10 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **The game starts from the main menu (`ui/menu.tscn`);** New game or Continue loads `main.tscn`.
   F6 runs just the open scene, for testing one piece (running `main.tscn` that way skips the menu).
 - **Disk reads can stall the game.** A first read of a file off a slow drive (an SD card) took up
-  to half a second, so anything loaded mid-play (songs) is read in the background up front.
-- **Never wait on `ResourceLoader.LoadThreadedGet` before a load is done.** While it waits it runs
-  deferred calls early (a deferred `AddChild` failed that way); check `LoadThreadedGetStatus` first.
+  to half a second, so anything loaded mid-play (songs) is read up front, on the loading screen.
+- **Don't use Godot's background loading (`ResourceLoader.LoadThreadedRequest`).** In 4.7 it crashed
+  the game outright (no error, no log) handing over a scene with C# in it, and Godot's tracker has
+  open bugs about it. The loading screen reads on the main thread instead, a few pieces a frame.
 - **Testing switches stay local:** git ignores local changes to `debug/dev_settings.tres`, so the
   repository always holds a normal game.
 - **No other game's name anywhere in the repository** (code, comments, commits, docs).

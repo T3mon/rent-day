@@ -29,11 +29,26 @@ public static class Music
 	public static float Position => _player != null && _player.IsInsideTree() ? _player.GetPlaybackPosition() : 0f;
 	public static float Length => (float)(_player?.Stream?.GetLength() ?? 0);
 
-	// The floor songs and the clear song are read in the background when the player is made, then kept in
-	// memory (about 3 MB each): the first read of a song off a slow drive (an SD card) stalled the game.
-	// shortcut: every song held at once; stream them from disk if the list grows past a few dozen.
+	// The floor songs and the clear song are read on the loading screen (ReadNext), then kept in memory
+	// (about 3 MB each), like the menu song: the first read of a song off a slow drive (an SD card) stalled
+	// the game. shortcut: every song held at once; stream them from disk if the list grows past a few dozen.
 	private static readonly AudioStream[] Loaded = new AudioStream[Songs.Length];
-	private static AudioStream _clearSong;
+	private static AudioStream _clearSong, _menuSong;
+
+	public static int Unread => Loaded.Count(song => song == null) + (_clearSong == null ? 1 : 0);
+
+	// Reads one song that isn't in memory yet; false once they all are.
+	public static bool ReadNext()
+	{
+		int song = Array.IndexOf(Loaded, null);
+		if (song >= 0)
+			Loaded[song] = GD.Load<AudioStream>(SongPath(song));
+		else if (_clearSong == null)
+			_clearSong = Looping(GD.Load<AudioStreamMP3>(ClearSong));
+		else
+			return false;
+		return true;
+	}
 
 	private static AudioStreamPlayer _player;
 	private static int _floor = -1; // the floor the song belongs to; -1 = the menu
@@ -47,7 +62,7 @@ public static class Music
 		Ready(from);
 		_floor = -1;
 		if (_player.Stream?.ResourcePath != MenuSong)
-			Start(Looping(GD.Load<AudioStreamMP3>(MenuSong)));
+			Start(_menuSong ??= Looping(GD.Load<AudioStreamMP3>(MenuSong)));
 	}
 
 	// A floor (0 = the first) is starting: keep the song through a death or restart, else the next one.
@@ -78,7 +93,7 @@ public static class Music
 		if (_player == null || _cleared)
 			return;
 		_cleared = true;
-		Start(_clearSong ??= Looping((AudioStreamMP3)Take(ClearSong)));
+		Start(_clearSong ??= Looping(GD.Load<AudioStreamMP3>(ClearSong)));
 	}
 
 	public static void Skip(int dir)
@@ -116,7 +131,7 @@ public static class Music
 
 	private static void StartSong()
 	{
-		Start(Loaded[Current] ??= (AudioStream)Take(SongPath(Current)));
+		Start(Loaded[Current] ??= GD.Load<AudioStream>(SongPath(Current)));
 		Started++;
 	}
 
@@ -131,11 +146,6 @@ public static class Music
 	}
 
 	private static string SongPath(int song) => $"{FloorFolder}/{Songs[song]}.mp3";
-
-	// A song read in the background, or read now if it isn't in yet (a floor right at start-up). Never waits
-	// on LoadThreadedGet: that runs deferred calls early, before the player is added to the tree.
-	private static Resource Take(string path) =>
-		ResourceLoader.LoadThreadedGetStatus(path) == ResourceLoader.ThreadLoadStatus.Loaded ? ResourceLoader.LoadThreadedGet(path) : GD.Load(path);
 
 	private static AudioStream Looping(AudioStreamMP3 stream)
 	{
@@ -160,9 +170,6 @@ public static class Music
 			}
 		};
 		from.GetTree().Root.CallDeferred(Node.MethodName.AddChild, _player);
-		for (int i = 0; i < Songs.Length; i++)
-			ResourceLoader.LoadThreadedRequest(SongPath(i));
-		ResourceLoader.LoadThreadedRequest(ClearSong);
 		if (!InputMap.HasAction("next_song")) // shortcut: added here, not in Project Settings; move it there when keys get rebindable (#8)
 		{
 			InputMap.AddAction("next_song");

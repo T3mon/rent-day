@@ -10,5 +10,6 @@
 - **Volume:** click a block of the bar to set it there (left of the first block: silent), or drag along it; left/right on the keyboard.
 - Volume, shuffle and loop are remembered in `Documents/My Games/Rent Day/settings.json`.
 - A new floor song: drop the mp3 in `audio/music/floor/`. Every mp3 there is a floor song, in name order; the name shown is the file name.
-- The floor songs and the clear song are read in the background when the game starts and stay in memory (about 3 MB each), so N and a cleared floor never wait on the disk.
+- The floor songs and the clear song are read on the loading screen and stay in memory (about 3 MB each), like the menu song, so N, a cleared floor and going back to the menu never wait on the disk.
+- The music playing goes on through the loading screen: New game keeps the menu song until the floor starts.
 - Dying is silent (the player has no death sound), so the music carries on.

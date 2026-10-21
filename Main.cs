@@ -95,8 +95,7 @@ public partial class Main : Node2D
 		_carried = save != null ? SaveGame.WeaponOf(save) : null;
 		_carriedAmmo = _carried != null ? save.Ammo : 0;
 		_arriving = true;
-		tree.Paused = false;
-		tree.ChangeSceneToFile("res://main.tscn");
+		TapeMenu.LoadScene(tree, "res://main.tscn");
 	}
 
 	// What a save holds: this floor, and the gun you came onto it with (loading starts the floor over).

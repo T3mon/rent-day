@@ -8,7 +8,7 @@ namespace RentDay;
 // The main menu and the Esc menu, drawn like a VCR's on-screen display: PLAY or PAUSE in the
 // corner, a running timecode, scanlines and a rolling tracking band, the picked line inverted.
 // Mouse, keyboard and gamepad all work. Paused = true makes it the Esc menu: it sits over the
-// frozen floor, and the game stays paused until it closes.
+// frozen floor, and the game stays paused until it closes. It is also the loading screen (LoadScene).
 public partial class TapeMenu : Control
 {
 	public const string ScenePath = "res://ui/menu.tscn";
@@ -19,7 +19,7 @@ public partial class TapeMenu : Control
 	private static readonly Color Ink = new("07030f"), Soft = new("d8d2e8"), Dim = new("8f88a6"), Red = new("ff2a6d"), Cyan = new("2de2e6");
 	private static readonly Color Faint = new(1f, 1f, 1f, 0.3f);
 
-	private enum View { Main, Pause, Load, Settings, Confirm, Music }
+	private enum View { Main, Pause, Load, Settings, Confirm, Music, Loading }
 
 	private static readonly string[] PauseItems = { "RESUME", "SAVE GAME", "LOAD GAME", "MUSIC", "SETTINGS", "QUIT TO MENU" };
 	private static readonly string[] MusicRows = { "PLAYER", "SHUFFLE", "LOOP", "VOLUME", "BACK" }; // PLAYER: back, pause, next
@@ -68,8 +68,15 @@ public partial class TapeMenu : Control
 		_small = PixelFont("res://ui/fonts/Silkscreen-Regular.ttf");
 		_title = PixelFont("res://ui/Blox2.ttf");
 		ProcessMode = ProcessModeEnum.Always; // keeps running while the game is paused
-		_view = Paused ? View.Pause : View.Main;
 		_opened = Time.GetTicksMsec();
+		if (_loading != null)
+		{
+			_view = View.Loading;
+			string[] art = ResourceLoader.ListDirectory(ArtFolder).Where(f => f.EndsWith(".png")).ToArray();
+			_art = art.Length > 0 ? GD.Load<Texture2D>($"{ArtFolder}/{art[GD.Randi() % art.Length]}") : null;
+			return;
+		}
+		_view = Paused ? View.Pause : View.Main;
 		_saves = SaveGame.All();
 		if (!Paused)
 			Music.Menu(this);
@@ -81,7 +88,12 @@ public partial class TapeMenu : Control
 		}
 	}
 
-	public override void _Process(double delta) => QueueRedraw();
+	public override void _Process(double delta)
+	{
+		QueueRedraw();
+		if (_loading != null)
+			PollLoading();
+	}
 
 	// ---------------------------------------------------------------- what's on each page
 	private string[] MainItems() => _saves.Count > 0
@@ -129,11 +141,7 @@ public partial class TapeMenu : Control
 						Toast(SaveGame.Write(slot, Main.Checkpoint()) ? "SAVED AS " + SaveGame.Title(slot) : "COULD NOT SAVE");
 						break;
 					case "QUIT TO MENU":
-						Ask("EJECT THE TAPE?", "THE FLOOR STARTS OVER NEXT TIME", () =>
-						{
-							GetTree().Paused = false;
-							GetTree().ChangeSceneToFile(ScenePath);
-						});
+						Ask("EJECT THE TAPE?", "THE FLOOR STARTS OVER NEXT TIME", () => LoadScene(GetTree(), ScenePath));
 						break;
 				}
 				break;
@@ -204,6 +212,101 @@ public partial class TapeMenu : Control
 	{
 		GetTree().Paused = false;
 		QueueFree();
+	}
+
+	// ---------------------------------------------------------------- loading
+	// The loading screen. It covers whatever is on (the game stays paused under it) and reads the scene,
+	// everything in it (every floor) and all the music, a few pieces a frame so it keeps moving, then
+	// switches to the scene. A quick load never shows it; once up, it stays a moment so it never just
+	// flashes. The scene stays in memory until the next one, so the stairs and restarts never touch the disk.
+	// Not Godot's background loading (LoadThreadedRequest): in 4.7 it crashed the game handing over a
+	// scene with C# in it.
+	private const string ArtFolder = "res://ui/loading"; // its pictures: one at random each time, best at 400 x 225
+	private const ulong ShowAfter = 250, ShowAtLeast = 600, FrameBudget = 12; // milliseconds
+	private static PackedScene _held;
+	private string _loading; // the scene being read; null on a menu
+	private ulong _shownAt;  // when the loading screen came up; 0 = not yet
+	private readonly Stack<(string Path, bool Opened)> _todo = new(); // Opened: what it needs is queued above it
+	private readonly HashSet<string> _seen = new();
+	private readonly List<Resource> _read = new(); // held until the scene is in
+	private int _done, _total;
+	private float _progress;
+	private Texture2D _art;
+
+	public static void LoadScene(SceneTree tree, string path)
+	{
+		var screen = new TapeMenu { _loading = path, _total = 1 + Music.Unread };
+		screen._todo.Push((path, false));
+		screen._seen.Add(path);
+		screen.SetAnchorsPreset(LayoutPreset.FullRect);
+		var layer = new CanvasLayer { Layer = 100 }; // over the HUD and the Esc menu
+		layer.AddChild(screen);
+		tree.Root.AddChild(layer);
+		tree.Paused = true; // nothing moves under it
+	}
+
+	private void PollLoading()
+	{
+		ulong now = Time.GetTicksMsec();
+		if (_shownAt == 0 && now - _opened >= ShowAfter)
+			_shownAt = now;
+		bool done = ReadSome(now + FrameBudget);
+		_progress = Math.Max(_progress, (float)_done / _total);
+		if (!done || _shownAt > 0 && Time.GetTicksMsec() - _shownAt < ShowAtLeast)
+			return;
+		SceneTree tree = GetTree();
+		tree.Paused = false;
+		_held = GD.Load<PackedScene>(_loading); // already in memory
+		if (_held != null)
+			tree.ChangeSceneToPacked(_held);
+		else
+			tree.ChangeSceneToFile(_loading); // the read failed: the plain load says why
+		_loading = null;
+		GetParent().QueueFree();
+	}
+
+	// Reads pieces until the time is up (at least one); true once the scene and all the music are in.
+	private bool ReadSome(ulong until)
+	{
+		do
+		{
+			if (_todo.Count > 0)
+				ReadNext();
+			else if (!Music.ReadNext())
+				return true;
+			_done++;
+		} while (Time.GetTicksMsec() < until);
+		return false;
+	}
+
+	// One piece of the scene: what it needs goes on top of it first, so by the time it is read, that is
+	// all in memory and reading it is quick.
+	private void ReadNext()
+	{
+		var (path, opened) = _todo.Pop();
+		if (opened || ResourceLoader.HasCached(path))
+		{
+			_read.Add(GD.Load(path));
+			return;
+		}
+		_todo.Push((path, true));
+		_done--; // not read yet
+		foreach (string dependency in ResourceLoader.GetDependencies(path))
+		{
+			string[] parts = dependency.Split("::"); // uid, type, path
+			string need = parts[^1] != "" ? parts[^1] : parts[0];
+			if (_seen.Add(need))
+			{
+				_todo.Push((need, false));
+				_total++;
+			}
+		}
+	}
+
+	public override void _Input(InputEvent e)
+	{
+		if (_view == View.Loading)
+			GetViewport().SetInputAsHandled(); // nothing under the loading screen reacts
 	}
 
 	// ---------------------------------------------------------------- input
@@ -306,6 +409,8 @@ public partial class TapeMenu : Control
 	public override void _Draw()
 	{
 		_hits.Clear();
+		if (_view == View.Loading && _shownAt == 0)
+			return; // a quick load never shows the loading screen
 		ulong now = Time.GetTicksMsec();
 		if (!Paused)
 			Backdrop(now);
@@ -316,6 +421,7 @@ public partial class TapeMenu : Control
 			case View.Load: DrawLoad(now); break;
 			case View.Settings: DrawSettings(now); break;
 			case View.Music: DrawMusic(now); break;
+			case View.Loading: DrawLoading(now); break;
 			default: DrawConfirm(now); break;
 		}
 		Tape(now);
@@ -375,6 +481,25 @@ public partial class TapeMenu : Control
 			Tri(16 + w + 7, 15, Colors.White);
 		ulong sec = (Paused ? _opened - Main.FloorStarted : now - _opened) / 1000;
 		Osd($"SP {sec / 3600}:{sec / 60 % 60:00}:{sec % 60:00}", W - 16, H - 12, Colors.White, HorizontalAlignment.Right);
+	}
+
+	// The loading screen: the picture, the tape fast-forwarding, how far the read has got.
+	private void DrawLoading(ulong now)
+	{
+		if (_art != null) // filling the screen, cropped to it (a 400 x 225 picture fits pixel for pixel)
+		{
+			Vector2 size = _art.GetSize() * Math.Max(W / _art.GetSize().X, H / _art.GetSize().Y);
+			DrawTextureRect(_art, new Rect2((new Vector2(W, H) - size) / 2, size), false);
+		}
+		float w = Osd("FF", 16, 26, Colors.White);
+		if (now / 300 % 2 == 0)
+		{
+			Tri(16 + w + 7, 15, Colors.White);
+			Tri(16 + w + 13, 15, Colors.White);
+		}
+		Osd("LOADING", 16, H - 12, Colors.White);
+		R(W - 96, H - 17, 80, 3, Faint); // how far the read has got
+		R(W - 96, H - 17, Mathf.Round(80 * _progress), 3, Colors.White);
 	}
 
 	// One line of a list; the picked one inverted, like a VCR menu.
