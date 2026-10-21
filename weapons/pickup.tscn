@@ -1,7 +1,6 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://weapons/WeaponPickup.cs" id="1_script"]
-[ext_resource type="AudioStream" path="res://audio/gun_hit.wav" id="2_hit"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gun"]
 radius = 4.0
@@ -21,6 +20,3 @@ position = Vector2(1, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_gun")
-
-[node name="HitSound" type="AudioStreamPlayer2D" parent="."]
-stream = ExtResource("2_hit")

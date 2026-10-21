@@ -33,6 +33,7 @@ public partial class WeaponData : Resource
 	[Export] public float SwingTime = 0.2f;      // seconds a swing hits whatever comes in reach
 	[Export] public float Reach = 35f;           // a swing hits up to this far in front of you, 22 px wide
 	[Export] public bool KillsWhenThrown;        // thrown, it kills instead of knocking down (knife)
+	[Export] public AudioStream ThrownHitSound;  // thrown into a goon (knife); empty = its HitSound (bat), or none (guns)
 	[Export] public AudioStream HitSound;        // when a swing connects
 	[Export] public int FinishBlows;             // finishing a downed goon with it: clicks, one blow each (bat 3); 0 = one slow cut on its own (knife)
 

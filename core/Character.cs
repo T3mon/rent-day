@@ -14,6 +14,7 @@ namespace RentDay;
 //     Corpse/Body     - lying on the floor: falling, knocked down, slumped, getting up, dead
 //   CollisionShape2D
 //   DeathSound
+// Knocked down, the body hits the floor with a body fall, played from a player made in code.
 //
 // Draw order (z index): floor 0, goo 1, corpses and guns on the floor 2, furniture and
 // doors 3 (so bodies slide under them), the living 4, walls 5 (over everyone, so a body
@@ -62,7 +63,8 @@ public partial class Character : CharacterBody2D
 	private Node2D _alive;
 	private Node2D _corpse;
 	private CollisionShape2D _collision;
-	private AudioStreamPlayer2D _deathSound;
+	private static readonly AudioStream BodyFall = GD.Load<AudioStream>("res://audio/body_fall.tres");
+	private AudioStreamPlayer2D _deathSound, _fallSound;
 	private float _walked;
 	private int _step;
 	private int _gooSteps;
@@ -83,6 +85,8 @@ public partial class Character : CharacterBody2D
 		_corpse = GetNode<Node2D>("Visual/Corpse");
 		_collision = GetNode<CollisionShape2D>("CollisionShape2D");
 		_deathSound = GetNode<AudioStreamPlayer2D>("DeathSound");
+		_fallSound = new AudioStreamPlayer2D { Stream = BodyFall };
+		AddChild(_fallSound);
 		_corpseBody = GetNode<AnimatedSprite2D>("Visual/Corpse/Body");
 		_livingZ = ZIndex;
 		ReadyMelee();
@@ -285,6 +289,7 @@ public partial class Character : CharacterBody2D
 		Visual.Rotation = direction.Angle();
 		ShowOnFloor("lie_fall");
 		ShowLying(true);
+		_fallSound.Play();
 	}
 
 	// Knocked down into a wall (`away` points out of it): he sits slumped against it, dazed,

@@ -17,7 +17,7 @@ public partial class WeaponPickup : CharacterBody2D
 
 	private Sprite2D _look;
 	private Sprite2D _shadow;
-	private AudioStreamPlayer2D _hitSound;
+	private AudioStreamPlayer2D _hitSound; // the weapon's hit sound for being thrown into a goon (knife, bat)
 	private float _spin;
 	private bool _thrown;
 
@@ -46,7 +46,8 @@ public partial class WeaponPickup : CharacterBody2D
 	{
 		_look = GetNode<Sprite2D>("Look");
 		_shadow = GetNode<Sprite2D>("Shadow");
-		_hitSound = GetNode<AudioStreamPlayer2D>("HitSound");
+		_hitSound = new AudioStreamPlayer2D();
+		AddChild(_hitSound);
 
 		if (Ammo < 0 && Data != null)
 			Ammo = Data.Ammo;
@@ -79,7 +80,9 @@ public partial class WeaponPickup : CharacterBody2D
 					goon.Die(Velocity.Normalized());
 				else
 					goon.KnockDown(Velocity.Normalized());
-				_hitSound.Play();
+				_hitSound.Stream = Data.ThrownHitSound ?? Data.HitSound;
+				if (_hitSound.Stream != null) // guns have none: the goon's body fall is the sound
+					_hitSound.Play();
 				ShakeCamera.Shake(1.3f);
 				_thrown = false;
 				Velocity = -Velocity * 0.2f;

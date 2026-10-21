@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://props/Door.cs" id="1_script"]
 [ext_resource type="Texture2D" path="res://props/door.png" id="2_tex"]
-[ext_resource type="AudioStream" path="res://audio/door_slam.wav" id="3_slam"]
+[ext_resource type="AudioStream" path="res://audio/door_hit.wav" id="3_slam"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_panel"]
 size = Vector2(40, 4)
@@ -36,3 +36,4 @@ shape = SubResource("RectangleShape2D_sweep")
 
 [node name="SlamSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("3_slam")
+volume_db = -4.0

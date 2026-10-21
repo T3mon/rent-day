@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" path="res://weapons/knife_floor.png" id="3_floor"]
 [ext_resource type="AudioStream" path="res://audio/melee/swoosh.tres" id="swing"]
 [ext_resource type="AudioStream" path="res://audio/melee/knife_hit.wav" id="hit"]
+[ext_resource type="AudioStream" path="res://audio/melee/knife_throw.wav" id="throw_hit"]
 
 [resource]
 script = ExtResource("1_script")
@@ -18,6 +19,7 @@ GoonCooldown = 0.5
 Melee = true
 SwingTime = 0.15
 KillsWhenThrown = true
+ThrownHitSound = ExtResource("throw_hit")
 Shake = 0.0
 ShotSound = ExtResource("swing")
 HitSound = ExtResource("hit")

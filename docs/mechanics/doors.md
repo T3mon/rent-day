@@ -17,6 +17,7 @@ How doors behave, and how to place them in a level. Tuning values live in the do
 ## Slams
 
 - A door you pushed, swinging hard, knocks down any goon it passes. He drops his gun (see [goons.md](goons.md)).
+- A slam sounds like the door cracking into him (`audio/door_hit.wav`, turned down 4 dB on the door's SlamSound), and he hits the floor with a body fall.
 - A door a goon pushed open never knocks anyone down.
 
 ## Bullets
