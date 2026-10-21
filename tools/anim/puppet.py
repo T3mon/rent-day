@@ -159,7 +159,7 @@ def compose(layers, n=SIZE):
 
 
 # ---------------------------------------------------------------- animations
-def walk_legs(ch, frames=8, stride=5.0):
+def walk_legs(ch, frames=12, stride=5.0):
     out = []
     for i in range(frames):
         p = 2 * math.pi * i / frames

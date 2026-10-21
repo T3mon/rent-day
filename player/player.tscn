@@ -27,6 +27,7 @@ script = ExtResource("1_oul6g")
 BlowCracks = [ExtResource("19_crack"), ExtResource("20_crack"), ExtResource("21_crack"), ExtResource("22_crack")]
 Look = ExtResource("anim")
 PickupScene = ExtResource("12_pickup")
+Stride = 133.0
 Fists = ExtResource("23_fists")
 
 [node name="Legs" type="AnimatedSprite2D" parent="." unique_id=884256833]

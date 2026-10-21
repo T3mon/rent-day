@@ -24,6 +24,10 @@ Gameplay rules are in [mechanics/](mechanics/).
   `python tools/anim/build.py`. A new outfit: its hand-drawn sprites in `art/` (or a recolour of an
   existing goon in `tools/anim/outfits.py`), its name in `build.py`. A melee weapon's animations are named after it (`bat_swing`), so a new one needs
   poses there too.
+- **Walking:** the legs (and the arms swinging in step) run a 12-frame walk cycle driven by distance
+  moved, not time: one full cycle (left foot, then right) per `Stride` pixels, set per character
+  (player 133: about 180 steps a minute at top speed, a running rhythm; goons 80: a stroll on patrol,
+  a run when chasing). Shorter strides look like scurrying. Goo footprints keep their own spacing (20 px).
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
   keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the goon adds
   the AI (behaviours, sight, hearing, chasing, route-finding).
@@ -113,6 +117,12 @@ Gameplay rules are in [mechanics/](mechanics/).
   in the background counts too: running the game saves open scenes. If in doubt, close Godot
   without saving and reopen.
 - **C# changes need a build** before the editor or the game sees them.
+- **Let Godot finish importing before running the game** after rebuilding animations or replacing art.
+  An import that overlapped a game start once failed silently: the new image was left as a `.tmp` in
+  `.godot/imported`, yet Godot counted it as done and kept the old, shorter strip, so a 12-frame walk
+  showed 4 blank frames (the player vanished walking with a bat). A forced reimport doesn't fix it,
+  because Godot thinks it's current: send that image's `.ctex` and `.md5` in `.godot/imported` to the
+  Recycle Bin and rescan.
 - **Fast things skip thin things.** A bullet moves further each frame than a door is thick, so
   bullets check the whole stretch they fly, not just where they land.
 - **The game starts from the main menu (`ui/menu.tscn`);** New game or Continue loads `main.tscn`.

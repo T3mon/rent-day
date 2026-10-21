@@ -216,7 +216,7 @@ def smear_for(kind, e0, e1):
     return ((0, 0), 15, 17.5, a0, a1)
 
 
-def walk_cycle(base, frames=8, swing=3.5, shear=1.5, free_left=True, free_right=True, bob=None):
+def walk_cycle(base, frames=12, swing=3.5, shear=1.5, free_left=True, free_right=True, bob=None):
     out = []
     for i in range(frames):
         s = math.sin(2 * math.pi * i / frames)

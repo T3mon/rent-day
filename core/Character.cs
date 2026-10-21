@@ -34,6 +34,10 @@ public partial class Character : CharacterBody2D
 	[Export] public float DownTimeMin = 1.7f;
 	[Export] public float DownTimeMax = 3.7f;
 
+	// Pixels travelled in one full walk cycle (left foot, then right). Longer = slower, heavier steps:
+	// about 180 steps a minute at the player's top speed (133), a stroll to a run for goons (80).
+	[Export] public float Stride = 80f;
+
 	// What a dropped or thrown gun becomes: a gun lying on the floor.
 	[Export] public PackedScene PickupScene;
 
@@ -53,7 +57,7 @@ public partial class Character : CharacterBody2D
 	private const int CorpseZ = 2;
 	private const int GooSteps = 8; // footprints left after stepping in goo
 
-	// One footprint per this many pixels travelled; the legs' walk cycle (8 frames) takes four.
+	// One footprint per this many pixels travelled (set apart from Stride, so goo trails stay dense).
 	private const float StepLength = 20f;
 	private const int DeadFaceDown = 1; // lie_dead's frames: on the back, face down, on the side
 
@@ -178,7 +182,8 @@ public partial class Character : CharacterBody2D
 			// Legs point where we're going, which may differ from where we aim.
 			_legs.Rotation = Velocity.Angle();
 			_walked += speed * (float)delta;
-			_legs.Frame = (int)(_walked * 4f / StepLength) % _legs.SpriteFrames.GetFrameCount("legs");
+			int frames = _legs.SpriteFrames.GetFrameCount("legs");
+			_legs.Frame = (int)(_walked * frames / Stride) % frames;
 			int step = (int)(_walked / StepLength);
 			for (; _step < step; _step++) // a slow frame can cover several steps: each gets its print, back along the path
 				Footstep(GlobalPosition - Velocity.Normalized() * (step - _step - 1) * StepLength);
