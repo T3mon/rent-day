@@ -49,6 +49,9 @@ public partial class Character : CharacterBody2D
 	// Held by someone finishing him off: he can't act or get up.
 	public bool Pinned { get; set; }
 
+	// Thrown by whoever held him up, and still flying (see Enemy: he bowls over a goon or bursts on a wall).
+	public bool Thrown { get; protected set; }
+
 	public Gun Gun { get; private set; }
 	public bool HasWeapon => Gun.Data != null;
 
@@ -297,6 +300,49 @@ public partial class Character : CharacterBody2D
 		_fallSound.Play();
 	}
 
+	// Being picked up as a human shield: his get-up plays sped up to last `seconds`, turned to `facing`.
+	public void LiftUp(float seconds, float facing)
+	{
+		string getUp = _slumped ? "lie_slump_getup" : "lie_getup";
+		Visual.Rotation = facing;
+		_corpseBody.Rotation = 0f;
+		ShowOnFloor(getUp);
+		_corpseBody.SpeedScale = Seconds(getUp) / seconds;
+	}
+
+	// Picked up off the floor as a human shield: on his feet, not solid (the holder's shots pass him; shots
+	// at the holder are checked by the holder), drawn just under the holder's arms.
+	public void HoldUp()
+	{
+		_corpseBody.SpeedScale = 1f;
+		IsDown = false;
+		_slumped = false;
+		_corpseBody.Rotation = 0f;
+		ShowLying(false);
+		ZIndex = _livingZ - 1;
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
+		HoldPose = "held";
+	}
+
+	// Thrown by whoever held him up: knocked down, flying at `velocity`.
+	public void Throw(Vector2 velocity)
+	{
+		Pinned = false;
+		HoldPose = null;
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, false);
+		KnockDown(velocity.Normalized());
+		Velocity = velocity;
+		Thrown = true;
+	}
+
+	// Carried by whoever holds him: where he stands, which way he faces, and how fast (for his legs).
+	public void Carry(Vector2 at, float facing, Vector2 velocity)
+	{
+		GlobalPosition = at;
+		Visual.Rotation = facing;
+		Velocity = velocity;
+	}
+
 	// Knocked down into a wall (`away` points out of it): he sits slumped against it, dazed,
 	// instead of lying flat. He gets up the same as from the floor.
 	public bool Slumped => IsDown && _slumped;
@@ -310,9 +356,22 @@ public partial class Character : CharacterBody2D
 		ShowOnFloor("lie_slump");
 	}
 
+	// Thrown into a wall hard (`away` points out of it): he splats flat against it, dead, slides
+	// down it into a heap, and goo splashes back off the wall.
+	protected void Splat(Vector2 away)
+	{
+		Slump(away);
+		Die(away);
+		_corpseBody.FlipV = GD.Randf() < 0.5f; // two ways to crumple
+		ShowOnFloor("lie_splat");
+		GooCanvas.Spray(GlobalPosition, away, 14, Mathf.Pi, 80f, 260f);
+		ShakeCamera.Shake(3f);
+	}
+
 	private void GetUp()
 	{
 		IsDown = false;
+		Thrown = false;
 		_slumped = false;
 		_corpseBody.Rotation = 0f;
 		ShowLying(false);

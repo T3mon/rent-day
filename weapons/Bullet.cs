@@ -12,6 +12,7 @@ public partial class Bullet : Area2D
 	[Export] public float Lifetime = 1.5f; // seconds before it removes itself
 	[Export] public PackedScene SparkScene; // sparks when it hits a wall
 	[Export] public float DoorShove = 190f; // degrees per second it adds to a door's swing; two quick shots slam
+	public bool Blast; // one pellet of a shotgun blast: a human shield can't stop it
 
 	public override void _Ready()
 	{
@@ -45,9 +46,13 @@ public partial class Bullet : Area2D
 		if (IsQueuedForDeletion())
 			return; // already hit something this frame
 
-		// Anyone killable (player or goon) dies; a wall just stops the bullet, a door also gets pushed.
+		// Anyone killable (player or goon) dies, unless a goon held up in front takes it; a wall just stops
+		// the bullet, a door also gets pushed.
 		if (body is Character target)
-			target.Die(Transform.X);
+		{
+			if (!(target is Player holder && holder.ShieldTakes(Transform.X, Blast)))
+				target.Die(Transform.X);
+		}
 		else
 			Effects.Spawn(SparkScene, this, GlobalPosition, Rotation + Mathf.Pi); // sparks fly back off the wall
 

@@ -48,6 +48,7 @@ Set per goon in the level:
 - A goon lying on the floor can still be shot or killed with a bat or knife swing. A thrown weapon slides past him.
 - A knocked-down goon drops his gun, and will go for the nearest gun he can see.
 - Doors you push open can knock goons down. Doors goons push open do not (see [doors.md](doors.md)).
+- A goon you throw (from a human shield, see [triggers.md](triggers.md)) knocks down the first goon he slides into, and dies on a wall he hits fast (slumps against it if slower).
 - A knocked-down goon can be finished off, and a standing goon right in front of you can be taken out with a stealth kill (see [triggers.md](triggers.md)). A stealth kill leaves no goo.
 - **Body fall:** anyone knocked down (a punch, a thrown gun or bat, a door) hits the floor with a short thud (`audio/body_fall.tres`, a little different in pitch each time). A door slamming into him also plays its slam. A thrown knife lands with a meaty stab of its own (`audio/melee/knife_throw.wav`, the weapon's **Thrown Hit Sound**) as it kills him; a thrown bat plays its usual hit; a thrown gun has only his fall.
 

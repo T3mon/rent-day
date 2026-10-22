@@ -5,7 +5,7 @@
 
 Poses and timings are in anims.py, the body parts in puppet.py.
 """
-import os, sys
+import os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import puppet as pp
 import anims as an
@@ -45,12 +45,17 @@ def build(name):
             fr.append(f'{{"duration": {ms[j] / 1000:.3f}, "texture": SubResource("{sid}")}}')
         loop = 'true' if key in LOOPS else 'false'
         entries.append(f'{{\n"frames": [{", ".join(fr)}],\n"loop": {loop},\n"name": &"{key}",\n"speed": 1.0\n}}')
-    text = '[gd_resource type="SpriteFrames" format=3]\n\n' + '\n'.join(res) + '\n\n' + '\n'.join(subs) + '\n[resource]\nanimations = [' + ', '.join(entries) + ']\n'
-    open(f'{OUT}{name}.tres', 'w', encoding='utf-8', newline='\n').write(text)
+    # keep the id Godot gave the file: scenes may refer to it by that
+    path = f'{OUT}{name}.tres'
+    uid = re.search(r' uid="(uid://\w+)"', open(path, encoding='utf-8').readline()) if os.path.exists(path) else None
+    head = '[gd_resource type="SpriteFrames" format=3%s]' % (f' uid="{uid.group(1)}"' if uid else '')
+    text = head + '\n\n' + '\n'.join(res) + '\n\n' + '\n'.join(subs) + '\n[resource]\nanimations = [' + ', '.join(entries) + ']\n'
+    open(path, 'w', encoding='utf-8', newline='\n').write(text)
     return anims
 
 
 LOOPS = {'idle', 'walk', 'gun_idle', 'gun_walk', 'bat_idle', 'bat_walk', 'knife_idle', 'knife_walk', 'choke',
+         'shield', 'gun_shield', 'bat_shield', 'knife_shield', 'held',
          'smoke', 'phone', 'hide', 'sit', 'lean', 'talk', 'lie_slump'}
 
 if __name__ == '__main__':

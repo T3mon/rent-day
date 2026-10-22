@@ -17,6 +17,10 @@ public partial class Character
 	// Standing still, this plays instead of the usual standing animation (a goon's smoke, phone...); null = none.
 	protected string IdlePose;
 
+	// Holding a human shield (ShieldPose), or held up as one ("held"): this plays walking or standing; null = none.
+	protected string HoldPose;
+	protected string ShieldPose => Kind + "shield";
+
 	private string _action;               // the one-off animation playing, if any
 	private Vector2 _lean;                // where the upper body sits over the legs, in the level's frame
 	private Vector2 _leanSpeed;
@@ -50,6 +54,14 @@ public partial class Character
 			return;
 		}
 		_action = null;
+		if (HoldPose != null)
+		{
+			Gun.Visible = Kind == "gun_";
+			_legs.Visible = true;
+			if (_bodySprite.Animation != HoldPose || !_bodySprite.IsPlaying())
+				_bodySprite.Play(HoldPose);
+			return;
+		}
 		string pose = moving ? null : IdlePose;
 		Gun.Visible = Kind == "gun_" && pose == null; // bats and knives are part of the animation
 		_legs.Visible = pose != "sit";

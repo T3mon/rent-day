@@ -43,7 +43,7 @@ public partial class TapeMenu : Control
 	// The controls tab: actions in groups, each with its main and second key, read from the input map.
 	private static readonly (string Group, string Label, string Action)[] Keys =
 	{
-		("COMBAT", null, null), (null, "SHOOT, SWING", "shoot"), (null, "GRAB, THROW", "grab"), (null, "EXECUTE", "execute"),
+		("COMBAT", null, null), (null, "SHOOT, SWING", "shoot"), (null, "GRAB, THROW", "grab"), (null, "EXECUTE", "execute"), (null, "HUMAN SHIELD", "shield"),
 		("MOVE", null, null), (null, "MOVE UP", "move_up"), (null, "MOVE DOWN", "move_down"), (null, "MOVE LEFT", "move_left"),
 		(null, "MOVE RIGHT", "move_right"), (null, "LOOK AHEAD", "look"),
 		("GAME", null, null), (null, "RESTART FLOOR", "restart"), (null, "PAUSE", "ui_cancel"), (null, "QUICK SAVE", "quick_save"),

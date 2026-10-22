@@ -85,3 +85,14 @@ One key, two takedowns. A goon standing right in front of you comes first; other
 - A gun in your hand is dropped beside you first (a bat or knife too, for a stealth kill).
 - You can't move or shoot until it's over, and other goons can still shoot you.
 - The goon can't act or get up while you're on him.
+
+## Human shield (`shield`, E)
+
+Pick up the nearest goon lying on the floor within reach and hold him in front of you. Works with anything in your hand. Picking him up takes a quarter second: you reach down and pull him up as he gets to his feet, and you stand still meanwhile.
+
+- **Holding him:** you move at 2/3 speed and turn slowly (at most a full turn a second), his legs walking in front of yours.
+- **Attacking:** any gun still fires, from out past his right shoulder. A bat, knife or fists can't: you just carry him. Picking up, throwing and Execute are off while you hold him.
+- **Bullets:** he takes goon bullets coming from the front 120°, jolting and bleeding. After 5 he dies and drops, and you carry on. A shotgun blast kills him at once (and he takes the whole blast). Bullets from the side or behind still hit you, and he goes down with you.
+- **Throwing him (right-click):** you shove him the way you face and he flies like a hard knockdown (about 7 tiles). The first standing goon he slides into goes down too, and he stops there: both are knocked down, alive. Thrown hard into a wall, he dies on it: flat against it with his arms flung out, a crash, goo splashing back off the wall, then he slides down it into a crumpled heap. Slowed down by then, he just slumps against it, alive, with a softer crash. Only the thrown body knocks goons over, never the goons he knocks down.
+- **Letting go (E again):** barely shot (0 to 2 hits), you snap his neck: you stand still for 0.3 s, then a crack and he drops dead. Shot 3 or more times, you just drop his body.
+- Tuning is on the Player: Shield Hits, Shield Drop After, Shield Speed, Shield Turn, Shield Front, Snap Time, Lift Time, Shield Throw Speed. How fast a thrown goon must be to die on a wall or bowl a goon over is on the goon (Splat Speed, Bowl Speed).

@@ -34,6 +34,23 @@ public partial class Player : Character
 	[Export] public float SneakKillReach = 28f; // how far in front of you he may stand
 	[Export] public float SneakKillTime = 0.7f; // seconds it takes; you're stuck meanwhile
 
+	// Human shield ("shield", E): pick a downed goon up and hold him in front of you, whatever is in your
+	// hand. He takes goon bullets from the front; guns still fire past him, melee can't swing.
+	// E again: a neck snap, or, once he's shot up, you just drop him. Right-click: shove him away (Enemy.Throw).
+	[Export] public int ShieldHits = 5;         // bullets he takes before he dies
+	[Export] public int ShieldDropAfter = 3;    // hits after which letting go just drops him
+	[Export] public float ShieldSpeed = 0.67f;  // your top speed holding him, part of MaxSpeed
+	[Export] public float ShieldTurn = 360f;    // degrees per second you can turn holding him
+	[Export] public float ShieldFront = 120f;   // the angle he covers, centered on where you face
+	[Export] public float SnapTime = 0.3f;      // seconds the neck snap takes; you stand still meanwhile
+	[Export] public float LiftTime = 0.25f;     // seconds picking him up off the floor; you stand still meanwhile
+	[Export] public float ShieldThrowSpeed = 450f; // shoving him away: how fast he flies, pixels per second (about 7 tiles)
+
+	private const float ShieldAhead = 12f;     // how far in front of you he's held
+	private static readonly Vector2 ShieldGunHand = new(15f, 11f); // the gun out past his right shoulder, not over his head
+	private static readonly AudioStream NeckSnap = GD.Load<AudioStream>("res://audio/neck_snap.wav");
+	private static readonly AudioStream Whoosh = GD.Load<AudioStream>("res://audio/melee/swoosh.tres");
+
 	private Camera2D _camera;
 	private AudioStreamPlayer2D _blowSound, _finalBlowSound, _grabSound, _struggleSound, _bodyFallSound;
 	private Enemy _victim; // the goon we're finishing off, if any
@@ -43,6 +60,12 @@ public partial class Player : Character
 	private float _blowLeft;
 	private float _sneakKillLeft;
 	private float _nextStruggle;
+	private Enemy _shield;        // the goon held up in front, if any
+	private int _shieldHits;
+	private float _snapLeft, _liftLeft;
+	private Vector2 _liftFrom;
+	private Vector2 _gunRest;      // the gun hand's usual spot
+	private ulong _shieldGoneFrame; // the physics frame a blast killed him in: the rest of that blast is his too
 
 	public override void _Ready()
 	{
@@ -54,6 +77,8 @@ public partial class Player : Character
 		_grabSound = GetNode<AudioStreamPlayer2D>("GrabSound");
 		_struggleSound = GetNode<AudioStreamPlayer2D>("StruggleSound");
 		_bodyFallSound = GetNode<AudioStreamPlayer2D>("BodyFallSound");
+		_gunRest = Gun.Position;
+		Died += () => DropShield(Visual.Transform.X); // shot from behind: he goes down with you
 	}
 
 	// Keep the camera inside the level, so you never see past its edges.
@@ -78,22 +103,33 @@ public partial class Player : Character
 			Execute(dt);
 			return;
 		}
+		if (_snapLeft > 0f)
+		{
+			Snap(dt);
+			return;
+		}
+		if (_liftLeft > 0f)
+		{
+			Lift(dt);
+			return;
+		}
 
 		// WASD -> a direction. Right = (1, 0), up-left = (-0.7, -0.7), nothing held = (0, 0).
 		Vector2 direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 
 		// Ease toward full speed in that direction, or ease to a stop.
-		Vector2 target = direction * MaxSpeed;
+		Vector2 target = direction * MaxSpeed * (_shield != null ? ShieldSpeed : 1f);
 		float rate = direction == Vector2.Zero ? Friction : Acceleration;
 		Velocity = Velocity.MoveToward(target, rate * dt);
 
 		// Move by Velocity, sliding along walls instead of sticking to them.
 		MoveAndSlide();
 
-		// Only the visuals turn toward the mouse; the physics body never spins.
-		Vector2 mouse = GetGlobalMousePosition();
-		Vector2 aim = (mouse - GlobalPosition).Normalized();
-		Visual.LookAt(mouse);
+		// Only the visuals turn toward the mouse; the physics body never spins. Holding a shield, slowly.
+		float toMouse = (GetGlobalMousePosition() - GlobalPosition).Angle();
+		Visual.Rotation = _shield != null ? Mathf.RotateToward(Visual.Rotation, toMouse, Mathf.DegToRad(ShieldTurn) * dt) : toMouse;
+		Vector2 aim = Vector2.Right.Rotated(Visual.Rotation);
+		_shield?.Carry(GlobalPosition + aim * ShieldAhead, Visual.Rotation, Velocity);
 
 		// Lean by the cursor's spot on the screen, not in the world: the world spot moves with
 		// the camera, so the lean would feed on itself.
@@ -104,15 +140,31 @@ public partial class Player : Character
 		_camera.Position = (fromCenter * lean).Clamp(-limit, limit);
 
 		// Guns shoot, bats and knives swing, empty hands punch. Single-shot guns fire once per
-		// click; automatic guns and swings keep going while the button is held.
+		// click; automatic guns and swings keep going while the button is held. Holding a shield,
+		// guns still fire, melee can't swing.
+		bool hands = _shield == null;
 		bool swings = Gun.Data is null or { Melee: true };
 		bool trigger = Gun.Data is { Automatic: true } || swings
 			? Input.IsActionPressed("shoot")
 			: Input.IsActionJustPressed("shoot");
-		if (trigger && swings)
+		if (trigger && swings && hands)
 			TrySwing();
-		else if (trigger && HasWeapon && Gun.TryFire())
+		else if (trigger && !swings && Gun.TryFire())
 			Velocity -= aim * Gun.Data.Kickback;
+
+		if (Input.IsActionJustPressed("shield"))
+		{
+			if (hands)
+				GrabShield();
+			else
+				LetGoOfShield();
+		}
+		if (!hands)
+		{
+			if (Input.IsActionJustPressed("grab"))
+				ThrowShield();
+			return; // no picking up or executing with him in your arms
+		}
 
 		// Grab: pick up the gun at your feet (dropping yours there), or throw yours if there's none.
 		if (Input.IsActionJustPressed("grab"))
@@ -190,6 +242,118 @@ public partial class Player : Character
 		}
 		if (_finisher is { FinishBlows: 0 })
 			Act("fin_knife"); // the whole cut, timed to CutAt and CutTime
+	}
+
+	// Pick the nearest downed goon in reach up off the floor and hold him in front of you.
+	private void GrabShield()
+	{
+		_shield = GetTree().GetNodesInGroup("enemies").OfType<Enemy>()
+			.Where(goon => goon.IsDown && !goon.IsDead && goon.GlobalPosition.DistanceTo(GlobalPosition) <= ExecuteRange)
+			.MinBy(goon => goon.GlobalPosition.DistanceTo(GlobalPosition));
+		if (_shield == null)
+			return;
+		_shield.Pinned = true;
+		_shield.Velocity = Vector2.Zero;
+		_shieldHits = 0;
+		_liftLeft = LiftTime;
+		_liftFrom = _shield.GlobalPosition;
+		_shield.LiftUp(LiftTime, Visual.Rotation);
+		Act("shield_grab");
+		_grabSound.Play();
+	}
+
+	// Reach down, grip, pull: he comes up off the floor into your arms.
+	private void Lift(float dt)
+	{
+		Velocity = Vector2.Zero;
+		_liftLeft = Mathf.Max(_liftLeft - dt, 0f);
+		Vector2 held = GlobalPosition + Visual.Transform.X * ShieldAhead;
+		_shield.Carry(_liftFrom.Lerp(held, 1f - _liftLeft / LiftTime), Visual.Rotation, Vector2.Zero);
+		if (_liftLeft > 0f)
+			return;
+		_shield.HoldUp();
+		HoldPose = ShieldPose;
+		Gun.Position = ShieldGunHand;
+		ShakeCamera.Shake(1f);
+	}
+
+	// E again: snap his neck, or, once he's shot up, just let the body drop.
+	private void LetGoOfShield()
+	{
+		if (_shieldHits >= ShieldDropAfter)
+		{
+			DropShield(Visual.Transform.X);
+			return;
+		}
+		_snapLeft = SnapTime;
+		HoldPose = null;
+		Gun.Position = _gunRest;
+		Act("snap");
+		_shield.Flinch(Visual.Transform.Y, 1.5f, bleed: false);
+		_blowSound.Stream = NeckSnap; // its cracks run through the twist
+		_blowSound.PitchScale = 1f;
+		_blowSound.Play();
+	}
+
+	// Right-click holding him: shove him the way you face.
+	private void ThrowShield()
+	{
+		Release().Throw(Visual.Transform.X * ShieldThrowSpeed);
+		Act("shove");
+		_blowSound.Stream = Whoosh;
+		_blowSound.PitchScale = 1f;
+		_blowSound.Play();
+		ShakeCamera.Shake(1f);
+	}
+
+	// Standing still for the snap; he drops at the end.
+	private void Snap(float dt)
+	{
+		Velocity = Vector2.Zero;
+		_snapLeft -= dt;
+		if (_snapLeft > 0f)
+			return;
+		Act(null);
+		ShakeCamera.Shake(1f);
+		DropShield(Visual.Transform.X);
+	}
+
+	// He's dead either way: falls the way you face, face down, no goo.
+	private void DropShield(Vector2 facing)
+	{
+		if (_shield != null)
+			Release().Die(facing, lethal: false);
+	}
+
+	// You're no longer holding him, whatever happens to him next.
+	private Enemy Release()
+	{
+		Enemy body = _shield;
+		_shield = null;
+		_snapLeft = _liftLeft = 0f;
+		HoldPose = null;
+		Gun.Position = _gunRest;
+		return body;
+	}
+
+	// A goon's bullet reached you. From the front, the goon you hold takes it: he jolts and bleeds, and
+	// dies after ShieldHits (a shotgun blast at once, and he takes all of it). Returns whether he took it.
+	public bool ShieldTakes(Vector2 bulletDirection, bool blast)
+	{
+		bool front = Mathf.Abs(Mathf.AngleDifference(Visual.Rotation, (-bulletDirection).Angle())) <= Mathf.DegToRad(ShieldFront / 2f);
+		if (_shield == null || IsDead)
+			return front && blast && Engine.GetPhysicsFrames() == _shieldGoneFrame;
+		if (!front)
+			return false;
+		if (blast || ++_shieldHits >= ShieldHits)
+		{
+			Act(null);
+			_shieldGoneFrame = Engine.GetPhysicsFrames();
+			Release().Die(bulletDirection);
+		}
+		else
+			_shield.Flinch(bulletDirection, 2f, bleed: true);
+		return true;
 	}
 
 	// Measured along where you aim, like a reach in front of your chest.

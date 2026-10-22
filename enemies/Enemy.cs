@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace RentDay;
@@ -44,6 +45,10 @@ public partial class Enemy : Character
 	[Export] public float RandomReaction = 0.15f; // up to this many extra seconds, at random
 	[Export] public float TurnSpeed = 540f;       // degrees per second he can turn while aiming at you
 
+	[ExportGroup("Thrown")]
+	[Export] public float SplatSpeed = 250f;    // thrown straight into a wall at least this fast (pixels per second): he dies on it
+	[Export] public float BowlSpeed = 150f;     // thrown and still this fast: the goon he slides into goes down too
+
 	[ExportGroup("Chase")]
 	[Export] public float ChaseSpeed = 130f;    // running after you
 	[Export] public float ChargeSpeed = 180f;   // with a bat or knife, running at you once he's seen you
@@ -51,7 +56,10 @@ public partial class Enemy : Character
 	[Export] public float SearchTime = 1.5f;    // seconds he looks around an empty spot before giving up
 	[Export] public float SearchSpread = 12f;   // runs to a random spot this close to where he last saw or heard you
 
+	private static readonly AudioStream WallHit = GD.Load<AudioStream>("res://audio/wall_hit.wav");
+
 	private Player _player;
+	private AudioStreamPlayer2D _wallSound;
 	private bool _alerted;          // knows you're around: sees all around him, not just in front
 	private bool _seesYou;
 	private float _reactionLeft = -1f; // counting down to his first shot; below zero = not counting yet
@@ -78,6 +86,8 @@ public partial class Enemy : Character
 		_postAngle = Visual.Rotation;
 		_heading = Vector2.Right.Rotated(_postAngle);
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
+		_wallSound = new AudioStreamPlayer2D { Stream = WallHit };
+		AddChild(_wallSound);
 	}
 
 	// A gunshot went off within earshot, at `where`.
@@ -112,7 +122,23 @@ public partial class Enemy : Character
 			MoveAndSlide();
 			if (!Slumped && GetLastSlideCollision() is { } bump && sliding.Dot(bump.GetNormal()) < -60f
 				&& (PhysicsServer2D.BodyGetCollisionLayer(bump.GetColliderRid()) & Layers.World) != 0)
+			{
+				bool hard = Thrown && sliding.Dot(bump.GetNormal()) < -SplatSpeed;
+				if (Thrown) // the crash; softer and lighter when he only slumps
+				{
+					_wallSound.VolumeDb = hard ? -3f : -12f;
+					_wallSound.PitchScale = hard ? 1f : 1.25f;
+					_wallSound.Play();
+				}
+				if (hard)
+				{
+					Splat(bump.GetNormal());
+					return;
+				}
 				Slump(bump.GetNormal());
+			}
+			if (Thrown)
+				Bowl(sliding);
 			_alerted = true;
 			_reactionLeft = -1f;
 			_route = null; // he slid off his route
@@ -138,6 +164,25 @@ public partial class Enemy : Character
 		IdlePose = pose;
 
 		MoveAndSlide();
+	}
+
+	// Thrown and still flying fast: the first goon he slides into goes down too, and he stops there.
+	private void Bowl(Vector2 sliding)
+	{
+		if (sliding.Length() < BowlSpeed)
+		{
+			Thrown = false; // slowed down: just sliding now
+			return;
+		}
+		Enemy hit = GetTree().GetNodesInGroup("enemies").OfType<Enemy>()
+			.FirstOrDefault(goon => goon != this && !goon.IsDead && !goon.IsDown && !goon.Pinned && goon.GlobalPosition.DistanceTo(GlobalPosition) < 16f);
+		if (hit == null)
+			return;
+		hit.KnockDown(sliding.Normalized());
+		Velocity = Vector2.Zero;
+		Thrown = false;
+		ShakeCamera.Shake(2f);
+		HitStop.Freeze(this, 0.05f);
 	}
 
 	// He sees you: stand still, turn to aim, and shoot once his reaction time has passed.

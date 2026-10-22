@@ -123,6 +123,11 @@ Gameplay rules are in [mechanics/](mechanics/).
   showed 4 blank frames (the player vanished walking with a bat). A forced reimport doesn't fix it,
   because Godot thinks it's current: send that image's `.ctex` and `.md5` in `.godot/imported` to the
   Recycle Bin and rescan.
+- **A build that adds new animations: build, let Godot import, then build again.** The editor reloads a
+  character's frames file (`art/anim/<name>.tres`) when it changes, but if the new strips aren't imported
+  yet the reload fails and it keeps the old copy, which the next game start saves over the build (the
+  new animations vanish, and a missing one left the gun hidden). The second build, once the strips are
+  imported, reloads cleanly.
 - **Fast things skip thin things.** A bullet moves further each frame than a door is thick, so
   bullets check the whole stretch they fly, not just where they land.
 - **The game starts from the main menu (`ui/menu.tscn`);** New game or Continue loads `main.tscn`.

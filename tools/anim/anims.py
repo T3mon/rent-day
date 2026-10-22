@@ -313,6 +313,29 @@ def animations():
                       (blend(grab, cut, 0.6), 80), (cut, 160), ({**cut, 'smear': None}, 180)]
     hold = {'rh': (12, 4), 'lh': (12, -4), 'hands_top': True}
     A['choke'] = [(hold, 90), ({**hold, 'shear': 1.0, 'rh': (12, 5)}, 90), (hold, 90), ({**hold, 'shear': -1.0, 'lh': (12, -5)}, 90)]
+
+    # human shield: he's held 12 px ahead, the left arm locked across his neck; whatever is in the right
+    # hand stays there (a one-handed gun out front). The snap: both hands to his head, a sharp twist.
+    neck = {'lh': (12, 4), 'hands_top': True}
+    A['shield'] = breathe({**neck, 'rh': (11, -6)})
+    A['gun_shield'] = breathe({**neck, 'rh': (15, 11)})  # the gun hand past his right shoulder (Player.ShieldGunHand)
+    A['bat_shield'] = breathe({**bat_rest, **neck})
+    A['knife_shield'] = breathe({**knife_rest, **neck})
+    grip = {'lh': (13, -4), 'rh': (13, 4), 'hands_top': True}
+    twist = {'lh': (15, -1), 'rh': (11, 3), 'shear': 1.5, 'hands_top': True}
+    A['snap'] = [(grip, 60), (blend(grip, twist, 0.5), 40), (twist, 60), ({**twist, 'lh': (15, 0), 'rh': (10, 2), 'shear': 1.0}, 140)]
+    # picking him up off the floor (Player.LiftTime): reach down, grip, pull him up, lock the arm round his neck
+    reach = {'rh': (14, 6), 'lh': (14, -6), 'body': (1, 0), 'head': (1.5, 0), 'shear': 1.0, 'hands_top': True}
+    pull = {'rh': (10, 5), 'lh': (11, -3), 'body': (0.5, 0), 'shear': 0.5, 'hands_top': True}
+    # shoving him away (Player.ThrowShield): both hands into his back, a hard push, back to rest
+    A['shove'] = [({'rh': (11, 6), 'lh': (11, -6), 'hands_top': True}, 40),
+                  ({'rh': (18, 5), 'lh': (18, -5), 'shear': 2.0, 'body': (1, 0), 'hands_top': True}, 60),
+                  ({'rh': (16, 5), 'lh': (16, -5), 'shear': 1.0, 'hands_top': True}, 70), ({'rh': (6, 9), 'lh': (6, -9)}, 60)]
+    A['shield_grab'] = [(reach, 60), ({**reach, 'rh': (12, 5), 'lh': (12, -5), 'shear': 1.5}, 60), (pull, 60),
+                        ({**neck, 'rh': (11, 7)}, 70)]
+    # the goon held up as one: arms pinned to his sides, squirming a little
+    held = {'rh': (-1, 9.5), 'lh': (-1, -9.5), 'head': (0.5, 0)}
+    A['held'] = [(held, 400), ({**held, 'shear': 0.8, 'rh': (0, 10)}, 250), (held, 400), ({**held, 'shear': -0.8, 'lh': (0, -10)}, 250)]
     leg = lambda f: ((-2, 4), f)
     A['kick'] = [({'legs': (leg((-6, 6)),), 'shear': -1.0}, 40), ({'legs': (leg((16, 3)),), 'shear': 2.0}, 50),
                  ({'legs': (leg((15, 3)),), 'shear': 1.5}, 70), ({'legs': (leg((4, 5)),)}, 60)]
@@ -356,6 +379,8 @@ def lying_animations():
     L['slump'] = [('slump', 500), ('slump2', 500)]
     L['slump_getup'] = [('slump_up1', 90), ('slump_up2', 90), ('crouch', 80)]
     L['dead_lean'] = [('dead_lean', 1000)]
+    # thrown into a wall: flat against it, arms flung out, then sliding down it into a heap
+    L['splat'] = [('splat', 70), ('splat_slide1', 90), ('splat_slide2', 100), ('dead_wall', 1000)]
     L['dead'] = [(0, 1000), (1, 1000), (2, 1000),
                  # sprawled on the back: arms flung up, legs wide
                  (dict(torso_len=16, head_x=12, legs=((-8, 3.5, -19, 11), (-8, -3.5, -18, -12)), hands=((15, 13), (14, -15))), 1000),
@@ -373,6 +398,10 @@ FLOOR_POSES = {
     'slump_up1': {'legs': (((0, 4), (8, 5)), ((0, -4), (8, -5))), 'rh': (-2, 11), 'lh': (-2, -11), 'head': (1, 1), 'turn': 0.2},
     'slump_up2': {'legs': (((-1, 4), (3, 5)), ((-1, -4), (3, -5))), 'rh': (-1, 11), 'lh': (-1, -11), 'body': (-0.5, 0)},
     'dead_lean': {'legs': (((0, 4), (14, 6)), ((0, -4), (13, -6))), 'rh': (7, 13), 'lh': (5, -13), 'head': (2.5, 3), 'turn': 0.8},
+    'splat': {'rh': (-2, 13), 'lh': (-2, -13), 'body': (-1.5, 0), 'head': (-1.5, 0)},
+    'splat_slide1': {'legs': (((0, 4), (6, 6)), ((0, -4), (6, -6))), 'rh': (-1, 12.5), 'lh': (-1, -12.5), 'head': (0, 0.5)},
+    'splat_slide2': {'legs': (((0, 4), (11, 6)), ((0, -4), (11, -6))), 'rh': (1, 12), 'lh': (0, -12), 'head': (1, 1.5), 'turn': 0.3},
+    'dead_wall': {'legs': (((0, 4), (12, 9)), ((0, -4), (13, -3))), 'rh': (6, 13), 'lh': (-1, -12), 'body': (0, 1), 'head': (2.5, 4), 'turn': 1.0},
 }
 
 

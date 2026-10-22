@@ -99,6 +99,7 @@ public partial class Gun : Node2D
 		{
 			var bullet = BulletScene.Instantiate<Bullet>();
 			bullet.CollisionMask = mask;
+			bullet.Blast = Data.Pellets > 1;
 			bullet.Speed = Data.BulletSpeed * (1f + (float)GD.RandRange(-Data.SpeedVariation, Data.SpeedVariation));
 			bullet.Lifetime = Data.Range / bullet.Speed;
 
