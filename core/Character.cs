@@ -80,6 +80,7 @@ public partial class Character : CharacterBody2D
 	private bool _slumped;       // knocked into a wall: sitting against it
 	private int _deadPose;       // lie_dead's frame shown once the fall is over
 	private int _livingZ;
+	private int _legFrames;
 	private Tween _flinch;
 
 	public override void _Ready()
@@ -101,6 +102,7 @@ public partial class Character : CharacterBody2D
 		if (Look != null)
 			_bodySprite.SpriteFrames = _legs.SpriteFrames = _corpseBody.SpriteFrames = Look;
 		_legs.Animation = "legs";
+		_legFrames = _legs.SpriteFrames.GetFrameCount("legs");
 		_corpseBody.AnimationFinished += () =>
 		{
 			if (_corpseBody.Animation == "lie_fall") // landed: the pose he stays in
@@ -113,6 +115,7 @@ public partial class Character : CharacterBody2D
 	public void Equip(WeaponData data, int ammo, bool playSound = false)
 	{
 		Gun.Equip(data, ammo, playSound);
+		FitAnimations();
 		ResetSwing();
 	}
 
@@ -185,8 +188,7 @@ public partial class Character : CharacterBody2D
 			// Legs point where we're going, which may differ from where we aim.
 			_legs.Rotation = Velocity.Angle();
 			_walked += speed * (float)delta;
-			int frames = _legs.SpriteFrames.GetFrameCount("legs");
-			_legs.Frame = (int)(_walked * frames / Stride) % frames;
+			_legs.Frame = (int)(_walked * _legFrames / Stride) % _legFrames;
 			int step = (int)(_walked / StepLength);
 			for (; _step < step; _step++) // a slow frame can cover several steps: each gets its print, back along the path
 				Footstep(GlobalPosition - Velocity.Normalized() * (step - _step - 1) * StepLength);

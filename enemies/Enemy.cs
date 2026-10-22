@@ -60,6 +60,7 @@ public partial class Enemy : Character
 
 	private Player _player;
 	private AudioStreamPlayer2D _wallSound;
+	private StringName _poseName;   // Pose's animation ("smoke"...); null = none
 	private bool _alerted;          // knows you're around: sees all around him, not just in front
 	private bool _seesYou;
 	private float _reactionLeft = -1f; // counting down to his first shot; below zero = not counting yet
@@ -86,6 +87,7 @@ public partial class Enemy : Character
 		_postAngle = Visual.Rotation;
 		_heading = Vector2.Right.Rotated(_postAngle);
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
+		_poseName = Pose == Idle.None ? null : Pose.ToString().ToLowerInvariant();
 		_wallSound = new AudioStreamPlayer2D { Stream = WallHit };
 		AddChild(_wallSound);
 	}
@@ -156,10 +158,10 @@ public partial class Enemy : Character
 		else
 			FollowRoutine(dt);
 
-		string pose = Pose == Idle.None || _alerted || Velocity != Vector2.Zero ? null : Pose.ToString().ToLowerInvariant();
+		StringName pose = _alerted || Velocity != Vector2.Zero ? null : _poseName;
 		if (Pose == Idle.Sit) // sitting on furniture: he can be in it until something alerts him, then he gets up off it
 			CollisionMask = _alerted ? CollisionMask | Layers.Furniture : CollisionMask & ~Layers.Furniture;
-		if (IdlePose == "smoke" && pose == null && _alerted) // flicks the cigarette away
+		if (Pose == Idle.Smoke && IdlePose != null && pose == null && _alerted) // flicks the cigarette away
 			Shell.Eject(this, GlobalPosition + Vector2.Down.Rotated(Visual.GlobalRotation) * 12f, Visual.GlobalRotation, Colors.White);
 		IdlePose = pose;
 

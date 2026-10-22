@@ -19,12 +19,15 @@ public static class LevelGrid
 	private static Rect2 _floor;
 	private static ulong _readyFrame;
 	private static AStarGrid2D _grid;
+	private static string _gridFor; // the floor scene _grid was made for
 	private static PhysicsShapeQueryParameters2D _query;
 
 	// floorArea is in world pixels (the level's root sits at (0, 0)).
 	public static void Build(Node2D level, Rect2 floorArea)
 	{
 		_level = level;
+		if (_grid != null && level.SceneFilePath == _gridFor)
+			return; // the same floor again (a restart): walls and furniture haven't moved, so the squares still hold
 		_floor = floorArea;
 		_grid = null;
 		_readyFrame = Engine.GetPhysicsFrames() + 2; // walls are only solid to queries after a physics step, so the squares are checked on first use
@@ -96,6 +99,7 @@ public static class LevelGrid
 					_grid.SetPointSolid(cell);
 			}
 		}
+		_gridFor = _level.SceneFilePath;
 		return true;
 	}
 

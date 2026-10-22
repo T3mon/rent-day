@@ -15,10 +15,10 @@ public partial class Character
 	private const float DustKick = 1800f;           // speed change (pixels per second, per second) that kicks up dust
 
 	// Standing still, this plays instead of the usual standing animation (a goon's smoke, phone...); null = none.
-	protected string IdlePose;
+	protected StringName IdlePose;
 
 	// Holding a human shield (ShieldPose), or held up as one ("held"): this plays walking or standing; null = none.
-	protected string HoldPose;
+	protected StringName HoldPose;
 	protected string ShieldPose => Kind + "shield";
 
 	private string _action;               // the one-off animation playing, if any
@@ -32,8 +32,19 @@ public partial class Character
 	private float _throwFollow;
 	private Vector2 _pushDirection;
 
-	// Which set of animations fits what's in hand: "" bare fists, "gun_", "bat_", "knife_".
-	private string Kind => Gun.Data == null ? "" : Gun.Data.Melee ? Gun.Data.Name.ToLowerInvariant() + "_" : "gun_";
+	private static readonly StringName Sit = "sit";
+
+	// Which set of animations fits what's in hand: "" bare fists, "gun_", "bat_", "knife_", and its
+	// standing and walking animations. Set on every Equip, so the names aren't built anew every frame.
+	private string Kind { get; set; } = "";
+	private StringName _idle, _walk;
+
+	private void FitAnimations()
+	{
+		Kind = Gun.Data == null ? "" : Gun.Data.Melee ? Gun.Data.Name.ToLowerInvariant() + "_" : "gun_";
+		_idle = Kind + "idle";
+		_walk = Kind + "walk";
+	}
 
 	// Plays a one-off animation of the upper body from the start; walking or standing takes over
 	// when it ends. A looping one (choke) plays until Act(null).
@@ -62,17 +73,17 @@ public partial class Character
 				_bodySprite.Play(HoldPose);
 			return;
 		}
-		string pose = moving ? null : IdlePose;
+		StringName pose = moving ? null : IdlePose;
 		Gun.Visible = Kind == "gun_" && pose == null; // bats and knives are part of the animation
-		_legs.Visible = pose != "sit";
+		_legs.Visible = pose != Sit;
 		if (moving)
 		{
-			_bodySprite.Animation = Kind + "walk";
+			_bodySprite.Animation = _walk;
 			_bodySprite.Pause();
 			_bodySprite.Frame = _legs.Frame; // the arms swing in step with the feet
 		}
-		else if (!_bodySprite.IsPlaying() || _bodySprite.Animation != (pose ?? Kind + "idle"))
-			_bodySprite.Play(pose ?? Kind + "idle");
+		else if (!_bodySprite.IsPlaying() || _bodySprite.Animation != (pose ?? _idle))
+			_bodySprite.Play(pose ?? _idle);
 	}
 
 	// Walked into a door: a shoulder against it, toward `direction`, and an empty hand on it.

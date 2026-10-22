@@ -1,7 +1,7 @@
 [gd_resource type="AudioStreamRandomizer" format=3]
 
-[ext_resource type="AudioStream" path="res://audio/struggle_1.ogg" id="1"]
-[ext_resource type="AudioStream" path="res://audio/struggle_2.ogg" id="2"]
+[ext_resource type="AudioStream" path="res://audio/struggle_1.wav" id="1"]
+[ext_resource type="AudioStream" path="res://audio/struggle_2.wav" id="2"]
 
 [resource]
 random_pitch = 1.15

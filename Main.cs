@@ -22,6 +22,9 @@ public partial class Main : Node2D
 
 	public static ulong FloorStarted { get; private set; } // engine ticks when this floor began
 
+	// Every goon on this floor is dead (the stairs up open).
+	public bool Cleared { get; private set; }
+
 	private Label _message;
 	private Label _ammo;
 	private ColorRect _fade;
@@ -188,6 +191,7 @@ public partial class Main : Node2D
 	{
 		if (_player.IsDead || !GetTree().GetNodesInGroup("enemies").All(node => ((Enemy)node).IsDead))
 			return;
+		Cleared = true;
 		Music.Clear();
 		if (_floor == Floors.Length - 1)
 		{

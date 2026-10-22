@@ -42,15 +42,17 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`effects/`**: particles, screen shake (`ShakeCamera.Shake(pixels)`), hit stop (`HitStop.Freeze`),
   `Effects.Spawn` for dropping an effect into the level, and spent casings (`Shell.Eject`, one per shot).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
-  clears (a hidden `SubViewport`), so splats cost nothing once they've landed. Splats are clipped
+  clears (a hidden `SubViewport`, redrawn only on frames where a splat lands), so splats cost nothing once they've landed. Splats are clipped
   to the floor they can reach without crossing a wall. Anything that bleeds calls the static
   `GooCanvas.Splat` / `Spray` / `Bleed`; `Main` builds one per level, like the level grid.
-- **`audio/`**: sounds. A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
+- **`audio/`**: sounds: effects as WAV (cheapest to play; Godot packs them small), music as MP3 (a WAV
+  song would be ten times the size). A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
   listing its takes; it picks one and shifts the pitch a little on every play.
 - **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelGrid.cs`** is the map goons
   route on: 8 px squares, closed where a goon's body (plus a margin) would touch a wall, furniture or
   the edge of the floor. Routes come from Godot's `AStarGrid2D` and are pulled straight wherever a
-  goon fits all the way. It checks the squares on first use, once the walls are solid to physics queries.
+  goon fits all the way. It checks the squares on first use, once the walls are solid to physics queries
+  (a 20 ms frame), and keeps them when the same floor restarts: walls and furniture never move.
 - **`ui/TapeMenu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
   drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
   beside them). Settings are placeholders: they keep their values while the game runs, nothing more.

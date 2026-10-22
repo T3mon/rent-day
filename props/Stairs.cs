@@ -21,7 +21,7 @@ public partial class Stairs : Area2D
 	{
 		if (!LeadsUp)
 			return;
-		_open = GetTree().GetNodesInGroup("enemies").OfType<Enemy>().All(goon => goon.IsDead);
+		_open = GetTree().CurrentScene is Main { Cleared: true };
 		if (!_open)
 			return;
 		_time += (float)delta;

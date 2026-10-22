@@ -103,7 +103,7 @@ public partial class GooCanvas : Node2D
 			TransparentBg = true,
 			Disable3D = true,
 			RenderTargetClearMode = SubViewport.ClearMode.Once, // clear when made, then never again
-			RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
+			RenderTargetUpdateMode = SubViewport.UpdateMode.Once, // drawn again only when a splat lands (Paint)
 		};
 		AddChild(_canvas);
 		_canvas.CanvasTransform = Transform2D.Identity.Translated(-_area.Position); // world pixels in, canvas pixels out (only once it's in the tree)
@@ -198,6 +198,7 @@ public partial class GooCanvas : Node2D
 			Material = clip ?? _noClip,
 		};
 		_canvas.AddChild(stamp);
+		_canvas.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
 		_painted.Add(stamp);
 		if (wet)
 			MarkWet(at, size * 0.35f, strength);

@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://buqsfaam2a162" path="res://player/Player.cs" id="1_oul6g"]
 [ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="3_rgyib"]
 [ext_resource type="Script" uid="uid://c638lssqxtywo" path="res://effects/ShakeCamera.cs" id="11_yllr7"]
+[ext_resource type="AudioStream" uid="uid://1kjf6t83mhae" path="res://audio/grab.wav" id="12_kb6p2"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="12_pickup"]
-[ext_resource type="AudioStream" uid="uid://bcpbs1cmpqy8u" path="res://audio/grab.ogg" id="14_grab"]
 [ext_resource type="AudioStream" path="res://audio/struggle.tres" id="15_struggle"]
 [ext_resource type="AudioStream" path="res://audio/body_fall.tres" id="16_fall"]
 [ext_resource type="AudioStream" uid="uid://dantb2nf653lt" path="res://audio/finish/final.wav" id="17_final"]
@@ -26,8 +26,8 @@ motion_mode = 1
 script = ExtResource("1_oul6g")
 BlowCracks = [ExtResource("19_crack"), ExtResource("20_crack"), ExtResource("21_crack"), ExtResource("22_crack")]
 Look = ExtResource("anim")
-PickupScene = ExtResource("12_pickup")
 Stride = 133.0
+PickupScene = ExtResource("12_pickup")
 Fists = ExtResource("23_fists")
 
 [node name="Legs" type="AnimatedSprite2D" parent="." unique_id=884256833]
@@ -69,7 +69,7 @@ script = ExtResource("11_yllr7")
 stream = ExtResource("17_final")
 
 [node name="GrabSound" type="AudioStreamPlayer2D" parent="." unique_id=1778043271]
-stream = ExtResource("14_grab")
+stream = ExtResource("12_kb6p2")
 volume_db = -4.0
 
 [node name="StruggleSound" type="AudioStreamPlayer2D" parent="." unique_id=907422200]
