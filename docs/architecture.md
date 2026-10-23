@@ -34,16 +34,18 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`weapons/`**: `WeaponData` is one weapon's settings, saved as a data file per weapon (`*.tres`);
   melee weapons (bat, knife, and the player's fists) tick `Melee`. `Gun` is the weapon in a hand and
   does the shooting. `Bullet` flies and hits. `WeaponPickup` is
-  a gun on the floor or in the air (dropped or thrown).
+  a gun on the floor or in the air (dropped or thrown). On the floor a weapon is drawn the size it is
+  in hand, with no outline, over its shadow. Its floor picture (`FloorLook`) is seen from the side, so
+  a pistol shows its grip.
 - **Props, walls and floors** are generated too: **`tools/props/build.py`** (Python with Pillow) draws
   every `props/<name>.png`, the wall tiles `levels/walls3.png` and the floor tiles `levels/floors3.png`;
   rebuild with `python tools/props/build.py` (or name some props: `... build.py sofa bed`).
   - The look: real shapes and materials (dark wood with grain, velvet, leather, porcelain, chrome) lit by
-    the room's neon, a faint cyan on top and left edges and pink on bottom and right, glowing only where
-    something gives off light (lamps, screens, LED strips). Glowing sprites are padded with see-through
-    pixels, centred on the body, so swapping art never moves a prop.
+	the room's neon, a faint cyan on top and left edges and pink on bottom and right, glowing only where
+	something gives off light (lamps, screens, LED strips). Glowing sprites are padded with see-through
+	pixels, centred on the body, so swapping art never moves a prop.
   - What stands and what lies flat must read at a glance: furniture (`props/Prop.cs`, a `StaticBody2D`
-    on the furniture layer with collision boxes) casts a shadow down-right on screen however it's
+	on the furniture layer with collision boxes) casts a shadow down-right on screen however it's
     turned, as long as its `Height` (3 low, like beds and tables; 4 counters and safes; 6 tall, like
     wardrobes, fridges and arcades). Rugs (`rug_*`, z 0: under the goo and everyone) and floor clutter
     (z 2: the keytar, pizza boxes, the duffel bag) cast none, and are walked over. Windows sit on the outer
@@ -52,9 +54,9 @@ Gameplay rules are in [mechanics/](mechanics/).
     them, with a square post on every corner, junction and wall end. The sheet: 16 columns, one per
     neighbour mask (a wall north 1, east 2, south 4, west 8). Rows: 0 drywall (white board, yellow
     insulation, studs), 1 outer walls (brick), 2 the drop shadow, 3 concrete block, 4 white painted brick,
-    5 timber. Each inner wall's material is picked by the floors beside it: block next to bathrooms and
-    kitchens (tiled floors), drywall along hallways, timber next to wooden floors, painted brick
-    otherwise; corners and junctions take what most of the walls running into them are. Changing a wall's
+	5 timber. Each inner wall's material is picked by the floors beside it: block next to bathrooms and
+	kitchens (tiled floors), drywall along hallways, timber next to wooden floors, painted brick
+	otherwise; corners and junctions take what most of the walls running into them are. Changing a wall's
     material is just painting its cells with the same column on another row.
   - Floors: rows 0 and 1 the street and sidewalk; rows 2 and 3 sixteen room floors (oak, honey and cherry
     planks, parquet, red, purple, blue and teal carpet, pink and pool tiles, black and white checker, terracotta,

@@ -201,18 +201,18 @@ position = Vector2(700, 300)
 rotation = -1.570796
 
 [node name="Bathtub" parent="Props" unique_id=101172993 instance=ExtResource("p_bathtub")]
-position = Vector2(284, 492)
+position = Vector2(284, 466)
 
 [node name="Toilet" parent="Props" unique_id=357173446 instance=ExtResource("p_toilet")]
 position = Vector2(330, 532)
 rotation = 3.141593
 
 [node name="Sink" parent="Props" unique_id=1713827851 instance=ExtResource("p_sink")]
-position = Vector2(420, 532)
+position = Vector2(409, 539)
 rotation = 3.141593
 
 [node name="Sink2" parent="Props" unique_id=618291277 instance=ExtResource("p_sink")]
-position = Vector2(440, 532)
+position = Vector2(437, 539)
 rotation = 3.141593
 
 [node name="Counter3" parent="Props" unique_id=2059820987 instance=ExtResource("p_counter")]
@@ -245,8 +245,9 @@ rotation = 3.141593
 position = Vector2(412, 122)
 
 [node name="WeightBench" parent="Props" unique_id=535585112 instance=ExtResource("29_bt2oj")]
-position = Vector2(609, 152)
+position = Vector2(700, 152)
 rotation = 3.141593
+script = null
 
 [node name="Keytar" parent="Props" unique_id=82180457 instance=ExtResource("30_2ci65")]
 position = Vector2(608, 120)

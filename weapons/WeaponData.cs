@@ -12,7 +12,7 @@ public partial class WeaponData : Resource
 	[ExportGroup("Looks")]
 	[Export] public string Name = "Pistol";      // a melee weapon's animations are named after it (bat_swing...), see tools/anim
 	[Export] public Texture2D Look;              // drawn in the hand
-	[Export] public Texture2D FloorLook;         // drawn on the floor (with a light rim, so it stands out)
+	[Export] public Texture2D FloorLook;         // drawn on the floor, seen from the side, the same size as in hand
 	[Export] public Vector2 HoldOffset;          // where the picture's centre sits, measured from the hand
 	[Export] public Vector2 Muzzle;              // where bullets come out, measured from the hand
 
