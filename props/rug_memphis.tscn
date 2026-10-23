@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://props/rug_memphis.png" id="1_tex"]
+
+[node name="RugMemphis" type="Sprite2D"]
+z_as_relative = false
+texture = ExtResource("1_tex")

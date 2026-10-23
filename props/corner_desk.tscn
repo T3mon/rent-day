@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://props/corner_desk.png" id="1_tex"]
+[ext_resource type="Script" path="res://props/Prop.cs" id="p_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_a"]
+size = Vector2(46, 14)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b"]
+size = Vector2(14, 30)
+
+[node name="CornerDesk" type="StaticBody2D"]
+script = ExtResource("p_script")
+Height = 3.0
+collision_layer = 16
+collision_mask = 0
+
+[node name="Shadow" type="Sprite2D" parent="."]
+self_modulate = Color(0, 0, 0, 0.5)
+position = Vector2(2, 2)
+texture = ExtResource("1_tex")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -8)
+shape = SubResource("RectangleShape2D_a")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="."]
+position = Vector2(16, 0)
+shape = SubResource("RectangleShape2D_b")

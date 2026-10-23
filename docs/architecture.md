@@ -35,6 +35,31 @@ Gameplay rules are in [mechanics/](mechanics/).
   melee weapons (bat, knife, and the player's fists) tick `Melee`. `Gun` is the weapon in a hand and
   does the shooting. `Bullet` flies and hits. `WeaponPickup` is
   a gun on the floor or in the air (dropped or thrown).
+- **Props, walls and floors** are generated too: **`tools/props/build.py`** (Python with Pillow) draws
+  every `props/<name>.png`, the wall tiles `levels/walls3.png` and the floor tiles `levels/floors3.png`;
+  rebuild with `python tools/props/build.py` (or name some props: `... build.py sofa bed`).
+  - The look: real shapes and materials (dark wood with grain, velvet, leather, porcelain, chrome) lit by
+    the room's neon, a faint cyan on top and left edges and pink on bottom and right, glowing only where
+    something gives off light (lamps, screens, LED strips). Glowing sprites are padded with see-through
+    pixels, centred on the body, so swapping art never moves a prop.
+  - What stands and what lies flat must read at a glance: furniture (`props/Prop.cs`, a `StaticBody2D`
+    on the furniture layer with collision boxes) casts a shadow down-right on screen however it's
+    turned, as long as its `Height` (3 low, like beds and tables; 4 counters and safes; 6 tall, like
+    wardrobes, fridges and arcades). Rugs (`rug_*`, z 0: under the goo and everyone) and floor clutter
+    (z 2: the keytar, pizza boxes, the duffel bag) cast none, and are walked over. Windows sit on the outer
+    walls (z 5, no collision); the concrete pillar is on the world layer like a wall (stops bullets and sight).
+  - Walls are drawn as seen cut through from above: a dark outline, the two faces, and the core between
+    them, with a square post on every corner, junction and wall end. The sheet: 16 columns, one per
+    neighbour mask (a wall north 1, east 2, south 4, west 8). Rows: 0 drywall (white board, yellow
+    insulation, studs), 1 outer walls (brick), 2 the drop shadow, 3 concrete block, 4 white painted brick,
+    5 timber. Each inner wall's material is picked by the floors beside it: block next to bathrooms and
+    kitchens (tiled floors), drywall along hallways, timber next to wooden floors, painted brick
+    otherwise; corners and junctions take what most of the walls running into them are. Changing a wall's
+    material is just painting its cells with the same column on another row.
+  - Floors: rows 0 and 1 the street and sidewalk; rows 2 and 3 sixteen room floors (oak, honey and cherry
+    planks, parquet, red, purple, blue and teal carpet, pink and pool tiles, black and white checker, terracotta,
+    cream stone, lavender lino, purple velvet, polished concrete). Every room gets its own, and rooms side
+    by side never share one, so the floor plan reads by colour.
 - **`props/Stairs.cs`**: stairs. Stairs up are the floor's exit: they open once every goon is dead and
   call `Main.NextFloor`. Rules in [mechanics/floors.md](mechanics/floors.md).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
@@ -80,7 +105,11 @@ Gameplay rules are in [mechanics/](mechanics/).
 - A new visual effect: its own scene, spawned with `Effects.Spawn` into the level (never as a
   child of a character, or it moves and dies with them).
 - A new floor: a level scene in `levels/` (floor, walls, props, doors, guns, goons, the player at the
-  arrival stairs), added to Main's `Floors` in `main.tscn`.
+  arrival stairs), added to Main's `Floors` in `main.tscn`. Keep a door's whole swing, doorways and the
+  stairs clear of furniture, and leave goons a way round it: a square of their route map closes
+  when furniture comes within 10 px of its middle, so gaps under about 24 px are walls to them.
+- A new prop: a drawing function and a line in `PROPS` in `tools/props/build.py`, then its scene in
+  `props/` (copy one of the same kind).
 - A new testing switch: a field in `DevSettings`, an `if` where it matters, and a line in
   `ActiveSummary()`.
 - A new shader: its path in `TapeMenu.Shaders` too, so the loading screen builds it up front (else it
@@ -92,7 +121,7 @@ Gameplay rules are in [mechanics/](mechanics/).
 - Physics layers (named in Project Settings): world, player, enemies, bullets, furniture, doors.
   `core/Layers.cs` mirrors them in code. Furniture blocks walking only; doors block bullets and
   sight only.
-- Draw order, bottom to top: floor, goo, corpses and floor guns, furniture and doors (bodies and goo
+- Draw order, bottom to top: floor, rugs, goo, corpses and floor guns, furniture and doors (bodies and goo
   go under them), the living, walls (over everyone, so brushing a wall never looks like being stuck
   in it), bullets and effects. Set with each scene's z index.
 - Tuning values live in the Inspector (scene and data files), not in code.

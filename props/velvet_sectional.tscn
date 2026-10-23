@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://props/velvet_sectional.png" id="1_tex"]
+[ext_resource type="Script" path="res://props/Prop.cs" id="p_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_a"]
+size = Vector2(46, 17)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b"]
+size = Vector2(17, 38)
+
+[node name="VelvetSectional" type="StaticBody2D"]
+script = ExtResource("p_script")
+Height = 3.0
+collision_layer = 16
+collision_mask = 0
+
+[node name="Shadow" type="Sprite2D" parent="."]
+self_modulate = Color(0, 0, 0, 0.5)
+position = Vector2(2, 2)
+texture = ExtResource("1_tex")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -10.5)
+shape = SubResource("RectangleShape2D_a")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="."]
+position = Vector2(-14.5, 0)
+shape = SubResource("RectangleShape2D_b")

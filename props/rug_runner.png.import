@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp7gp4x1klgdh"
-path="res://.godot/imported/floors2.png-16ea4ea9f072022c48aa8a8a0ddfeeb2.ctex"
+uid="uid://btkcuimyw3vng"
+path="res://.godot/imported/rug_runner.png-bfd92d9effe26334e2432c6e088849d6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://levels/floors2.png"
-dest_files=["res://.godot/imported/floors2.png-16ea4ea9f072022c48aa8a8a0ddfeeb2.ctex"]
+source_file="res://props/rug_runner.png"
+dest_files=["res://.godot/imported/rug_runner.png-bfd92d9effe26334e2432c6e088849d6.ctex"]
 
 [params]
 
