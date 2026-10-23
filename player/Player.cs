@@ -166,19 +166,14 @@ public partial class Player : Character
 			return; // no picking up or executing with him in your arms
 		}
 
-		// Grab: pick up the gun at your feet (dropping yours there), or throw yours if there's none.
+		// Grab: throw yours toward the mouse, and pick up the gun at your feet if there is one.
 		if (Input.IsActionJustPressed("grab"))
 		{
 			WeaponPickup gunAtFeet = WeaponPickup.Nearest(GetTree(), GlobalPosition, PickupRange);
-			if (gunAtFeet != null)
-			{
-				DropWeapon(Vector2.Zero);
-				PickUp(gunAtFeet);
-			}
-			else if (HasWeapon)
-			{
+			if (HasWeapon)
 				DropWeapon(aim * ThrowSpeed + Velocity, thrown: true);
-			}
+			if (gunAtFeet != null)
+				PickUp(gunAtFeet);
 		}
 
 		if (Input.IsActionJustPressed("execute"))

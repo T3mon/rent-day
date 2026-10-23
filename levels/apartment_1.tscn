@@ -17,10 +17,10 @@
 [ext_resource type="PackedScene" path="res://props/desk.tscn" id="28_r"]
 [ext_resource type="PackedScene" path="res://props/office_chair.tscn" id="29_r"]
 [ext_resource type="PackedScene" path="res://props/car.tscn" id="31_r"]
-[ext_resource type="SpriteFrames" path="res://art/anim/goon_c.tres" id="34_24og6"]
-[ext_resource type="SpriteFrames" path="res://art/anim/goon_d.tres" id="35_avq43"]
+[ext_resource type="SpriteFrames" uid="uid://caxniidqnw0hv" path="res://art/anim/goon_c.tres" id="34_24og6"]
+[ext_resource type="SpriteFrames" uid="uid://c7hl8t1v25fg4" path="res://art/anim/goon_d.tres" id="35_avq43"]
 [ext_resource type="Resource" uid="uid://cpxggc76wa3it" path="res://weapons/bat.tres" id="bat"]
-[ext_resource type="SpriteFrames" path="res://art/anim/goon_b.tres" id="b_look"]
+[ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/goon_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
 [ext_resource type="Resource" path="res://weapons/knife.tres" id="knife"]
@@ -350,7 +350,7 @@ Look = ExtResource("34_24og6")
 StartWeapon = ExtResource("uzi")
 
 [node name="Enemy11" parent="." unique_id=1931120906 instance=ExtResource("enemy")]
-position = Vector2(841, 450)
+position = Vector2(424, 431)
 Pose = 1
 Look = ExtResource("b_look")
 StartWeapon = ExtResource("bat")

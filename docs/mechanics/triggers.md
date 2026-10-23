@@ -28,7 +28,7 @@ What you hold decides: a gun shoots, a bat or knife swings, empty hands punch.
 
 One button does two jobs, depending on what is under your feet:
 
-1. **A weapon lies within reach:** you pick it up. The one you were holding drops where you stand, with its remaining ammo.
+1. **A weapon lies within reach:** you pick it up. The one you were holding is thrown toward the mouse, with its remaining ammo, like any throw.
 2. **Nothing within reach, and you hold one:** you throw it toward the mouse. A thrown weapon can knock a goon down; a thrown knife kills (see [goons.md](goons.md)).
 
 Throwing does nothing if you hold nothing.
@@ -41,7 +41,7 @@ Throwing does nothing if you hold nothing.
 
 ## Swapping
 
-Picking up a gun while holding one swaps them: the held gun lands at your feet.
+Picking up a gun while holding one swaps them: the held gun is thrown toward the mouse, so it can knock down (a knife: kill) a goon in the way.
 
 ## Pickup sound
 
