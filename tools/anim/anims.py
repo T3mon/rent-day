@@ -362,6 +362,16 @@ def animations():
     talk = {}
     A['talk'] = [(talk, 500), ({'rh': (6, 11)}, 150), ({'rh': (10, 9)}, 300), ({'rh': (8, 10), 'head': (0.5, 0)}, 200),
                  ({'rh': (11, 8)}, 300), ({'rh': (5, 11)}, 200), (talk, 400), ({'head': (0.5, 0)}, 300)]
+    # getting up out of those when something alerts him: short enough to finish inside his reaction time
+    A['sit_up'] = [({'legs': sit_legs, 'rh': (9, 7), 'lh': (9, -7), 'shear': 1.5, 'body': (1, 0), 'head': (1.5, 0)}, 60),
+                   ({'legs': (((-1, 4), (6, 5)), ((-1, -4), (6, -5))), 'rh': (7, 8), 'lh': (7, -8), 'shear': 1.0,
+                     'body': (1, 0), 'head': (1, 0)}, 60),
+                   ({'legs': (((-1, 4), (2, 5)), ((-1, -4), (2, -5))), 'rh': (3, 10), 'lh': (3, -10), 'shear': 0.5,
+                     'body': (0.5, 0)}, 60),
+                   (fists, 60)]
+    A['hide_up'] = [(blend(hide, fists, 0.35), 60), (blend(hide, fists, 0.75), 60), (fists, 40)]
+    A['lean_off'] = [({'shear': 1.0, 'body': (0.5, 0), 'rh': (6, 2), 'lh': (6, -2), 'turn': 0.1}, 60),
+                     ({'shear': 0.5, 'body': (1, 0), 'rh': (3, 9), 'lh': (3, -9)}, 60), (fists, 60)]
 
     return A
 

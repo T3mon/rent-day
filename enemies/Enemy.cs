@@ -12,11 +12,15 @@ namespace RentDay;
 // Patrolling and wandering goons hear your gunshots and run to where the shot came from.
 // When a goon sees you he stops, turns to aim, and fires after a short reaction time: longer
 // when you're far away or behind him, with a little randomness. That delay is your window.
-// After that he keeps firing at his gun's goon pace for as long as he sees you.
-// A goon with a bat or knife instead runs at you after that delay and swings once you're in reach.
-// If he loses you, he runs to around where he last saw or heard you (each goon to a slightly
-// different spot, so they don't pile up), on a route around walls (see LevelGrid). If you're not there, he
+// After that he keeps firing at his gun's goon pace for as long as he sees you, walking at you
+// until he's close. A goon with a bat or knife instead runs at you and swings once you're in reach.
+// He notices you all around him, but only as far as about the screen reaches to your side. Calm, he
+// only looks around every half second and takes a moment to react, so you can sneak up on him.
+// If he loses you, he runs to around where he last saw or heard you (each goon to a different spot,
+// so they don't pile up), on a route around walls (see LevelGrid). If you're not there, he
 // looks around for a moment and goes back to his routine (a static goon returns to his post).
+// Goons shoulder each other apart rather than stand inside one another. One standing where he
+// doesn't fit (sitting in a couch, slumped against a wall) first steps out onto open floor.
 // A goon whose weapon got knocked away runs for the nearest weapon he can see.
 // Knocked down into a wall, he sits slumped against it instead of lying flat.
 // Pose is only the look: what he does while calm and standing still (smoking, on the phone...).
@@ -35,8 +39,9 @@ public partial class Enemy : Character
 	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking
 
 	[ExportGroup("Senses")]
-	[Export] public float SightRange = 300f;    // pixels
-	[Export] public float FieldOfView = 140f;   // degrees he can see while unaware
+	[Export] public float SightRange = 183f;    // pixels, all around him; the screen reaches 200 to your side, 112 up and down
+	[Export] public float LookEvery = 0.5f;     // calm, he only looks around this often (seconds), so you can sneak up between looks
+	[Export] public float NoticeTime = 0.25f;   // calm, seconds from spotting you to reacting; he carries on until then
 
 	[ExportGroup("Reaction")]
 	[Export] public float ReactionTime = 0.3f;    // seconds before his first shot when you're close and in front of him
@@ -53,18 +58,27 @@ public partial class Enemy : Character
 	[Export] public float ChaseSpeed = 130f;    // running after you
 	[Export] public float ChargeSpeed = 180f;   // with a bat or knife, running at you once he's seen you
 	[Export] public float SwingRange = 26f;     // he swings once you're this close
+	[Export] public float StandOff = 67f;       // with a gun, he walks at you while shooting until this close
 	[Export] public float SearchTime = 1.5f;    // seconds he looks around an empty spot before giving up
-	[Export] public float SearchSpread = 12f;   // runs to a random spot this close to where he last saw or heard you
+	[Export] public float SearchSpread = 32f;   // runs to a random spot this close to where he last saw you
+	[Export] public float NoiseSpread = 64f;    // runs to a random spot this close to a gunshot he heard
+
+	private const float Shoulder = 16f;          // two goons' bodies side by side: closer than this they push apart
+	private const float ShoveSpeed = 90f;        // how hard, pixels per second, when right on top of each other
 
 	private static readonly AudioStream WallHit = GD.Load<AudioStream>("res://audio/wall_hit.wav");
+	private static readonly List<Enemy> All = new();
 
 	private Player _player;
 	private AudioStreamPlayer2D _wallSound;
 	private StringName _poseName;   // Pose's animation ("smoke"...); null = none
-	private bool _alerted;          // knows you're around: sees all around him, not just in front
+	private bool _alerted;          // knows you're around
 	private bool _seesYou;
 	private float _reactionLeft = -1f; // counting down to his first shot; below zero = not counting yet
+	private float _lookLeft = -1f;  // calm: seconds to his next look around (below zero at the start: a random first look)
+	private float _noticeLeft = -1f; // calm and spotted you: seconds until he reacts; below zero = hasn't
 	private Vector2? _checkSpot;    // where he last saw or heard you
+	private float _checkSpread;     // and how far from it he may end up
 	private float _searchLeft;
 	private bool _goingBack;        // stays in his room: walking back to it after a chase
 	private Vector2 _post;          // where he started, and which way he faced
@@ -76,7 +90,14 @@ public partial class Enemy : Character
 	private float _stuckTime;
 	private List<Vector2> _route;   // corners left on his way to _goal; null = plan a new route
 	private Vector2 _goal;
+	private Vector2? _stepOut;      // walking straight onto open floor first (through furniture if need be)
 	private bool _turning;          // patrol: turning left until the way is clear
+
+	public override void _EnterTree() => All.Add(this);
+	public override void _ExitTree() => All.Remove(this);
+
+	// Would a gunshot bring him running? (Static goons stay put; one who sees you is busy with you.)
+	public bool CanHear => Behaviour != Routine.Static && !IsDead && !IsDown && !_seesYou;
 
 	public override void _Ready()
 	{
@@ -95,10 +116,11 @@ public partial class Enemy : Character
 	// A gunshot went off within earshot, at `where`.
 	public void Hear(Vector2 where)
 	{
-		if (Behaviour == Routine.Static || IsDead || IsDown || _seesYou)
+		if (!CanHear)
 			return;
 		_alerted = true;
 		_checkSpot = where;
+		_checkSpread = NoiseSpread;
 		_searchLeft = SearchTime;
 	}
 
@@ -119,6 +141,8 @@ public partial class Enemy : Character
 		if (IsDown)
 		{
 			// Knocked flat: slide to a stop. When he gets up, he knows you're around.
+			_stepOut = null;
+			CollisionMask = Layers.World | Layers.Furniture;
 			Velocity = Velocity.MoveToward(Vector2.Zero, 900f * dt);
 			Vector2 sliding = Velocity;
 			MoveAndSlide();
@@ -151,7 +175,7 @@ public partial class Enemy : Character
 			Velocity = Vector2.Zero;
 		else if (!HasWeapon)
 			GoForAGun(dt);
-		else if (CanSeePlayer())
+		else if (Notices(dt))
 			Fire(dt);
 		else if (_checkSpot is Vector2 spot)
 			Search(spot, dt);
@@ -159,13 +183,47 @@ public partial class Enemy : Character
 			FollowRoutine(dt);
 
 		StringName pose = _alerted || Velocity != Vector2.Zero ? null : _poseName;
-		if (Pose == Idle.Sit) // sitting on furniture: he can be in it until something alerts him, then he gets up off it
-			CollisionMask = _alerted ? CollisionMask | Layers.Furniture : CollisionMask & ~Layers.Furniture;
+		// Furniture doesn't stop him while he's in it (sitting in a couch); elsewhere it does.
+		// Stepping out onto open floor, nothing does.
+		bool throughFurniture = (Pose == Idle.Sit && !_alerted) || LevelGrid.Wedged(GlobalPosition, Layers.Furniture);
+		CollisionMask = _stepOut != null ? 0 : Layers.World | (throughFurniture ? 0 : Layers.Furniture);
 		if (Pose == Idle.Smoke && IdlePose != null && pose == null && _alerted) // flicks the cigarette away
 			Shell.Eject(this, GlobalPosition + Vector2.Down.Rotated(Visual.GlobalRotation) * 12f, Visual.GlobalRotation, Colors.White);
+		if (IdlePose != null && pose == null && GetUpAnimation() is string getUp)
+			Act(getUp);
 		IdlePose = pose;
 
+		if (_alerted || Velocity != Vector2.Zero)
+			Velocity += Shove();
 		MoveAndSlide();
+	}
+
+	// Leaving a pose that has him sitting, crouched or against a wall: the look of getting up (it fits
+	// inside his reaction time, so it never slows him down).
+	private string GetUpAnimation() => Pose switch
+	{
+		Idle.Sit => "sit_up",
+		Idle.Hide => "hide_up",
+		Idle.Lean => "lean_off",
+		_ => null,
+	};
+
+	// Closer to another goon than their two bodies side by side: a push apart, harder the deeper in.
+	private Vector2 Shove()
+	{
+		Vector2 push = Vector2.Zero;
+		foreach (Enemy other in All)
+		{
+			if (other == this || other.IsDead || other.IsDown || other.Pinned)
+				continue;
+			Vector2 away = GlobalPosition - other.GlobalPosition;
+			float distance = away.Length();
+			if (distance >= Shoulder)
+				continue;
+			Vector2 direction = distance > 0.01f ? away / distance : Vector2.Right.Rotated(GetIndex()); // right on top: any way, but not both the same
+			push += direction * (1f - distance / Shoulder);
+		}
+		return push * ShoveSpeed;
 	}
 
 	// Thrown and still flying fast: the first goon he slides into goes down too, and he stops there.
@@ -198,6 +256,7 @@ public partial class Enemy : Character
 		}
 		_alerted = true;
 		_checkSpot = _player.GlobalPosition;
+		_checkSpread = SearchSpread;
 		_searchLeft = SearchTime;
 		_goingBack = false;
 
@@ -219,6 +278,14 @@ public partial class Enemy : Character
 			return;
 		}
 
+		// Then he walks at you while he shoots, around walls and furniture, still aiming at you.
+		if (_reactionLeft <= 0f && toYou.Length() > StandOff)
+		{
+			float facing = Visual.Rotation;
+			RunTo(_player.GlobalPosition, ChaseSpeed, dt);
+			Visual.Rotation = facing;
+		}
+
 		bool onTarget = Mathf.Abs(Mathf.AngleDifference(Visual.Rotation, aim)) < Mathf.DegToRad(10f);
 		if (_reactionLeft <= 0f && onTarget && DevSettings.Current.GoonsShoot)
 			Gun.TryFire();
@@ -238,7 +305,7 @@ public partial class Enemy : Character
 	private void Search(Vector2 spot, float dt)
 	{
 		_reactionLeft = -1f; // when he sees you again, he needs a moment again
-		if (RunTo(spot, ChaseSpeed, dt, SearchSpread))
+		if (RunTo(spot, ChaseSpeed, dt, _checkSpread))
 			return;
 
 		Velocity = Vector2.Zero;
@@ -290,6 +357,8 @@ public partial class Enemy : Character
 	// still while it's blocked) until the way is clear and he faces straight along the walls again.
 	private void Patrol(float dt)
 	{
+		if (SteppingOut(WalkSpeed))
+			return;
 		bool blocked = Blocked(_heading) || Stuck(dt);
 		if (blocked || _turning)
 		{
@@ -311,6 +380,8 @@ public partial class Enemy : Character
 		if (_walkLeft > 0)
 		{
 			_walkLeft -= dt;
+			if (SteppingOut(WalkSpeed))
+				return;
 			if (Blocked(_heading) || Stuck(dt))
 				_heading = OpenDirection(); // off walls, furniture (and doorways, if he stays in his room)
 			Walk(_heading);
@@ -376,15 +447,26 @@ public partial class Enemy : Character
 	}
 
 	// Heads for a spot on a route around walls and furniture (see LevelGrid), planning a new
-	// route when the spot moves or he gets stuck. spread: aims for a random spot this close to it
-	// instead. Returns false once he has arrived, or if there's no way there.
+	// route when the spot moves or he gets stuck. spread: aims for a random open spot this close to it
+	// (and not behind a wall from it) instead. Returns false once he has arrived, or if there's no way there.
 	private bool RunTo(Vector2 spot, float speed, float dt, float spread = 0f)
 	{
+		if (SteppingOut(speed))
+			return true;
 		if (_route == null || _goal.DistanceTo(spot) > 8f || (_route.Count > 0 && Stuck(dt)))
 		{
 			_goal = spot;
-			Vector2 near = spot + Vector2.Right.Rotated(GD.Randf() * Mathf.Tau) * spread * Mathf.Sqrt(GD.Randf());
-			_route = LevelGrid.Path(GlobalPosition, LevelGrid.IsOpen(near) ? near : spot);
+			Vector2 near = spot;
+			for (int tries = 0; tries < 6 && spread > 0f; tries++)
+			{
+				Vector2 pick = spot + Vector2.Right.Rotated(GD.Randf() * Mathf.Tau) * spread * Mathf.Sqrt(GD.Randf());
+				if (LevelGrid.IsOpen(pick) && !LevelGrid.WallBetween(spot, pick))
+				{
+					near = pick;
+					break;
+				}
+			}
+			_route = LevelGrid.Path(GlobalPosition, near);
 			_stuckTime = 0f;
 			if (_route == null) // the map isn't ready yet (the first frames)
 			{
@@ -401,6 +483,29 @@ public partial class Enemy : Character
 		Vector2 toNext = _route[0] - GlobalPosition;
 		Velocity = toNext.Normalized() * speed;
 		Visual.Rotation = toNext.Angle();
+		return true;
+	}
+
+	// Body in something (a couch he sat in, pressed into a wall, shoved into a corner):
+	// walk straight onto the nearest open floor first, nothing stopping him (the way there crosses no
+	// wall, so at most he brushes one), so he can never wedge himself. True while at it.
+	private bool SteppingOut(float speed)
+	{
+		if (_stepOut == null)
+		{
+			if (!LevelGrid.Wedged(GlobalPosition, Layers.World | Layers.Furniture) || LevelGrid.StepOut(GlobalPosition) is not Vector2 step)
+				return false;
+			_stepOut = step;
+		}
+		Vector2 toStep = _stepOut.Value - GlobalPosition;
+		if (toStep.Length() < 2f)
+		{
+			_stepOut = null;
+			_route = null; // plan from here
+			return false;
+		}
+		Velocity = toStep.Normalized() * speed;
+		Visual.Rotation = toStep.Angle();
 		return true;
 	}
 
@@ -434,24 +539,46 @@ public partial class Enemy : Character
 		return false;
 	}
 
+	// Once he knows you're around he watches all the time. Calm, he only looks around now and then
+	// (goons not all at once), and after spotting you carries on for a moment before he reacts.
+	private bool Notices(float dt)
+	{
+		if (_alerted)
+		{
+			_noticeLeft = -1f;
+			return CanSeePlayer();
+		}
+		if (_noticeLeft < 0f)
+		{
+			if (_lookLeft < 0f)
+				_lookLeft = GD.Randf() * LookEvery;
+			_lookLeft -= dt;
+			if (_lookLeft > 0f)
+				return false;
+			_lookLeft = LookEvery;
+			if (!CanSeePlayer())
+				return false;
+			_noticeLeft = NoticeTime;
+		}
+		_noticeLeft -= dt;
+		if (_noticeLeft > 0f)
+			return false;
+		// He's onto you: if you've slipped out of sight meanwhile, he goes to where you are now.
+		_noticeLeft = -1f;
+		_alerted = true;
+		_checkSpot = _player.GlobalPosition;
+		_checkSpread = SearchSpread;
+		_searchLeft = SearchTime;
+		return CanSeePlayer();
+	}
+
 	private bool CanSeePlayer()
 	{
 		if (!DevSettings.Current.GoonsSeeYou)
 			return false;
 
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
-		if (toPlayer.Length() > SightRange)
-			return false;
-
-		// Until something alerts him, he only sees what's in front of him.
-		if (!_alerted)
-		{
-			float offAxis = Mathf.RadToDeg(Mathf.Abs(Visual.GlobalTransform.X.AngleTo(toPlayer)));
-			if (offAxis > FieldOfView / 2f)
-				return false;
-		}
-
-		return ClearView(_player.GlobalPosition);
+		return toPlayer.Length() <= SightRange && ClearView(_player.GlobalPosition);
 	}
 
 	// A ray from him to the spot that only notices walls and doors. If it hits nothing, nothing's in the way.
@@ -474,14 +601,7 @@ public partial class Enemy : Character
 		Color color = _seesYou ? new Color(1f, 0.2f, 0.2f, 0.5f)
 			: _checkSpot != null ? new Color(1f, 0.85f, 0.2f, 0.45f)
 			: new Color(1f, 1f, 1f, 0.3f);
-		float facing = Visual.Rotation;
-		float half = _alerted ? Mathf.Pi : Mathf.DegToRad(FieldOfView / 2f);
-		DrawArc(Vector2.Zero, SightRange, facing - half, facing + half, 48, color, 1f);
-		if (!_alerted)
-		{
-			DrawLine(Vector2.Zero, Vector2.Right.Rotated(facing - half) * SightRange, color, 1f);
-			DrawLine(Vector2.Zero, Vector2.Right.Rotated(facing + half) * SightRange, color, 1f);
-		}
+		DrawArc(Vector2.Zero, SightRange, 0f, Mathf.Tau, 48, color, 1f);
 		if (_checkSpot is Vector2 spot)
 		{
 			DrawLine(Vector2.Zero, ToLocal(spot), color, 1f);

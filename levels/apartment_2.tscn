@@ -382,7 +382,7 @@ Length = 32.0
 [node name="Weapons" type="Node2D" parent="." unique_id=1392132433]
 
 [node name="Pistol1" parent="Weapons" unique_id=810029449 instance=ExtResource("pickup")]
-position = Vector2(150, 470)
+position = Vector2(116, 234)
 Data = ExtResource("pistol")
 
 [node name="Uzi2" parent="Weapons" unique_id=1953857112 instance=ExtResource("pickup")]
@@ -421,7 +421,7 @@ Look = ExtResource("27_hmfqy")
 StartWeapon = ExtResource("shotgun")
 
 [node name="Enemy5" parent="." unique_id=1681626037 instance=ExtResource("enemy")]
-position = Vector2(100, 276)
+position = Vector2(200, 276)
 Behaviour = 1
 Look = ExtResource("b_look")
 

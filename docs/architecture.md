@@ -75,11 +75,15 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`audio/`**: sounds: effects as WAV (cheapest to play; Godot packs them small), music as MP3 (a WAV
   song would be ten times the size). A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
   listing its takes; it picks one and shifts the pitch a little on every play.
-- **`core/Noise.cs`**: gunshots alert goons in earshot. **`core/LevelGrid.cs`** is the map goons
+- **`core/Noise.cs`**: gunshots alert goons in earshot (the three with the shortest walk come).
+  **`core/LevelGrid.cs`** is the map goons
   route on: 8 px squares, closed where a goon's body (plus a margin) would touch a wall, furniture or
   the edge of the floor. Routes come from Godot's `AStarGrid2D` and are pulled straight wherever a
   goon fits all the way. It checks the squares on first use, once the walls are solid to physics queries
   (a 20 ms frame), and keeps them when the same floor restarts: walls and furniture never move.
+  A route may cut across the corner of a closed square (the line was checked), so "closed" is not
+  "stuck": a goon only counts as wedged when his body actually overlaps something (`Wedged`), and then
+  steps straight out (`StepOut`) with nothing stopping him before routing on.
 - **`ui/TapeMenu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
   drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
   beside them). Settings are placeholders: they keep their values while the game runs, nothing more.

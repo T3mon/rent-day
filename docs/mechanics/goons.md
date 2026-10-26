@@ -9,30 +9,35 @@ Set per goon in the level:
 - **Patrol:** walks straight. When blocked, stops and turns left a little at a time until the way is clear and it faces straight along the walls again. Hears gunshots.
 - **Wander:** walks short stretches in random open directions, stops to look around, repeats. Hears gunshots.
 - **Stay in room** (option, patrol and wander): treats doorways as walls when on its own. A chase can still take it through doors, but it walks back to its room afterwards.
-- **Pose** (option, any behaviour): what he does while calm and standing still: smoke, phone, hide (crouched), sit, lean (back to a wall), talk. Only the look: he sees and reacts exactly as without it. Once alerted he drops it (a smoker flicks his cigarette away); it comes back when he gives up searching. A sitting goon can be placed on furniture (a couch): he gets up off it when alerted. A wanderer strikes his pose whenever he stops.
+- **Pose** (option, any behaviour): what he does while calm and standing still: smoke, phone, hide (crouched), sit, lean (back to a wall), talk. Only the look: he sees and reacts exactly as without it. Once alerted he drops it (a smoker flicks his cigarette away; a sitter stands up, a crouching goon rises, a leaner pushes off the wall, each quick enough to finish inside his reaction time); it comes back when he gives up searching. A sitting goon can be placed on furniture (a couch): he gets up off it when alerted, stepping out onto open floor before he goes anywhere. A wanderer strikes his pose whenever he stops.
 
 ## Seeing you
 
-- Goons see in front of them within a range and a field of view.
+(temporary) Sight Range, Look Every, Notice Time and Stand Off are a first pass; they get balanced in [issue #11](https://github.com/T3mon/rent-day/issues/11).
+
+- Goons notice you all around them, but only within their **Sight Range** (temporary): a little short of how far the screen reaches to your side. Above and below you the screen ends sooner, so a goon there can still see you just off screen. Sitting, smoking or on the phone makes no difference.
 - Walls and doors block sight (see [doors.md](doors.md)).
-- Once alerted, a goon sees all around.
+- A calm goon only looks around now and then (**Look Every**, half a second; not all goons at the same moment; temporary). When he spots you, he carries on with what he was doing for a moment (**Notice Time**, temporary) before he reacts. Between his looks you can sneak up on him. Once he knows you're around (he saw you, heard a shot, or was knocked down), he watches all the time.
 - A goon that sees you stops, turns to face you, and fires after a short reaction delay.
+- After that, a goon with a gun walks at you while he keeps firing, until he's close (**Stand Off**, temporary), so he comes into view.
 - The delay is longer when you are far away or behind the goon, plus a little randomness. This delay is the player's window to act.
 - A goon only fires once his aim is roughly on you.
 
 ## Hearing
 
 - Only player gunshots are heard.
-- Patrolling and wandering goons inside the noise radius run to where the shot came from.
+- Of the patrolling and wandering goons inside the noise radius, the three with the shortest walk to the shot come running; the rest carry on. Each heads for his own random spot around the shot (within **Noise Spread**, never behind a wall from it).
 - Goons that are already chasing you ignore other noise.
 - On arrival, they look around for a moment, then go back to their routine.
 
 ## Chasing and searching
 
-- A goon that loses sight of you runs to the last place he saw or heard you. Each goon picks a slightly different spot around it, so they don't pile up.
+- A goon that loses sight of you runs to the last place he saw or heard you. Each goon picks his own spot around it (within **Search Spread**), so they don't pile up.
 - If you are not there, he searches briefly, then returns to his routine.
 - Goons route around walls and furniture with a little room to spare, so they never scrape corners. They go through doorways, pushing doors open.
 - The edge of the map is a wall to goons: they never walk off it.
+- Goons closer together than two bodies side by side push apart, so they never stand inside each other. Calm goons in their poses are left where they were placed.
+- A goon whose body is in something (sitting in a couch, knocked against a wall) first steps straight out onto open floor, never through a wall, and only then sets off.
 - A goon that stops making progress plans a new route; a patrolling or wandering one turns.
 
 ## Level design for goons
