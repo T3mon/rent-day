@@ -3,7 +3,7 @@ using Godot;
 namespace RentDay;
 
 // The upper body's look, which never changes what anyone can do or when. Its animation (from
-// Look): walking in step with the legs or standing, with whatever is in hand, and one-offs
+// Look): walking in step with the legs, standing or looking around, with whatever is in hand, and one-offs
 // over that (a swing, a throw, a pickup, a hand on a door, a finisher). And small motions on
 // top: leaning into a run and settling after a stop, with dust at the feet; a dip to pick
 // something up; a shoulder into a door; the body turning with a throw; a startle.
@@ -16,6 +16,9 @@ public partial class Character
 
 	// Standing still, this plays instead of the usual standing animation (a goon's smoke, phone...); null = none.
 	protected StringName IdlePose;
+
+	// Standing still, he looks around instead (a goon at an empty spot); an idle pose comes first.
+	protected bool LookAround;
 
 	// Holding a human shield (ShieldPose), or held up as one ("held"): this plays walking or standing; null = none.
 	protected StringName HoldPose;
@@ -35,15 +38,16 @@ public partial class Character
 	private static readonly StringName Sit = "sit";
 
 	// Which set of animations fits what's in hand: "" bare fists, "gun_", "bat_", "knife_", and its
-	// standing and walking animations. Set on every Equip, so the names aren't built anew every frame.
+	// standing, walking and looking-around animations. Set on every Equip, so the names aren't built anew every frame.
 	private string Kind { get; set; } = "";
-	private StringName _idle, _walk;
+	private StringName _idle, _walk, _look;
 
 	private void FitAnimations()
 	{
 		Kind = Gun.Data == null ? "" : Gun.Data.Melee ? Gun.Data.Name.ToLowerInvariant() + "_" : "gun_";
 		_idle = Kind + "idle";
 		_walk = Kind + "walk";
+		_look = Kind + "look";
 	}
 
 	// Plays a one-off animation of the upper body from the start; walking or standing takes over
@@ -74,6 +78,7 @@ public partial class Character
 			return;
 		}
 		StringName pose = moving ? null : IdlePose;
+		StringName stand = pose ?? (LookAround ? _look : _idle);
 		Gun.Visible = Kind == "gun_" && pose == null; // bats and knives are part of the animation
 		_legs.Visible = pose != Sit;
 		if (moving)
@@ -82,8 +87,8 @@ public partial class Character
 			_bodySprite.Pause();
 			_bodySprite.Frame = _legs.Frame; // the arms swing in step with the feet
 		}
-		else if (!_bodySprite.IsPlaying() || _bodySprite.Animation != (pose ?? _idle))
-			_bodySprite.Play(pose ?? _idle);
+		else if (!_bodySprite.IsPlaying() || _bodySprite.Animation != stand)
+			_bodySprite.Play(stand);
 	}
 
 	// Walked into a door: a shoulder against it, toward `direction`, and an empty hand on it.

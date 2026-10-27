@@ -12,7 +12,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   Its melee half is **`core/CharacterMelee.cs`**: swings (`TrySwing`, hits checked each physics tick
   in `UpdateSwing`).
   **`core/CharacterMotion.cs`** is the upper body's look, which never changes timing: which animation
-  plays (walking in step with the legs or standing, per thing in hand, a goon's idle pose, and
+  plays (walking in step with the legs, standing or looking around, per thing in hand, a goon's idle pose, and
   one-offs over that via `Act`: swings, throws, pickups, a hand on a door, finishers), plus small
   motions on top: leaning into a run and settling after a stop (with dust), a dip on pickups, a
   shoulder into doors, a throw's follow-through, a goon's startle when he spots you.

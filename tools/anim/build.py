@@ -56,7 +56,7 @@ def build(name):
 
 LOOPS = {'idle', 'walk', 'gun_idle', 'gun_walk', 'bat_idle', 'bat_walk', 'knife_idle', 'knife_walk', 'choke',
          'shield', 'gun_shield', 'bat_shield', 'knife_shield', 'held',
-         'smoke', 'phone', 'hide', 'sit', 'lean', 'talk', 'lie_slump'}
+         'smoke', 'phone', 'hide', 'sit', 'lean', 'talk', 'lie_slump', 'look', 'gun_look', 'bat_look', 'knife_look'}
 
 if __name__ == '__main__':
     for name in ('collector', 'goon_a', 'goon_b', 'goon_c', 'goon_d'):

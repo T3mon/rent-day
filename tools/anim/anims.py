@@ -4,7 +4,7 @@ A pose is a dict; a missing key means the default. Coordinates are in the charac
 facing +x, centred on the body, right side = +y. Each animation is a list of (pose, milliseconds).
 """
 import math
-from puppet import (Layer, C, SIZE, INK, blank, capsule, head, torso, arm, hand,
+from puppet import (Layer, C, SIZE, INK, blank, capsule, head, torso, arm, hand, rot,
                     read_png, PROJECT)
 
 WEAPONS = {}
@@ -243,6 +243,20 @@ def breathe(base, extra=None):
     return [(a, 700), (blend(a, b, 0.5), 250), (b, 600), (blend(a, b, 0.5), 250)]
 
 
+def look_around(base, free):
+    """Standing and looking around: the head turns right, then left; the shoulders and the `free` hands
+    turn a little with it."""
+    out = []
+    for turn, ms in ((0.0, 150), (0.5, 80), (1.1, 400), (0.5, 80), (0.0, 120), (-0.5, 80), (-1.1, 400), (-0.5, 80)):
+        p = dict(base)
+        p['turn'] = turn
+        p['shear'] = 1.3 * turn
+        for k in free:
+            p[k] = rot(base.get(k, DEFAULT[k]), turn * 0.15)
+        out.append((p, ms))
+    return out
+
+
 def animations():
     A = {}
     fists = {}
@@ -372,6 +386,11 @@ def animations():
     A['hide_up'] = [(blend(hide, fists, 0.35), 60), (blend(hide, fists, 0.75), 60), (fists, 40)]
     A['lean_off'] = [({'shear': 1.0, 'body': (0.5, 0), 'rh': (6, 2), 'lh': (6, -2), 'turn': 0.1}, 60),
                      ({'shear': 0.5, 'body': (1, 0), 'rh': (3, 9), 'lh': (3, -9)}, 60), (fists, 60)]
+    # looking around an empty spot (a goon who lost you, a wanderer between walks), with whatever is in hand
+    A['look'] = look_around(fists, ('lh', 'rh'))
+    A['gun_look'] = look_around(gun, ('lh',))
+    A['bat_look'] = look_around(bat_rest, ())
+    A['knife_look'] = look_around(knife_rest, ('lh',))
 
     return A
 

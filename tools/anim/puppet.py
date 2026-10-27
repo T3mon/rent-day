@@ -116,12 +116,28 @@ def torso(ch, shear=0.0, shift=(0.0, 0.0)):
 
 
 def head(ch, shift=(0.0, 0.0), turn=0.0):
+    """The head (hair, face, ears, nose: the patch joined to its middle) turned about its own middle. Each pixel
+    of the result is looked up in the sprite, so a turned head stays whole; stray bits of the sprite stay put."""
+    src = {k: c for k, c in ch.head.items() if c[:3] != INK[:3]}
+    blob, todo = set(), [min(src, key=lambda k: abs(k[0] - 1) + abs(k[1]))]
+    while todo:
+        k = todo.pop()
+        if k in src and k not in blob:
+            blob.add(k)
+            todo += [(k[0] + 1, k[1]), (k[0] - 1, k[1]), (k[0], k[1] + 1), (k[0], k[1] - 1)]
+    cx = sum(x for x, y in blob) / len(blob)
+    cy = sum(y for x, y in blob) / len(blob)
+    r = math.ceil(max(math.hypot(x - cx, y - cy) for x, y in blob)) + 1
     layer = Layer()
-    for (x, y), c in ch.head.items():
-        if c[:3] == INK[:3]:
-            continue
-        rx, ry = rot((x, y), turn)
-        layer.put(C + rx + shift[0], C + ry + shift[1], c)
+    for (x, y), c in src.items():
+        if (x, y) not in blob:
+            layer.put(C + x + shift[0], C + y + shift[1], c)
+    for y in range(math.floor(cy) - r, math.ceil(cy) + r + 1):
+        for x in range(math.floor(cx) - r, math.ceil(cx) + r + 1):
+            sx, sy = rot((x - cx, y - cy), -turn)
+            k = (math.floor(sx + cx + 0.5), math.floor(sy + cy + 0.5))
+            if k in blob:
+                layer.put(C + x + shift[0], C + y + shift[1], src[k])
     return layer
 
 

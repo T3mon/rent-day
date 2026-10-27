@@ -108,7 +108,7 @@ public partial class Enemy : Character
 		_postAngle = Visual.Rotation;
 		_heading = Vector2.Right.Rotated(_postAngle);
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
-		_poseName = Pose == Idle.None ? null : Pose.ToString().ToLowerInvariant();
+		_poseName = Pose == Idle.None ? null : (StringName)Pose.ToString().ToLowerInvariant(); // a null string would become an empty name: a "pose"
 		_wallSound = new AudioStreamPlayer2D { Stream = WallHit };
 		AddChild(_wallSound);
 	}
@@ -137,6 +137,7 @@ public partial class Enemy : Character
 		float dt = (float)delta;
 		UpdateSwing(dt);
 		_seesYou = false;
+		LookAround = false; // Search and Wander turn it on while he stands there
 
 		if (IsDown)
 		{
@@ -309,6 +310,7 @@ public partial class Enemy : Character
 			return;
 
 		Velocity = Vector2.Zero;
+		LookAround = true;
 		_searchLeft -= dt;
 		if (_searchLeft <= 0)
 		{
@@ -400,6 +402,7 @@ public partial class Enemy : Character
 			_lookedAround = true;
 			Visual.Rotation = GD.Randf() * Mathf.Tau;
 		}
+		LookAround = !_lookedAround; // glancing about, until he turns to face some way
 		if (_waitLeft <= 0)
 		{
 			_heading = OpenDirection();
