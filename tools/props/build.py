@@ -576,6 +576,54 @@ def keytar():
     return p
 
 
+# ======================================================================= outside
+def chopper():
+    """The collector's ride: long and low, gloss black with neon flames licking back along the tank, a raked
+    chrome fork, swept-back bars, a V-twin and drag pipes. Faces right."""
+    BLK, BLK2, GLOSS, GLINT = C('#0b0912'), C('#1d1a2a'), C('#55507a'), C('#d8d4f0')
+    FLAME = [C('#ffd24a'), T1, HP1]                                                         # yellow at the root, pink at the tips
+    LAMP, LAMP2, TAIL = C('#fff4c8'), C('#fdee82'), C('#ff3048')
+    p = P(62, 23, 4)
+    cy = 11
+    for x0, x1, w in ((1, 16, 7), (47, 61, 3)):                                             # fat rear tyre, skinny front one
+        p.rect(x0, cy - w // 2, x1 - x0, w, C('#16101f')); p.rect(x0 + 1, cy, x1 - x0 - 2, 1, C('#2a2238'))
+        for x, y in ((x0, cy - w // 2), (x0, cy + w // 2), (x1 - 1, cy - w // 2), (x1 - 1, cy + w // 2)):
+            p.set(x, y, (0, 0, 0, 0))
+    p.rect(42, cy - 2, 13, 1, CH[1]); p.rect(42, cy + 2, 13, 1, CH[1])                     # long raked fork
+    p.box(2, cy - 2, 10, 5, BLK2, GLOSS, BLK); p.set(4, cy - 1, GLINT)                     # bobbed rear fender
+    p.rect(1, cy - 1, 2, 3, TAIL)
+    for y, w in ((cy + 4, 25), (cy + 7, 23)):                                               # drag pipes, right side
+        p.rect(3, y, w, 1, CH[0]); p.rect(3, y + 1, w, 1, CH[2])
+    p.rect(23, cy - 5, 11, 11, D2)                                                          # crankcase
+    for x0 in (23, 29):                                                                     # two finned heads, out both sides
+        for y0 in (cy - 6, cy + 4):
+            p.rect(x0, y0, 5, 3, CH[1])
+            for x in range(x0, x0 + 5, 2):
+                p.rect(x, y0, 1, 3, CH[3])
+    p.disc(26, cy + 9, 2.4, CH[1]); p.ring(26, cy + 9, 2.4, CH[3]); p.set(26, cy + 9, CH[0])   # round air cleaner
+    p.rect(12, cy - 2, 5, 5, D0); p.rect(16, cy - 3, 10, 7, D0)                            # stepped leather seat
+    p.rect(17, cy - 2, 8, 1, D4); p.rect(13, cy - 1, 3, 1, D4); p.rect(17, cy + 2, 8, 1, D2)
+    p.rect(11, cy - 3, 1, 7, CH[0]); p.set(12, cy - 3, CH[1]); p.set(12, cy + 3, CH[1])   # sissy bar
+    tank = lambda x, y: ((x + 0.5 - 34.5) / 6.8) ** 2 + ((y - cy) / 4.3) ** 2 <= 1
+    p.ellipse(34.5, cy + 0.5, 6.8, 4.3, BLK); p.ellipse(34, cy, 5.2, 2.7, BLK2)           # teardrop tank
+    for r, n in ((-3, 3), (-2, 9), (-1, 5), (0, 11), (1, 5), (2, 9), (3, 3)):              # the flames, from its front
+        front = max(x for x in range(27, 42) if tank(x, cy + r))
+        for i in range(n):
+            if tank(front - i, cy + r):
+                p.set(front - i, cy + r, FLAME[3 * i // n])
+    p.line(30, cy - 2, 34, cy - 3, GLOSS); p.set(31, cy - 2, GLINT)
+    p.disc(35, cy + 0.5, 1.6, CH[1]); p.set(35, cy, CH[0])                                 # speedo on the tank
+    for k in (-1, 1):                                                                       # ape hangers, swept back
+        p.line(41, cy + k, 42, cy + k * 6, CH[0]); p.line(42, cy + k * 6, 41, cy + k * 10, CH[0])
+        p.rect(37, cy + k * 10, 4, 1, D0)                                                   # grips
+        p.disc(44.5, cy + k * 8.5 + 0.5, 1.3, CH[0])                                        # mirrors
+    p.disc(45.5, cy + 0.5, 2.8, CH[2]); p.disc(45.5, cy + 0.5, 1.8, LAMP2); p.disc(46, cy + 0.5, 1, LAMP)   # headlight
+    p.outline()
+    p.rim(only={p.px[x, y] for y in range(p.h) for x in range(p.w)} - set(FLAME))           # cyan on the yellow would go green
+    p.glow([LAMP, LAMP2], 3, 110); p.glow([TAIL], 2, 90)
+    return p
+
+
 # ======================================================================= the existing props, redrawn (same sizes)
 def old_armchair():
     p = P(22, 22, 2)
@@ -634,24 +682,6 @@ def old_cabinet():
     p.line(9, 1, 9, 12, WD0)
     p.rect(7, 11, 1, 2, CH[0]); p.rect(10, 11, 1, 2, CH[0])
     p.rim(only=WOOD)
-    return p
-
-def old_car():
-    p = P(66, 32, 3)
-    body = lambda x, y: ((x + 0.5 - 33) / 32.5) ** 6 + ((y + 0.5 - 16) / 13) ** 4 <= 1
-    for x, y in ((12, 2), (12, 28), (50, 2), (50, 28)):                                   # tyres
-        p.rect(x - 4, y - 2, 9, 4, D0)
-    p.grad(1, 3, 64, 26, [HP2, HP1, HP3, HP4], mask=body)                               # hot pink paint
-    p.outline()
-    p.grad(36, 7, 11, 18, [C('#2a0b4a'), PU1, SUN[4], SUN[2]], vertical=False,          # windscreen, the sunset in it
-           mask=lambda x, y: abs(y - 16) <= 6 + (x - 36) * 0.35)
-    p.rect(22, 8, 14, 16, HP3); p.rect(22, 8, 14, 1, HP2); p.frame(22, 8, 14, 16, HP4)   # roof
-    p.grad(14, 9, 8, 14, [D2, PU1], vertical=False)                                        # rear window
-    p.rect(60, 8, 3, 4, YEL); p.rect(60, 20, 3, 4, YEL)                                    # pop-up lights
-    p.rect(2, 7, 2, 18, HP1); p.rect(2, 7, 2, 1, WHT)                                       # tail lights
-    p.line(6, 15, 58, 15, HP4); p.line(6, 17, 58, 17, HP4)                                  # vents along the body
-    p.rect(30, 2, 3, 2, CH[1]); p.rect(30, 28, 3, 2, CH[1])                                 # mirrors
-    p.glow([YEL], 2, 90); p.underglow(CY1, 3, 85)
     return p
 
 def old_chair():
@@ -1004,7 +1034,7 @@ def floor_sheet(old):
 PROPS = {
     # the ones the levels already use
     'armchair': old_armchair, 'bathtub': old_bathtub, 'bed': old_bed, 'box': old_box, 'cabinet': old_cabinet,
-    'car': old_car, 'chair': old_chair, 'coffee_table': old_coffee_table, 'couch': old_couch, 'counter': old_counter,
+    'chair': old_chair, 'coffee_table': old_coffee_table, 'couch': old_couch, 'counter': old_counter,
     'desk': old_desk, 'door': old_door, 'dresser': old_dresser, 'fridge': old_fridge, 'nightstand': old_nightstand,
     'office_chair': old_office_chair, 'plant': plant, 'sink': old_sink, 'stairs': old_stairs, 'table': old_table,
     'toilet': old_toilet, 'tv': old_tv,
@@ -1028,6 +1058,8 @@ PROPS = {
     'window': night_window, 'radiator': radiator, 'pillar': pillar, 'glass_partition': glass_partition,
     # clutter
     'pizza_boxes': pizza_boxes, 'duffel_bag': duffel_bag, 'keytar': keytar,
+    # outside
+    'chopper': chopper,
 }
 
 if __name__ == '__main__':

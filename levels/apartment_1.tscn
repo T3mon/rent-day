@@ -23,7 +23,7 @@
 [ext_resource type="PackedScene" path="res://props/bean_bag.tscn" id="29_8ctpn"]
 [ext_resource type="PackedScene" path="res://props/office_chair.tscn" id="29_r"]
 [ext_resource type="PackedScene" path="res://props/trash_bins.tscn" id="30_6nhec"]
-[ext_resource type="PackedScene" path="res://props/car.tscn" id="31_r"]
+[ext_resource type="PackedScene" path="res://props/chopper.tscn" id="31_r"]
 [ext_resource type="PackedScene" path="res://props/pizza_boxes.tscn" id="31_u6f82"]
 [ext_resource type="PackedScene" path="res://props/rug_shag.tscn" id="32_sm7rc"]
 [ext_resource type="PackedScene" path="res://props/wardrobe.tscn" id="33_1fdcl"]
@@ -195,7 +195,7 @@ position = Vector2(594, 438)
 [node name="Plant5" parent="Props" unique_id=1316201956 instance=ExtResource("p_plant")]
 position = Vector2(398, 420)
 
-[node name="Car" parent="Props" unique_id=939903708 instance=ExtResource("31_r")]
+[node name="Chopper" parent="Props" unique_id=939903708 instance=ExtResource("31_r")]
 position = Vector2(250, 516)
 
 [node name="WingFridge1" parent="Props" unique_id=973304717 instance=ExtResource("p_fridge")]
