@@ -13,8 +13,8 @@ public partial class Gun : Node2D
 	public WeaponData Data { get; private set; } // null = empty hands
 	public int Ammo { get; private set; }
 
-	// A goon's gun never runs dry, fires at the goon pace, only hurts the player and makes no noise.
-	public bool HeldByGoon;
+	// An enemy's gun never runs dry, fires at the enemy pace, only hurts the player and makes no noise.
+	public bool HeldByEnemy;
 
 	private float _cooldownLeft;
 	private float _flashLeft;
@@ -71,7 +71,7 @@ public partial class Gun : Node2D
 		if (Data == null || Data.Melee || _cooldownLeft > 0)
 			return false;
 
-		if (Ammo <= 0 && !HeldByGoon)
+		if (Ammo <= 0 && !HeldByEnemy)
 		{
 			// Out of ammo: just a dry click. Time to throw it.
 			_cooldownLeft = 0.25f;
@@ -79,12 +79,12 @@ public partial class Gun : Node2D
 			return false;
 		}
 
-		_cooldownLeft = HeldByGoon ? Data.GoonCooldown : Data.Cooldown;
-		if (!HeldByGoon && !DevSettings.Current.InfiniteAmmo)
+		_cooldownLeft = HeldByEnemy ? Data.EnemyCooldown : Data.Cooldown;
+		if (!HeldByEnemy && !DevSettings.Current.InfiniteAmmo)
 			Ammo--;
 
-		// What the bullets can hit. Goons never shoot each other.
-		uint mask = Layers.World | Layers.Doors | (HeldByGoon ? Layers.Player : Layers.Enemies);
+		// What the bullets can hit. Enemies never shoot each other.
+		uint mask = Layers.World | Layers.Doors | (HeldByEnemy ? Layers.Player : Layers.Enemies);
 
 		// The barrel can poke through a wall the shooter is touching. Check the stretch from the
 		// shooter's center (Owner, never inside a wall) to the muzzle: whatever is in the way takes the shot.
@@ -93,7 +93,7 @@ public partial class Gun : Node2D
 
 		// A shot fired right against a door shoves it at full swing.
 		if (blocked.Count > 0 && ((Node)blocked["collider"]).GetParent() is Door door)
-			door.Shove(GlobalTransform.X, door.SwingSpeed, !HeldByGoon);
+			door.Shove(GlobalTransform.X, door.SwingSpeed, !HeldByEnemy);
 
 		for (int i = 0; i < Data.Pellets; i++)
 		{
@@ -120,7 +120,7 @@ public partial class Gun : Node2D
 		Effects.Spawn(SmokeScene, this, _muzzle.GlobalPosition, GlobalRotation);
 		Shell.Eject(this, GlobalPosition, GlobalRotation, Data.ShellColor);
 
-		if (!HeldByGoon)
+		if (!HeldByEnemy)
 		{
 			ShakeCamera.Shake(Data.Shake);
 			Noise.Make(this, GlobalPosition, Data.Noise);

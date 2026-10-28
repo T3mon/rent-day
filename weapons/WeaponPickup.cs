@@ -5,7 +5,7 @@ namespace RentDay;
 
 // A weapon lying on the floor, or flying through the air after being thrown or
 // dropped. Stand on it and press "grab" to pick it up. A thrown weapon knocks down
-// the first goon it hits (a knife kills him), then clatters to the floor.
+// the first enemy it hits (a knife kills him), then clatters to the floor.
 public partial class WeaponPickup : CharacterBody2D
 {
 	[Export] public WeaponData Data;
@@ -17,7 +17,7 @@ public partial class WeaponPickup : CharacterBody2D
 
 	private Sprite2D _look;
 	private Sprite2D _shadow;
-	private AudioStreamPlayer2D _hitSound; // the weapon's hit sound for being thrown into a goon (knife, bat)
+	private AudioStreamPlayer2D _hitSound; // the weapon's hit sound for being thrown into an enemy (knife, bat)
 	private float _spin;
 	private bool _thrown;
 
@@ -56,7 +56,7 @@ public partial class WeaponPickup : CharacterBody2D
 		_look.Rotation = _shadow.Rotation = GD.Randf() * Mathf.Tau;
 	}
 
-	// Sends the gun sliding. thrown = true makes it dangerous to goons.
+	// Sends the gun sliding. thrown = true makes it dangerous to enemies.
 	public void Launch(Vector2 velocity, bool thrown)
 	{
 		Velocity = velocity;
@@ -73,15 +73,15 @@ public partial class WeaponPickup : CharacterBody2D
 		KinematicCollision2D hit = MoveAndCollide(Velocity * dt);
 		if (hit != null)
 		{
-			if (hit.GetCollider() is Enemy goon && _thrown && !goon.IsDown)
+			if (hit.GetCollider() is Enemy enemy && _thrown && !enemy.IsDown)
 			{
 				// A thrown gun to the head: he goes down, the gun bounces off him.
 				if (Data.KillsWhenThrown)
-					goon.Die(Velocity.Normalized());
+					enemy.Die(Velocity.Normalized());
 				else
-					goon.KnockDown(Velocity.Normalized());
+					enemy.KnockDown(Velocity.Normalized());
 				_hitSound.Stream = Data.ThrownHitSound ?? Data.HitSound;
-				if (_hitSound.Stream != null) // guns have none: the goon's body fall is the sound
+				if (_hitSound.Stream != null) // guns have none: the enemy's body fall is the sound
 					_hitSound.Play();
 				ShakeCamera.Shake(1.3f);
 				_thrown = false;

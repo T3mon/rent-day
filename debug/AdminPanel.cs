@@ -5,7 +5,7 @@ using Godot;
 namespace RentDay;
 
 // The admin panel: F1 in a run from the editor (an exported game has none). Every testing switch of
-// DevSettings, live, plus tools: a weapon in your hand, any floor, a restart, every goon dead. The game
+// DevSettings, live, plus tools: a weapon in your hand, any floor, a restart, every enemy dead. The game
 // pauses while it's open; F1 or Esc closes it. Switches are saved to the settings file, so the next run
 // starts with them too. Drawn at the window's own resolution, so it reads clearly over the pixel art.
 public partial class AdminPanel : Control
@@ -49,10 +49,10 @@ public partial class AdminPanel : Control
 		DevSettings s = DevSettings.Current;
 		var rows = new VBoxContainer();
 
-		Heading(rows, "GOONS");
-		Switch(rows, "See you", s.GoonsSeeYou, on => s.GoonsSeeYou = on);
-		Switch(rows, "Hear your shots", s.GoonsHearShots, on => s.GoonsHearShots = on);
-		Switch(rows, "Shoot", s.GoonsShoot, on => s.GoonsShoot = on);
+		Heading(rows, "ENEMIES");
+		Switch(rows, "See you", s.EnemiesSeeYou, on => s.EnemiesSeeYou = on);
+		Switch(rows, "Hear your shots", s.EnemiesHearShots, on => s.EnemiesHearShots = on);
+		Switch(rows, "Shoot", s.EnemiesShoot, on => s.EnemiesShoot = on);
 
 		Heading(rows, "YOU");
 		Switch(rows, "God mode (you can't die)", s.GodMode, on => s.GodMode = on);
@@ -65,7 +65,7 @@ public partial class AdminPanel : Control
 			i => s.StartWeapon = i == 0 ? null : Weapons[i - 1]);
 
 		Heading(rows, "SHOW");
-		Switch(rows, "Goon info", s.ShowGoonInfo, on => s.ShowGoonInfo = on);
+		Switch(rows, "Enemy info", s.ShowEnemyInfo, on => s.ShowEnemyInfo = on);
 		Switch(rows, "Red goo", s.RedGoo, on => s.RedGoo = on);
 
 		Heading(rows, "FLOORS");
@@ -79,10 +79,10 @@ public partial class AdminPanel : Control
 			Math.Clamp(s.StartFloor, 1, FloorCount) - 1, i => s.StartFloor = i + 1);
 		HBoxContainer tools = Row(rows, "");
 		Button(tools, "Restart floor", () => Close(() => GetTree().ReloadCurrentScene()));
-		Button(tools, "Kill all goons", () => Close(() =>
+		Button(tools, "Kill all enemies", () => Close(() =>
 		{
-			foreach (Enemy goon in GetTree().GetNodesInGroup("enemies").OfType<Enemy>().Where(goon => !goon.IsDead))
-				goon.Die(Vector2.Right);
+			foreach (Enemy enemy in GetTree().GetNodesInGroup("enemies").OfType<Enemy>().Where(enemy => !enemy.IsDead))
+				enemy.Die(Vector2.Right);
 		}));
 		Button(Row(rows, ""), "Reset all to normal", () =>
 		{

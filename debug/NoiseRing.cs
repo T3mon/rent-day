@@ -2,7 +2,7 @@ using Godot;
 
 namespace RentDay;
 
-// Dev settings, "show goon info": a ring that briefly shows how far a gunshot carried.
+// Dev settings, "show enemy info": a ring that briefly shows how far a gunshot carried.
 public partial class NoiseRing : Node2D
 {
 	private float _radius;

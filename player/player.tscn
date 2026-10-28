@@ -13,7 +13,7 @@
 [ext_resource type="AudioStream" uid="uid://dge5vdpikhi61" path="res://audio/finish/blow_4.wav" id="21_crack"]
 [ext_resource type="AudioStream" uid="uid://w856aiqosher" path="res://audio/finish/blow_5.wav" id="22_crack"]
 [ext_resource type="Resource" path="res://weapons/fists.tres" id="23_fists"]
-[ext_resource type="SpriteFrames" uid="uid://b4g1kxjhnohs6" path="res://art/anim/collector.tres" id="anim"]
+[ext_resource type="SpriteFrames" uid="uid://b4g1kxjhnohs6" path="res://art/anim/player.tres" id="anim"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8t03j"]
 radius = 8.0

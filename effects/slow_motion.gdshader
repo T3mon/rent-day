@@ -25,8 +25,8 @@ void fragment() {
 	vec3 split = vec3(texture(screen, uv - shift).r, texture(screen, uv + shift).gb);
 	c = mix(c, split, edge(uv, 0.65, 1.0) * amount);
 	float lum = dot(c, vec3(0.299, 0.587, 0.114));
-	vec3 tape = lum < 0.5 ? mix(NAVY, BLUE, lum * 2.0) : mix(BLUE, PALE, lum * 2.0 - 1.0);
-	c = mix(c, tape, 0.3 * amount);
+	vec3 tint = lum < 0.5 ? mix(NAVY, BLUE, lum * 2.0) : mix(BLUE, PALE, lum * 2.0 - 1.0);
+	c = mix(c, tint, 0.3 * amount);
 	c = mix(c, DARK, edge(uv, 0.6, 0.7) * amount);
 	if (mod(floor(uv.y / game_pixel.y), 2.0) > 0.5)
 		c *= 1.0 - 0.08 * amount;

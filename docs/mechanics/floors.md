@@ -4,8 +4,8 @@ The building is played floor by floor, bottom to top.
 
 ## Clearing a floor
 
-- A floor is clear when every goon on it is dead. A knocked-down goon still counts as alive.
-- While any goon is alive, the stairs up do nothing.
+- A floor is clear when every enemy on it is dead. A knocked-down enemy still counts as alive.
+- While any enemy is alive, the stairs up do nothing.
 - When the floor is clear, "FLOOR CLEAR" shows for a moment and a pink arrow bobs over the stairs up.
 - Walking onto the open stairs fades to black and starts the next floor, on the stairs you came up. No loading: every floor was read in on the loading screen.
 
@@ -21,7 +21,7 @@ The building is played floor by floor, bottom to top.
 
 ## The edge of the map
 
-- The map ends where its floor tiles end. Nobody walks off it: you stop at the edge, and so does a goon thrown at it. Bullets fly on out.
+- The map ends where its floor tiles end. Nobody walks off it: you stop at the edge, and so does an enemy thrown at it. Bullets fly on out.
 
 ## Level design for floors
 
@@ -31,9 +31,9 @@ The building is played floor by floor, bottom to top.
 - Leave a gun near where you arrive, for a player who comes up empty-handed.
 - Stairs are walked onto, not around: keep furniture off them and leave a free approach.
 - No green anywhere in a level: green is the crosshair's colour, and it must always stand out.
-- Mix the goon behaviours: guards facing doorways, patrollers in corridors, wanderers in rooms.
-- Give guards and wanderers something to do (Pose, see [goons.md](goons.md)): sitters on a couch or
+- Mix the enemy behaviours: guards facing doorways, patrollers in corridors, wanderers in rooms.
+- Give guards and wanderers something to do (Pose, see [enemies.md](enemies.md)): sitters on a couch or
   chair (facing = 90 + the seat's rotation; seats face down at rotation 0), leaners with their back
   to a wall, talkers in pairs facing each other. Patrollers never stand still, so they never pose.
 - Give rooms more than one way in where you can, so there are routes around a guard.
-- Doors follow [doors.md](doors.md); gaps for goons follow [goons.md](goons.md).
+- Doors follow [doors.md](doors.md); gaps for enemies follow [enemies.md](enemies.md).

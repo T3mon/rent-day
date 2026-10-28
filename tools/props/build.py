@@ -578,7 +578,7 @@ def keytar():
 
 # ======================================================================= outside
 def chopper():
-    """The collector's ride: long and low, gloss black with neon flames licking back along the tank, a raked
+    """The player's ride: long and low, gloss black with neon flames licking back along the tank, a raked
     chrome fork, swept-back bars, a V-twin and drag pipes. Faces right."""
     BLK, BLK2, GLOSS, GLINT = C('#0b0912'), C('#1d1a2a'), C('#55507a'), C('#d8d4f0')
     FLAME = [C('#ffd24a'), T1, HP1]                                                         # yellow at the root, pink at the tips

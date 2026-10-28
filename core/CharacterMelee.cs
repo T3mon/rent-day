@@ -3,7 +3,7 @@ using Godot;
 
 namespace RentDay;
 
-// Melee, for the player and the goons: swinging a bat or knife, or punching with bare fists.
+// Melee, for the player and the enemies: swinging a bat or knife, or punching with bare fists.
 // Here is when a swing may start and whom it hits; the swing itself is an animation of the
 // body (see CharacterMotion).
 public partial class Character
@@ -40,7 +40,7 @@ public partial class Character
 			return false;
 		_swung = weapon;
 		_swingLeft = weapon.SwingTime;
-		_swingWait = Gun.HeldByGoon ? weapon.GoonCooldown : weapon.Cooldown;
+		_swingWait = Gun.HeldByEnemy ? weapon.EnemyCooldown : weapon.Cooldown;
 		_struck.Clear();
 		_swingSound.Stream = weapon.ShotSound;
 		_swingSound.PitchScale = (float)GD.RandRange(0.9, 1.1);
@@ -67,7 +67,7 @@ public partial class Character
 		{
 			Shape = _reach,
 			Transform = new Transform2D(facing.Angle(), GlobalPosition + facing * (_swung.Reach / 2f + 1f)),
-			CollisionMask = Gun.HeldByGoon ? Layers.Player : Layers.Enemies,
+			CollisionMask = Gun.HeldByEnemy ? Layers.Player : Layers.Enemies,
 		};
 		PhysicsDirectSpaceState2D space = GetWorld2D().DirectSpaceState;
 		foreach (var hit in space.IntersectShape(query, 8))
@@ -81,7 +81,7 @@ public partial class Character
 			Vector2 direction = (target.GlobalPosition - GlobalPosition).Normalized();
 			_strikeSound.Stream = _swung.HitSound;
 			_strikeSound.Play();
-			if (!Gun.HeldByGoon)
+			if (!Gun.HeldByEnemy)
 				ShakeCamera.Shake(_swung.Shake);
 			if (_swung.Lethal)
 				target.Die(direction);

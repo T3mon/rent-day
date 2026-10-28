@@ -4,7 +4,7 @@ using Godot;
 namespace RentDay;
 
 // Stairs; the way up is the scene's up. Stairs that lead up are the floor's exit: shut while
-// any goon on the floor is alive (knocked-down ones too), then an arrow bobs over them, and
+// any enemy on the floor is alive (knocked-down ones too), then an arrow bobs over them, and
 // walking onto them takes you to the next floor (Main.NextFloor).
 public partial class Stairs : Area2D
 {

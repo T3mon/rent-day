@@ -4,10 +4,10 @@ using Godot;
 
 namespace RentDay;
 
-// The top of a run. Plays the floors in order: kill every goon on a floor and its stairs
+// The top of a run. Plays the floors in order: kill every enemy on a floor and its stairs
 // up open; walk onto them and you're on the next floor, holding the gun you came with.
 // Holds the on-screen messages and ammo counter, and handles restarting. Every floor start is
-// autosaved; Esc opens the Esc menu (TapeMenu), F5 quick-saves, F9 loads the quick save.
+// autosaved; Esc opens the Esc menu (Menu), F5 quick-saves, F9 loads the quick save.
 // A run starts from the main menu through Begin (a new game or a save).
 public partial class Main : Node2D
 {
@@ -18,11 +18,11 @@ public partial class Main : Node2D
 	private static WeaponData _carried;  // the gun you came up the stairs with, and its rounds
 	private static int _carriedAmmo;
 	private static bool _arriving;
-	private static readonly PackedScene Menu = GD.Load<PackedScene>(TapeMenu.ScenePath);
+	private static readonly PackedScene MenuScene = GD.Load<PackedScene>(Menu.ScenePath);
 
 	public static ulong FloorStarted { get; private set; } // engine ticks when this floor began
 
-	// Every goon on this floor is dead (the stairs up open).
+	// Every enemy on this floor is dead (the stairs up open).
 	public bool Cleared { get; private set; }
 
 	private Label _message;
@@ -60,7 +60,7 @@ public partial class Main : Node2D
 			CreateTween().TweenProperty(_fade, "modulate:a", 0f, 0.3);
 		_arriving = false;
 
-		// Short notes in the top left corner, in the menu's tape lettering: "QUICK SAVED".
+		// Short notes in the top left corner, in the menu's lettering: "QUICK SAVED".
 		_note = new Label { Position = new Vector2(16, 6), Visible = false };
 		_note.AddThemeFontOverride("font", GD.Load<Font>("res://ui/fonts/VT323-Regular.ttf"));
 		_note.AddThemeFontSizeOverride("font_size", 16);
@@ -82,7 +82,7 @@ public partial class Main : Node2D
 			((Enemy)node).Died += OnEnemyDied;
 
 		// The level's floor covers the whole map, so its size is the camera's limit,
-		// and (minus walls and furniture) the area goons can walk.
+		// and (minus walls and furniture) the area enemies can walk.
 		if (level.FindChild("Floor", true, false) is TileMapLayer floor)
 		{
 			Rect2I cells = floor.GetUsedRect();
@@ -133,7 +133,7 @@ public partial class Main : Node2D
 		_carried = save != null ? SaveGame.WeaponOf(save) : null;
 		_carriedAmmo = _carried != null ? save.Ammo : 0;
 		_arriving = true;
-		TapeMenu.LoadScene(tree, "res://main.tscn");
+		Menu.LoadScene(tree, "res://main.tscn");
 	}
 
 	// What a save holds: this floor, and the gun you came onto it with (loading starts the floor over).
@@ -147,7 +147,7 @@ public partial class Main : Node2D
 			GetViewport().SetInputAsHandled();
 			if (SlowMotion.On)
 				SlowMotion.Set(1f); // the menu runs at full speed
-			var menu = Menu.Instantiate<TapeMenu>();
+			var menu = MenuScene.Instantiate<Menu>();
 			menu.Paused = true;
 			GetNode("HUD").AddChild(menu);
 			GetTree().Paused = true;

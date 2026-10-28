@@ -69,7 +69,7 @@ public partial class Bullet : Area2D
 		if (IsQueuedForDeletion())
 			return; // already hit something this frame
 
-		// Anyone killable (player or goon) dies, unless a goon held up in front takes it; a wall just stops
+		// Anyone killable (player or enemy) dies, unless an enemy held up in front takes it; a wall just stops
 		// the bullet, a door also gets pushed.
 		if (body is Character target)
 		{
@@ -80,7 +80,7 @@ public partial class Bullet : Area2D
 			Effects.Spawn(SparkScene, this, GlobalPosition, Rotation + Mathf.Pi); // sparks fly back off the wall
 
 		if (body.GetParent() is Door door)
-			door.Shove(Transform.X, DoorShove, byPlayer: (CollisionMask & Layers.Enemies) != 0); // only your bullets hit goons
+			door.Shove(Transform.X, DoorShove, byPlayer: (CollisionMask & Layers.Enemies) != 0); // only your bullets hit enemies
 
 		// QueueFree removes the node from the game at the end of this frame.
 		QueueFree();

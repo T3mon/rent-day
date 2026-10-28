@@ -16,20 +16,20 @@ How doors behave, and how to place them in a level. Tuning values live in the do
 
 ## Slams
 
-- A door you pushed, swinging hard, knocks down any goon it passes. He drops his gun (see [goons.md](goons.md)).
+- A door you pushed, swinging hard, knocks down any enemy it passes. He drops his gun (see [enemies.md](enemies.md)).
 - A slam sounds like the door cracking into him (`audio/door_hit.wav`, turned down 4 dB on the door's SlamSound), and he hits the floor with a body fall.
-- A door a goon pushed open never knocks anyone down.
+- A door an enemy pushed open never knocks anyone down.
 
 ## Bullets
 
 - Doors stop bullets, wherever the door hangs.
 - Each bullet nudges the door the way it flies. A single shot can't open a closed door (it clicks back shut), but nudges an open one.
 - A shotgun blast, or a shot fired right against a door, flings it open.
-- A door your bullets fling open slams goons like one you pushed. Goons' bullets push doors too, but never make a slam.
+- A door your bullets fling open slams enemies like one you pushed. Enemies' bullets push doors too, but never make a slam.
 
 ## Sight
 
-- A door blocks goons' sight wherever it hangs: a closed door hides the room, an open one only the line it lies across.
+- A door blocks enemies' sight wherever it hangs: a closed door hides the room, an open one only the line it lies across.
 
 ## Placing doors in a level
 

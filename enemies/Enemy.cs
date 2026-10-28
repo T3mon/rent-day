@@ -4,28 +4,28 @@ using Godot;
 
 namespace RentDay;
 
-// A goon. What he does until he notices you depends on his Behaviour:
+// An enemy. What he does until he notices you depends on his Behaviour:
 //   Static - stands guard facing one way. Reacts only to what he sees, never to gunshots.
 //   Patrol - walks straight ahead; when something blocks his way he turns left, bit by bit, until
 //            the way is clear and he faces straight along the walls again.
 //   Wander - walks a few steps in a random direction, stops, looks around, repeats.
-// Patrolling and wandering goons hear your gunshots and run to where the shot came from.
-// When a goon sees you he stops, turns to aim, and fires after a short reaction time: longer
+// Patrolling and wandering enemies hear your gunshots and run to where the shot came from.
+// When an enemy sees you he stops, turns to aim, and fires after a short reaction time: longer
 // when you're far away or behind him, with a little randomness. That delay is your window.
-// After that he keeps firing at his gun's goon pace for as long as he sees you, walking at you
-// until he's close. A goon with a bat or knife instead runs at you and swings once you're in reach.
+// After that he keeps firing at his gun's enemy pace for as long as he sees you, walking at you
+// until he's close. An enemy with a bat or knife instead runs at you and swings once you're in reach.
 // He notices you all around him, but only as far as about the screen reaches to your side. Calm, he
 // only looks around every half second and takes a moment to react, so you can sneak up on him.
-// If he loses you, he runs to around where he last saw or heard you (each goon to a different spot,
+// If he loses you, he runs to around where he last saw or heard you (each enemy to a different spot,
 // so they don't pile up), on a route around walls (see LevelGrid). If you're not there, he
-// looks around for a moment and goes back to his routine (a static goon returns to his post).
-// Goons shoulder each other apart rather than stand inside one another. One standing where he
+// looks around for a moment and goes back to his routine (a static enemy returns to his post).
+// Enemies shoulder each other apart rather than stand inside one another. One standing where he
 // doesn't fit (sitting in a couch, slumped against a wall) first steps out onto open floor.
-// A goon whose weapon got knocked away runs for the nearest weapon he can see.
+// An enemy whose weapon got knocked away runs for the nearest weapon he can see.
 // Knocked down into a wall, he sits slumped against it instead of lying flat.
 // Pose is only the look: what he does while calm and standing still (smoking, on the phone...).
 //
-// Change the defaults for every goon in enemies/enemy.tscn; change one goon in the level.
+// Change the defaults for every enemy in enemies/enemy.tscn; change one enemy in the level.
 public partial class Enemy : Character
 {
 	public enum Routine { Static, Patrol, Wander }
@@ -52,7 +52,7 @@ public partial class Enemy : Character
 
 	[ExportGroup("Thrown")]
 	[Export] public float SplatSpeed = 250f;    // thrown straight into a wall at least this fast (pixels per second): he dies on it
-	[Export] public float BowlSpeed = 150f;     // thrown and still this fast: the goon he slides into goes down too
+	[Export] public float BowlSpeed = 150f;     // thrown and still this fast: the enemy he slides into goes down too
 
 	[ExportGroup("Chase")]
 	[Export] public float ChaseSpeed = 130f;    // running after you
@@ -63,7 +63,7 @@ public partial class Enemy : Character
 	[Export] public float SearchSpread = 32f;   // runs to a random spot this close to where he last saw you
 	[Export] public float NoiseSpread = 64f;    // runs to a random spot this close to a gunshot he heard
 
-	private const float Shoulder = 16f;          // two goons' bodies side by side: closer than this they push apart
+	private const float Shoulder = 16f;          // two enemies' bodies side by side: closer than this they push apart
 	private const float ShoveSpeed = 90f;        // how hard, pixels per second, when right on top of each other
 
 	private static readonly AudioStream WallHit = GD.Load<AudioStream>("res://audio/wall_hit.wav");
@@ -96,13 +96,13 @@ public partial class Enemy : Character
 	public override void _EnterTree() => All.Add(this);
 	public override void _ExitTree() => All.Remove(this);
 
-	// Would a gunshot bring him running? (Static goons stay put; one who sees you is busy with you.)
+	// Would a gunshot bring him running? (Static enemies stay put; one who sees you is busy with you.)
 	public bool CanHear => Behaviour != Routine.Static && !IsDead && !IsDown && !_seesYou;
 
 	public override void _Ready()
 	{
 		base._Ready();
-		Gun.HeldByGoon = true;
+		Gun.HeldByEnemy = true;
 		Visual.RotationDegrees = FacingDegrees;
 		_post = GlobalPosition;
 		_postAngle = Visual.Rotation;
@@ -126,7 +126,7 @@ public partial class Enemy : Character
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (DevSettings.Current.ShowGoonInfo || _drawnInfo)
+		if (DevSettings.Current.ShowEnemyInfo || _drawnInfo)
 			QueueRedraw();
 		if (IsDead || Pinned)
 		{
@@ -209,7 +209,7 @@ public partial class Enemy : Character
 		_ => null,
 	};
 
-	// Closer to another goon than their two bodies side by side: a push apart, harder the deeper in.
+	// Closer to another enemy than their two bodies side by side: a push apart, harder the deeper in.
 	private Vector2 Shove()
 	{
 		Vector2 push = Vector2.Zero;
@@ -227,7 +227,7 @@ public partial class Enemy : Character
 		return push * ShoveSpeed;
 	}
 
-	// Thrown and still flying fast: the first goon he slides into goes down too, and he stops there.
+	// Thrown and still flying fast: the first enemy he slides into goes down too, and he stops there.
 	private void Bowl(Vector2 sliding)
 	{
 		if (sliding.Length() < BowlSpeed)
@@ -236,7 +236,7 @@ public partial class Enemy : Character
 			return;
 		}
 		Enemy hit = GetTree().GetNodesInGroup("enemies").OfType<Enemy>()
-			.FirstOrDefault(goon => goon != this && !goon.IsDead && !goon.IsDown && !goon.Pinned && goon.GlobalPosition.DistanceTo(GlobalPosition) < 16f);
+			.FirstOrDefault(enemy => enemy != this && !enemy.IsDead && !enemy.IsDown && !enemy.Pinned && enemy.GlobalPosition.DistanceTo(GlobalPosition) < 16f);
 		if (hit == null)
 			return;
 		hit.KnockDown(sliding.Normalized());
@@ -274,7 +274,7 @@ public partial class Enemy : Character
 			if (toYou.Length() > SwingRange)
 				RunTo(_player.GlobalPosition, ChargeSpeed, dt);
 			Visual.Rotation = aim;
-			if (toYou.Length() <= SwingRange && DevSettings.Current.GoonsShoot)
+			if (toYou.Length() <= SwingRange && DevSettings.Current.EnemiesShoot)
 				TrySwing();
 			return;
 		}
@@ -288,7 +288,7 @@ public partial class Enemy : Character
 		}
 
 		bool onTarget = Mathf.Abs(Mathf.AngleDifference(Visual.Rotation, aim)) < Mathf.DegToRad(10f);
-		if (_reactionLeft <= 0f && onTarget && DevSettings.Current.GoonsShoot)
+		if (_reactionLeft <= 0f && onTarget && DevSettings.Current.EnemiesShoot)
 			Gun.TryFire();
 	}
 
@@ -426,7 +426,7 @@ public partial class Enemy : Character
 
 		if (nearest == null)
 		{
-			// Nothing to grab: just watch you (goons never punch).
+			// Nothing to grab: just watch you (enemies never punch).
 			Velocity = Vector2.Zero;
 			if (CanSeePlayer())
 				Visual.LookAt(_player.GlobalPosition);
@@ -543,7 +543,7 @@ public partial class Enemy : Character
 	}
 
 	// Once he knows you're around he watches all the time. Calm, he only looks around now and then
-	// (goons not all at once), and after spotting you carries on for a moment before he reacts.
+	// (enemies not all at once), and after spotting you carries on for a moment before he reacts.
 	private bool Notices(float dt)
 	{
 		if (_alerted)
@@ -577,7 +577,7 @@ public partial class Enemy : Character
 
 	private bool CanSeePlayer()
 	{
-		if (!DevSettings.Current.GoonsSeeYou)
+		if (!DevSettings.Current.EnemiesSeeYou)
 			return false;
 
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
@@ -591,13 +591,13 @@ public partial class Enemy : Character
 		return GetWorld2D().DirectSpaceState.IntersectRay(query).Count == 0;
 	}
 
-	// ---------------------------------------------------------------- dev settings: "show goon info"
+	// ---------------------------------------------------------------- dev settings: "show enemy info"
 	// Draws what he can see (white = calm, yellow = searching, red = sees you) and where he's headed.
 	private bool _drawnInfo;
 
 	public override void _Draw()
 	{
-		_drawnInfo = DevSettings.Current.ShowGoonInfo && !IsDead;
+		_drawnInfo = DevSettings.Current.ShowEnemyInfo && !IsDead;
 		if (!_drawnInfo)
 			return;
 

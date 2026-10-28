@@ -3,18 +3,18 @@ using Godot;
 
 namespace RentDay;
 
-// The map goons find their way around with: graph paper laid over the floor, 8 px squares,
-// each open or closed. A square is closed if a goon standing in its middle would come closer
-// than Room pixels to a wall, furniture or the edge of the floor. Doors don't count: goons
+// The map enemies find their way around with: graph paper laid over the floor, 8 px squares,
+// each open or closed. A square is closed if an enemy standing in its middle would come closer
+// than Room pixels to a wall, furniture or the edge of the floor. Doors don't count: enemies
 // walk through them, pushing them open.
-// A route runs square to square (Godot's AStarGrid2D), then gets pulled straight wherever a
-// goon fits all the way, so he cuts across a room instead of zig-zagging.
-// Main builds it once per level; goons use the static calls.
+// A route runs square to square (Godot's AStarGrid2D), then gets pulled straight wherever an
+// enemy fits all the way, so he cuts across a room instead of zig-zagging.
+// Main builds it once per level; enemies use the static calls.
 public static class LevelGrid
 {
 	private const int Cell = 8;
-	private const float Room = 10f; // a goon's body (8 px) plus a little to spare, so he never scrapes a corner
-	private const float Body = 7.5f; // a goon's body, a hair under, so touching a wall isn't being in it
+	private const float Room = 10f; // an enemy's body (8 px) plus a little to spare, so he never scrapes a corner
+	private const float Body = 7.5f; // an enemy's body, a hair under, so touching a wall isn't being in it
 
 	private static Node2D _level;
 	private static Rect2 _floor;
@@ -40,10 +40,10 @@ public static class LevelGrid
 		};
 	}
 
-	// Is there room for a goon here? Before the map is ready (the first frames), everywhere is open.
+	// Is there room for an enemy here? Before the map is ready (the first frames), everywhere is open.
 	public static bool IsOpen(Vector2 at) => !Ready() || IsOpen(CellAt(at));
 
-	// The corners to walk through from `from` to `to`, ending at `to` (or as near as a goon fits).
+	// The corners to walk through from `from` to `to`, ending at `to` (or as near as an enemy fits).
 	// Empty if there's no way there; null if the map isn't ready yet.
 	// Call it from _PhysicsProcess: it asks the physics engine what's in the way.
 	public static List<Vector2> Path(Vector2 from, Vector2 to)
@@ -80,7 +80,7 @@ public static class LevelGrid
 		return route;
 	}
 
-	// Is a goon's body here pressed into a wall or furniture (`mask`), rather than just close to one?
+	// Is an enemy's body here pressed into a wall or furniture (`mask`), rather than just close to one?
 	public static bool Wedged(Vector2 at, uint mask)
 	{
 		if (!Ready())
@@ -90,7 +90,7 @@ public static class LevelGrid
 		return _level.GetWorld2D().DirectSpaceState.IntersectShape(_bodyQuery, 1).Count > 0;
 	}
 
-	// Where a goon wedged in something steps out to: the middle of the nearest open square he can walk
+	// Where an enemy wedged in something steps out to: the middle of the nearest open square he can walk
 	// straight onto without going through a wall (furniture doesn't count: he may be sitting in it).
 	public static Vector2? StepOut(Vector2 from) => NearestReachable(from, Layers.World);
 
@@ -122,7 +122,7 @@ public static class LevelGrid
 		return null;
 	}
 
-	// How far a goon walks from `from` to `to`, square by square: straight-line distance before the
+	// How far an enemy walks from `from` to `to`, square by square: straight-line distance before the
 	// map is ready, infinity if there's no way.
 	public static float WalkLength(Vector2 from, Vector2 to)
 	{
@@ -193,7 +193,7 @@ public static class LevelGrid
 		return null;
 	}
 
-	// Would a goon (plus Room) fit all the way from a to b, touching no wall or furniture?
+	// Would an enemy (plus Room) fit all the way from a to b, touching no wall or furniture?
 	private static bool Fits(Vector2 a, Vector2 b)
 	{
 		_query.Transform = new Transform2D(0f, a);

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b5nk61ym4p0po"]
 
 [ext_resource type="Script" uid="uid://5ye6kv37knnw" path="res://Main.cs" id="1_h2yge"]
-[ext_resource type="Material" uid="uid://dxjesfdeveoy4" path="res://art/trip_material.tres" id="3_1bvp3"]
+[ext_resource type="Material" uid="uid://dxjesfdeveoy4" path="res://art/vignette_material.tres" id="3_1bvp3"]
 [ext_resource type="FontFile" uid="uid://bavbtyv50qn1p" path="res://ui/Blox2.ttf" id="4_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bfo8jitqkgar8" path="res://levels/apartment_1.tscn" id="floor_1"]
 [ext_resource type="PackedScene" uid="uid://hf2lqivia5a7" path="res://levels/apartment_2.tscn" id="floor_2"]
@@ -12,9 +12,9 @@
 script = ExtResource("1_h2yge")
 Floors = [ExtResource("floor_1"), ExtResource("floor_2"), ExtResource("floor_3"), ExtResource("floor_4")]
 
-[node name="Trip" type="CanvasLayer" parent="." unique_id=182106927]
+[node name="Vignette" type="CanvasLayer" parent="." unique_id=182106927]
 
-[node name="Filter" type="ColorRect" parent="Trip" unique_id=438629166]
+[node name="Filter" type="ColorRect" parent="Vignette" unique_id=438629166]
 material = ExtResource("3_1bvp3")
 anchors_preset = 15
 anchor_right = 1.0

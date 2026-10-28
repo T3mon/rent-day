@@ -1,4 +1,4 @@
-"""Makes extra goon outfits by recolouring an existing goon's hand-drawn sprites (art/anim/<name>/<name>_*.png).
+"""Makes extra enemy outfits by recolouring an existing enemy's hand-drawn sprites (art/anim/<name>/<name>_*.png).
 
     python tools/anim/outfits.py     then     python tools/anim/build.py
 """
@@ -11,10 +11,10 @@ PARTS = ('armed', 'unarmed', 'legs', 'dead', 'dead_face', 'dead_side')
 
 # new outfit: (made from, {old colour: new colour}). No green: green is the crosshair's.
 OUTFITS = {
-    'goon_c': ('goon_b', {  # red tracksuit, white trim, black hair
+    'enemy_c': ('enemy_b', {  # red tracksuit, white trim, black hair
         '4a3328': 'b8282e', '2a1c15': '6e1418', '26262e': 'e6e2d8', 'd9b45a': '1c1418', 'f2d98a': '3a2e30',
         '7a5644': '2a2024', '121620': '6e1418', '1e2433': '9e2228', 'b07a58': '8a5a3c', 'e0a882': 'b07a58'}),
-    'goon_d': ('goon_b', {  # cream suit, dark purple shirt, slicked brown hair
+    'enemy_d': ('enemy_b', {  # cream suit, dark purple shirt, slicked brown hair
         '4a3328': 'd8d4c8', '2a1c15': '9a968c', '26262e': '2a1c3a', 'd9b45a': '5a3a2a', 'f2d98a': '7a5240',
         '7a5644': '3a2418', '121620': 'a8a49a', '1e2433': 'cfcabe'}),
 }

@@ -13,7 +13,7 @@ Settings a gun controls:
 - **Pellets:** one bullet per shot, or several spread in a cone.
 - **Spread:** random angle on each bullet.
 - **Speed and range:** each bullet has its own speed (with optional variation) and a maximum distance.
-- **Cooldown:** minimum time between shots, separate values for the player and for goons.
+- **Cooldown:** minimum time between shots, separate values for the player and for enemies.
 - **Feel:** screen shake (in pixels, your shots only), recoil push-back on the shooter, sound pitch.
 - **Noise:** how far a shot can be heard.
 
@@ -22,10 +22,10 @@ Settings a gun controls:
 - Bullets fly straight and stop at the first thing they hit.
 - Each bullet checks the whole stretch it flies every frame, so a fast bullet can't skip over a thin door.
 - Walls and doors stop bullets. Furniture does not. Bullets also push doors (see [doors.md](doors.md)).
-- Bullets fly over dead bodies, but a knocked-down goon can still be shot.
+- Bullets fly over dead bodies, but a knocked-down enemy can still be shot.
 - A shot is checked from the shooter's center to the muzzle, so a barrel poking through a wall
   can't shoot through it: the shot hits the wall (or whoever stands in between) right there.
-- Bullets damage characters on the enemy side only: the player's bullets hit goons, goon bullets hit the player. Goons never hit each other.
+- Bullets damage characters on the enemy side only: the player's bullets hit enemies, enemy bullets hit the player. Enemies never hit each other.
 - Any hit on a character kills it in one shot.
 
 ## Feedback
@@ -45,13 +45,13 @@ Settings a gun controls:
 - A big splat lands just past the body, with a smear the way it slid, and a pool spreads under it for a few seconds.
 - Goo stays on the floor it lands on: it can flow through an open doorway in front of it, never through or around a wall. Walls and furniture are drawn over it.
 - Each blow of an execution leaves a small splat and a few drops. Stealth kills leave none.
-- Walking through goo leaves footprints for a few steps, fading out. Goons leave them too.
+- Walking through goo leaves footprints for a few steps, fading out. Enemies leave them too.
 - Every splat gets its own fixed mix of two colours. Nothing cycles or changes colour over time.
 - Goo stays until the floor restarts.
 
 ## Noise
 
-- Player shots make noise. Goons' shots do not.
+- Player shots make noise. Enemies' shots do not.
 - Noise has a radius and goes through walls.
-- Goons inside the radius may react (see [goons.md](goons.md)).
+- Enemies inside the radius may react (see [enemies.md](enemies.md)).
 - Different guns have different radii.

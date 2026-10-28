@@ -14,10 +14,10 @@ public partial class Character
 	private const float LeanPerSpeed = 2.5f / 200f; // pixels the upper body leads by, per pixel per second of speed
 	private const float DustKick = 1800f;           // speed change (pixels per second, per second) that kicks up dust
 
-	// Standing still, this plays instead of the usual standing animation (a goon's smoke, phone...); null = none.
+	// Standing still, this plays instead of the usual standing animation (an enemy's smoke, phone...); null = none.
 	protected StringName IdlePose;
 
-	// Standing still, he looks around instead (a goon at an empty spot); an idle pose comes first.
+	// Standing still, he looks around instead (an enemy at an empty spot); an idle pose comes first.
 	protected bool LookAround;
 
 	// Holding a human shield (ShieldPose), or held up as one ("held"): this plays walking or standing; null = none.

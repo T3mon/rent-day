@@ -4,9 +4,9 @@ namespace RentDay;
 
 // A swinging door. Walk into it and it flies open, away from you; nobody is
 // ever blocked by a door. It swings at a fixed speed, slows down and stays
-// where it stops: doors don't close by themselves. A goon caught by a door
+// where it stops: doors don't close by themselves. An enemy caught by a door
 // you pushed, while it swings hard, goes down. Bullets push doors too.
-// Closed doors stop bullets and block the goons' eyesight.
+// Closed doors stop bullets and block the enemies' eyesight.
 //
 // Place the Door node on the hinge and rotate it so the closed door spans the
 // doorway; set Length to the doorway's width. Keep its whole swing (MaxAngle
@@ -31,13 +31,13 @@ public partial class Door : Node2D
 	[Export] public float SwingSpeed = 480f;  // how fast it flies open when pushed (degrees per second)
 	[Export] public float PlayerSwingSpeedLeftRight = 420f; // your push on doors in left-right walls is softer
 	[Export] public float Slowdown = 900f;    // degrees per second lost every second
-	[Export] public float SlamSpeed = 210f;   // faster than this it floors goons and ignores new pushes
+	[Export] public float SlamSpeed = 210f;   // faster than this it floors enemies and ignores new pushes
 	[Export] public float MaxAngle = 135f;    // how far it opens either way (degrees); it bounces back off this
 
 	private float _length = 40f;
 	private float _angle; // degrees, 0 = closed
 	private float _spin;  // degrees per second, + swings toward the door's "down" side
-	private bool _swungByPlayer; // only doors you push knock goons down; goons just open them
+	private bool _swungByPlayer; // only doors you push knock enemies down; enemies just open them
 	private bool _leftRight;     // hangs in a left-right wall
 	private Node2D _panel;
 	private Area2D _sweep;
@@ -103,7 +103,7 @@ public partial class Door : Node2D
 
 			if (Mathf.Abs(_spin) > SlamSpeed)
 			{
-				// Swinging hard: it passes through people, and floors a goon if you pushed it.
+				// Swinging hard: it passes through people, and floors an enemy if you pushed it.
 				if (who is Enemy && _swungByPlayer)
 				{
 					who.KnockDown(_panel.GlobalTransform.Y.Normalized() * Mathf.Sign(_spin));

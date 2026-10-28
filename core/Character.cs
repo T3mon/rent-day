@@ -2,7 +2,7 @@ using Godot;
 
 namespace RentDay;
 
-// Everything the player and the goons have in common: a body that faces where
+// Everything the player and the enemies have in common: a body that faces where
 // it aims, legs that walk where it moves, a weapon (or empty hands), melee swings,
 // and death from a single hit. Player and Enemy build on this.
 //
@@ -25,7 +25,7 @@ public partial class Character : CharacterBody2D
 	[Signal] public delegate void DiedEventHandler();
 
 	// Every animation of this character (art/anim/<name>.tres, made by tools/anim/build.py).
-	// Set it on a placed goon to give him a different outfit.
+	// Set it on a placed enemy to give him a different outfit.
 	[Export] public SpriteFrames Look;
 
 	[Export] public WeaponData StartWeapon;      // empty = starts empty-handed
@@ -35,7 +35,7 @@ public partial class Character : CharacterBody2D
 	[Export] public float DownTimeMax = 3.7f;
 
 	// Pixels travelled in one full walk cycle (left foot, then right). Longer = slower, heavier steps:
-	// about 180 steps a minute at the player's top speed (133), a stroll to a run for goons (80).
+	// about 180 steps a minute at the player's top speed (133), a stroll to a run for enemies (80).
 	[Export] public float Stride = 80f;
 
 	// What a dropped or thrown gun becomes: a gun lying on the floor.
@@ -49,7 +49,7 @@ public partial class Character : CharacterBody2D
 	// Held by someone finishing him off: he can't act or get up.
 	public bool Pinned { get; set; }
 
-	// Thrown by whoever held him up, and still flying (see Enemy: he bowls over a goon or bursts on a wall).
+	// Thrown by whoever held him up, and still flying (see Enemy: he bowls over an enemy or bursts on a wall).
 	public bool Thrown { get; protected set; }
 
 	public Gun Gun { get; private set; }
@@ -129,7 +129,7 @@ public partial class Character : CharacterBody2D
 	}
 
 	// Lets go of our gun: it becomes a gun on the floor, sliding at `velocity`.
-	// thrown = true makes it knock down the goon it hits.
+	// thrown = true makes it knock down the enemy it hits.
 	public void DropWeapon(Vector2 velocity, bool thrown = false)
 	{
 		if (!HasWeapon || PickupScene == null)

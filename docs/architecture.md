@@ -5,31 +5,31 @@ Gameplay rules are in [mechanics/](mechanics/).
 
 ## The shape of the code
 
-- **`core/Character.cs`** is the shared body of the player and every goon: walking legs, the
+- **`core/Character.cs`** is the shared body of the player and every enemy: walking legs, the
   weapon in the hand, one-hit death (with or without blood), knockdown, being held down (`Pinned`),
   flinching under blows, the lying layer (falling, knocked down, slumped against a wall, getting up,
   dead). Everything that happens *to* a body lives here.
   Its melee half is **`core/CharacterMelee.cs`**: swings (`TrySwing`, hits checked each physics tick
   in `UpdateSwing`).
   **`core/CharacterMotion.cs`** is the upper body's look, which never changes timing: which animation
-  plays (walking in step with the legs, standing or looking around, per thing in hand, a goon's idle pose, and
+  plays (walking in step with the legs, standing or looking around, per thing in hand, an enemy's idle pose, and
   one-offs over that via `Act`: swings, throws, pickups, a hand on a door, finishers), plus small
   motions on top: leaning into a run and settling after a stop (with dust), a dip on pickups, a
-  shoulder into doors, a throw's follow-through, a goon's startle when he spots you.
+  shoulder into doors, a throw's follow-through, an enemy's startle when he spots you.
 - **Animations** are generated, not drawn: **`tools/anim/`** (Python, no packages) builds every
   character's frames from body parts posed per frame, taking heads, hands and colours from the
   hand-drawn sprites in `art/anim/<name>/` (`<name>_armed`, `_unarmed`, `_legs`, `_dead*`). It writes
   `art/anim/<name>/<animation>.png` and one `SpriteFrames` per character, `art/anim/<name>.tres`,
   which is the character's `Look`. Poses and timings are in `tools/anim/anims.py`; rebuild with
   `python tools/anim/build.py`. A new outfit: its hand-drawn sprites in `art/` (or a recolour of an
-  existing goon in `tools/anim/outfits.py`), its name in `build.py`. A melee weapon's animations are named after it (`bat_swing`), so a new one needs
+  existing enemy in `tools/anim/outfits.py`), its name in `build.py`. A melee weapon's animations are named after it (`bat_swing`), so a new one needs
   poses there too.
 - **Walking:** the legs (and the arms swinging in step) run a 12-frame walk cycle driven by distance
   moved, not time: one full cycle (left foot, then right) per `Stride` pixels, set per character
-  (player 133: about 180 steps a minute at top speed, a running rhythm; goons 80: a stroll on patrol,
+  (player 133: about 180 steps a minute at top speed, a running rhythm; enemies 80: a stroll on patrol,
   a run when chasing). Shorter strides look like scurrying. Goo footprints keep their own spacing (20 px).
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
-  keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the goon adds
+  keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the enemy adds
   the AI (behaviours, sight, hearing, chasing, route-finding).
 - **`weapons/`**: `WeaponData` is one weapon's settings, saved as a data file per weapon (`*.tres`);
   melee weapons (bat, knife, and the player's fists) tick `Melee`. `Gun` is the weapon in a hand and
@@ -62,10 +62,10 @@ Gameplay rules are in [mechanics/](mechanics/).
     planks, parquet, red, purple, blue and teal carpet, pink and pool tiles, black and white checker, terracotta,
     cream stone, lavender lino, purple velvet, polished concrete). Every room gets its own, and rooms side
     by side never share one, so the floor plan reads by colour.
-- **`props/Stairs.cs`**: stairs. Stairs up are the floor's exit: they open once every goon is dead and
+- **`props/Stairs.cs`**: stairs. Stairs up are the floor's exit: they open once every enemy is dead and
   call `Main.NextFloor`. Rules in [mechanics/floors.md](mechanics/floors.md).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
-  bullets and sight and slam goons. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
+  bullets and sight and slam enemies. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
 - **`effects/`**: particles, screen shake (`ShakeCamera.Shake(pixels)`), hit stop (`HitStop.Freeze`), slow
   motion (`SlowMotion.Set`: game speed, sound speed and the music in one place; the player runs its meter),
   and its look: `slow_motion.gdshader` on a rect `Main` lays over the level at z 7 (over walls 5 and stairs 7);
@@ -78,19 +78,19 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`audio/`**: sounds: effects as WAV (cheapest to play; Godot packs them small), music as MP3 (a WAV
   song would be ten times the size). A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
   listing its takes; it picks one and shifts the pitch a little on every play.
-- **`core/Noise.cs`**: gunshots alert goons in earshot (the three with the shortest walk come).
-  **`core/LevelGrid.cs`** is the map goons
-  route on: 8 px squares, closed where a goon's body (plus a margin) would touch a wall, furniture or
-  the edge of the floor. Routes come from Godot's `AStarGrid2D` and are pulled straight wherever a
-  goon fits all the way. It checks the squares on first use, once the walls are solid to physics queries
+- **`core/Noise.cs`**: gunshots alert enemies in earshot (the three with the shortest walk come).
+  **`core/LevelGrid.cs`** is the map enemies
+  route on: 8 px squares, closed where an enemy's body (plus a margin) would touch a wall, furniture or
+  the edge of the floor. Routes come from Godot's `AStarGrid2D` and are pulled straight wherever an
+  enemy fits all the way. It checks the squares on first use, once the walls are solid to physics queries
   (a 20 ms frame), and keeps them when the same floor restarts: walls and furniture never move.
   A route may cut across the corner of a closed square (the line was checked), so "closed" is not
-  "stuck": a goon only counts as wedged when his body actually overlaps something (`Wedged`), and then
+  "stuck": an enemy only counts as wedged when his body actually overlaps something (`Wedged`), and then
   steps straight out (`StepOut`) with nothing stopping him before routing on.
-- **`ui/TapeMenu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
+- **`ui/Menu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
   drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
   beside them). Settings are placeholders: they keep their values while the game runs, nothing more.
-  It is also the loading screen: `TapeMenu.LoadScene` reads a scene (with every floor in it, and all
+  It is also the loading screen (`ui/MenuLoading.cs`): `Menu.LoadScene` reads a scene (with every floor in it, and all
   the music) a few pieces a frame while the game waits paused under it, then switches. It only shows
   if that takes a moment (over 0.25 s), then stays at least 0.6 s. The first load of a run also draws
   every shader once, hidden under it, so no effect stutters the first time it shows up mid-play (the
@@ -109,19 +109,19 @@ Gameplay rules are in [mechanics/](mechanics/).
 
 ## Where new things go
 
-- Affects both you and goons: `Character`. Goon-only: `Enemy`. Player-only: `Player`.
+- Affects both you and enemies: `Character`. Enemy-only: `Enemy`. Player-only: `Player`.
 - A new gun or melee weapon: a new `WeaponData` file in `weapons/`, no code.
 - A new visual effect: its own scene, spawned with `Effects.Spawn` into the level (never as a
   child of a character, or it moves and dies with them).
-- A new floor: a level scene in `levels/` (floor, walls, props, doors, guns, goons, the player at the
+- A new floor: a level scene in `levels/` (floor, walls, props, doors, guns, enemies, the player at the
   arrival stairs), added to Main's `Floors` in `main.tscn`. Keep a door's whole swing, doorways and the
-  stairs clear of furniture, and leave goons a way round it: a square of their route map closes
+  stairs clear of furniture, and leave enemies a way round it: a square of their route map closes
   when furniture comes within 10 px of its middle, so gaps under about 24 px are walls to them.
 - A new prop: a drawing function and a line in `PROPS` in `tools/props/build.py`, then its scene in
   `props/` (copy one of the same kind).
 - A new testing switch: a field in `DevSettings`, an `if` where it matters, a line in
   `ActiveSummary()`, and a switch in `AdminPanel`.
-- A new shader: its path in `TapeMenu.Shaders` too, so the loading screen builds it up front (else it
+- A new shader: its path in `Menu.Shaders` (`ui/MenuLoading.cs`) too, so the loading screen builds it up front (else it
   may stutter the first time it shows).
 
 ## Conventions
@@ -135,9 +135,9 @@ Gameplay rules are in [mechanics/](mechanics/).
   in it), bullets and effects. Set with each scene's z index.
 - Tuning values live in the Inspector (scene and data files), not in code.
 - **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in
-  levels (floors, walls, props, goons, goo), so the pointer always stands out.
-- Every goon's defaults are in `enemies/enemy.tscn`; set a single goon's values in the level.
-- **Change scenes with `TapeMenu.LoadScene`** (or `Main.Begin` for a run), never `ChangeSceneToFile`:
+  levels (floors, walls, props, enemies, goo), so the pointer always stands out.
+- Every enemy's defaults are in `enemies/enemy.tscn`; set a single enemy's values in the level.
+- **Change scenes with `Menu.LoadScene`** (or `Main.Begin` for a run), never `ChangeSceneToFile`:
   that reads the scene on the spot and freezes the game. The scene it loaded stays in memory, so the
   stairs and restarts (which reload the same scene) never touch the disk.
 

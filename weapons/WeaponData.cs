@@ -20,7 +20,7 @@ public partial class WeaponData : Resource
 	[Export] public int Ammo = 6;                // rounds in a fresh gun; there is no reloading
 	[Export] public bool Automatic;              // hold the button to keep firing
 	[Export] public float Cooldown = 0.18f;      // seconds between your shots
-	[Export] public float GoonCooldown = 0.17f;  // seconds between shots (or swings) when a goon holds it
+	[Export] public float EnemyCooldown = 0.17f;  // seconds between shots (or swings) when an enemy holds it
 	[Export] public int Pellets = 1;             // bullets per shot (a shotgun fires several)
 	[Export] public float Spread = 1.5f;         // random wobble either side of the aim, in degrees
 	[Export] public float BulletSpeed = 750f;    // pixels per second
@@ -33,14 +33,14 @@ public partial class WeaponData : Resource
 	[Export] public float SwingTime = 0.2f;      // seconds a swing hits whatever comes in reach
 	[Export] public float Reach = 35f;           // a swing hits up to this far in front of you, 22 px wide
 	[Export] public bool KillsWhenThrown;        // thrown, it kills instead of knocking down (knife)
-	[Export] public AudioStream ThrownHitSound;  // thrown into a goon (knife); empty = its HitSound (bat), or none (guns)
+	[Export] public AudioStream ThrownHitSound;  // thrown into an enemy (knife); empty = its HitSound (bat), or none (guns)
 	[Export] public AudioStream HitSound;        // when a swing connects
-	[Export] public int FinishBlows;             // finishing a downed goon with it: clicks, one blow each (bat 3); 0 = one slow cut on its own (knife)
+	[Export] public int FinishBlows;             // finishing a downed enemy with it: clicks, one blow each (bat 3); 0 = one slow cut on its own (knife)
 
 	[ExportGroup("Feel")]
 	[Export] public float Shake = 1f;            // screen shake per shot or melee hit, in pixels (yours only)
 	[Export] public float Kickback;              // pushes you backwards per shot, pixels per second
-	[Export] public float Noise = 240f;          // patrolling and wandering goons this close hear your shot, through walls
+	[Export] public float Noise = 240f;          // patrolling and wandering enemies this close hear your shot, through walls
 	[Export] public AudioStream ShotSound;       // the bang, or the whoosh of a swing
 	[Export] public float ShotPitch = 1f;        // the same sound pitched down sounds bigger, up sounds smaller
 	[Export] public AudioStream PickupSound;     // played when you grab it (slide rack, pump...)

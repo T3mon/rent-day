@@ -312,7 +312,7 @@ def animations():
     A['push_l'] = [({'lh': (6, -12), 'shear': 0.5}, 50), ({'lh': (9, -13), 'shear': 1.0, 'body': (0, -0.5)}, 110),
                    ({'lh': (8, -12.5), 'shear': 1.0}, 90), ({'lh': (4, -11)}, 50)]
 
-    # finishing a downed goon (the player kneels on him; the camera sees the back of the player)
+    # finishing a downed enemy (the player kneels on him; the camera sees the back of the player)
     A['fin_fists'] = [({'rh': (-2, 9), 'shear': -1.0}, 30), ({'rh': (13, 2), 'shear': 1.5}, 40),
                       ({'rh': (12, 2.5), 'shear': 1.0}, 60), ({'rh': (4, 8)}, 70)]
     up = bat_pose(0.0)
@@ -347,14 +347,14 @@ def animations():
                   ({'rh': (16, 5), 'lh': (16, -5), 'shear': 1.0, 'hands_top': True}, 70), ({'rh': (6, 9), 'lh': (6, -9)}, 60)]
     A['shield_grab'] = [(reach, 60), ({**reach, 'rh': (12, 5), 'lh': (12, -5), 'shear': 1.5}, 60), (pull, 60),
                         ({**neck, 'rh': (11, 7)}, 70)]
-    # the goon held up as one: arms pinned to his sides, squirming a little
+    # the enemy held up as one: arms pinned to his sides, squirming a little
     held = {'rh': (-1, 9.5), 'lh': (-1, -9.5), 'head': (0.5, 0)}
     A['held'] = [(held, 400), ({**held, 'shear': 0.8, 'rh': (0, 10)}, 250), (held, 400), ({**held, 'shear': -0.8, 'lh': (0, -10)}, 250)]
     leg = lambda f: ((-2, 4), f)
     A['kick'] = [({'legs': (leg((-6, 6)),), 'shear': -1.0}, 40), ({'legs': (leg((16, 3)),), 'shear': 2.0}, 50),
                  ({'legs': (leg((15, 3)),), 'shear': 1.5}, 70), ({'legs': (leg((4, 5)),)}, 60)]
 
-    # goons' idle poses for level design
+    # enemies' idle poses for level design
     cig_side = ('cig', (2, 12), 0.4)
     smoke = [({'items': (cig_side,)}, 700), ({'rh': (5, 8), 'items': (('cig', (6, 9), -0.6),)}, 100),
              ({'rh': (8, 4), 'items': (('cig', (9, 4), -1.2),), 'hands_top': True}, 100),
@@ -386,7 +386,7 @@ def animations():
     A['hide_up'] = [(blend(hide, fists, 0.35), 60), (blend(hide, fists, 0.75), 60), (fists, 40)]
     A['lean_off'] = [({'shear': 1.0, 'body': (0.5, 0), 'rh': (6, 2), 'lh': (6, -2), 'turn': 0.1}, 60),
                      ({'shear': 0.5, 'body': (1, 0), 'rh': (3, 9), 'lh': (3, -9)}, 60), (fists, 60)]
-    # looking around an empty spot (a goon who lost you, a wanderer between walks), with whatever is in hand
+    # looking around an empty spot (an enemy who lost you, a wanderer between walks), with whatever is in hand
     A['look'] = look_around(fists, ('lh', 'rh'))
     A['gun_look'] = look_around(gun, ('lh',))
     A['bat_look'] = look_around(bat_rest, ())

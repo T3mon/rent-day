@@ -3,7 +3,7 @@ using Godot;
 
 namespace RentDay;
 
-// The rent collector, driven by WASD and the mouse.
+// The player, driven by WASD and the mouse.
 // Dying, the gun and the alive/corpse looks come from Character.
 public partial class Player : Character
 {
@@ -20,22 +20,22 @@ public partial class Player : Character
 	[Export] public float PickupRange = 20f;    // how close a gun on the floor must be to grab it
 	[Export] public float ThrowSpeed = 600f;    // pixels per second
 
-	// Execute: finish off a goon lying on the floor. Bare fists (or holding a gun, which you drop):
-	// a few blows, one click each (a goon slumped against a wall: kicks to the head). A bat: its own
+	// Execute: finish off an enemy lying on the floor. Bare fists (or holding a gun, which you drop):
+	// a few blows, one click each (an enemy slumped against a wall: kicks to the head). A bat: its own
 	// blows, one click each, and you keep it. A knife: one slow cut across the throat, no clicks,
 	// and you keep it.
-	[Export] public float ExecuteRange = 32f;   // how close a downed goon must be
+	[Export] public float ExecuteRange = 32f;   // how close a downed enemy must be
 	[Export] public float BlowTime = 0.2f;      // seconds per blow; clicks during a blow don't count
 	[Export] public AudioStream[] BlowCracks = []; // fists: lightest first, every blow cracks harder, the last one before the kill hardest
 	[Export] public float CutTime = 0.78f;      // knife: seconds the whole cut takes
 	[Export] public float CutAt = 0.44f;        // knife: when it cuts
 
-	// Sneak kill: the same key on a goon standing right in front of you takes him out, no clicks.
+	// Sneak kill: the same key on an enemy standing right in front of you takes him out, no clicks.
 	[Export] public float SneakKillReach = 28f; // how far in front of you he may stand
 	[Export] public float SneakKillTime = 0.7f; // seconds it takes; you're stuck meanwhile
 
-	// Human shield ("shield", E): pick a downed goon up and hold him in front of you, whatever is in your
-	// hand. He takes goon bullets from the front; guns still fire past him, melee can't swing.
+	// Human shield ("shield", E): pick a downed enemy up and hold him in front of you, whatever is in your
+	// hand. He takes enemy bullets from the front; guns still fire past him, melee can't swing.
 	// E again: a neck snap, or, once he's shot up, you just drop him. Right-click: shove him away (Enemy.Throw).
 	[Export] public int ShieldHits = 5;         // bullets he takes before he dies
 	[Export] public int ShieldDropAfter = 3;    // hits after which letting go just drops him
@@ -64,14 +64,14 @@ public partial class Player : Character
 
 	private Camera2D _camera;
 	private AudioStreamPlayer2D _blowSound, _finalBlowSound, _grabSound, _struggleSound, _bodyFallSound;
-	private Enemy _victim; // the goon we're finishing off, if any
+	private Enemy _victim; // the enemy we're finishing off, if any
 	private WeaponData _finisher; // the bat or knife finishing him; null = fists
 	private float _cutAge;
 	private int _blowsLeft;
 	private float _blowLeft;
 	private float _sneakKillLeft;
 	private float _nextStruggle;
-	private Enemy _shield;        // the goon held up in front, if any
+	private Enemy _shield;        // the enemy held up in front, if any
 	private int _shieldHits;
 	private float _snapLeft, _liftLeft;
 	private Vector2 _liftFrom;
@@ -246,14 +246,14 @@ public partial class Player : Character
 			Afterimage.Leave(this);
 	}
 
-	// Grab a goon standing right in front of you, or else kneel on the nearest downed goon in reach.
-	// A bat or knife finishes a downed goon itself; anything else in your hand is dropped beside you.
+	// Grab an enemy standing right in front of you, or else kneel on the nearest downed enemy in reach.
+	// A bat or knife finishes a downed enemy itself; anything else in your hand is dropped beside you.
 	private void StartExecution()
 	{
-		var goons = GetTree().GetNodesInGroup("enemies").OfType<Enemy>().Where(goon => !goon.IsDead).ToList();
-		_victim = goons.FirstOrDefault(goon => !goon.IsDown && InSneakKillReach(goon))
-			?? goons.Where(goon => goon.IsDown && goon.GlobalPosition.DistanceTo(GlobalPosition) <= ExecuteRange)
-				.MinBy(goon => goon.GlobalPosition.DistanceTo(GlobalPosition));
+		var enemies = GetTree().GetNodesInGroup("enemies").OfType<Enemy>().Where(enemy => !enemy.IsDead).ToList();
+		_victim = enemies.FirstOrDefault(enemy => !enemy.IsDown && InSneakKillReach(enemy))
+			?? enemies.Where(enemy => enemy.IsDown && enemy.GlobalPosition.DistanceTo(GlobalPosition) <= ExecuteRange)
+				.MinBy(enemy => enemy.GlobalPosition.DistanceTo(GlobalPosition));
 		if (_victim == null)
 			return;
 
@@ -305,12 +305,12 @@ public partial class Player : Character
 			Act("fin_knife"); // the whole cut, timed to CutAt and CutTime
 	}
 
-	// Pick the nearest downed goon in reach up off the floor and hold him in front of you.
+	// Pick the nearest downed enemy in reach up off the floor and hold him in front of you.
 	private void GrabShield()
 	{
 		_shield = GetTree().GetNodesInGroup("enemies").OfType<Enemy>()
-			.Where(goon => goon.IsDown && !goon.IsDead && goon.GlobalPosition.DistanceTo(GlobalPosition) <= ExecuteRange)
-			.MinBy(goon => goon.GlobalPosition.DistanceTo(GlobalPosition));
+			.Where(enemy => enemy.IsDown && !enemy.IsDead && enemy.GlobalPosition.DistanceTo(GlobalPosition) <= ExecuteRange)
+			.MinBy(enemy => enemy.GlobalPosition.DistanceTo(GlobalPosition));
 		if (_shield == null)
 			return;
 		_shield.Pinned = true;
@@ -397,7 +397,7 @@ public partial class Player : Character
 		return body;
 	}
 
-	// A goon's bullet reached you. From the front, the goon you hold takes it: he jolts and bleeds, and
+	// An enemy's bullet reached you. From the front, the enemy you hold takes it: he jolts and bleeds, and
 	// dies after ShieldHits (a shotgun blast at once, and he takes all of it). Returns whether he took it.
 	public bool ShieldTakes(Vector2 bulletDirection, bool blast)
 	{
@@ -418,13 +418,13 @@ public partial class Player : Character
 	}
 
 	// Measured along where you aim, like a reach in front of your chest.
-	private bool InSneakKillReach(Enemy goon)
+	private bool InSneakKillReach(Enemy enemy)
 	{
-		Vector2 ahead = (goon.GlobalPosition - GlobalPosition).Rotated(-Visual.Rotation);
+		Vector2 ahead = (enemy.GlobalPosition - GlobalPosition).Rotated(-Visual.Rotation);
 		return ahead.X > 0f && ahead.X <= SneakKillReach && Mathf.Abs(ahead.Y) <= 16f;
 	}
 
-	// Stuck on him until he's done, and goons can still shoot you meanwhile.
+	// Stuck on him until he's done, and enemies can still shoot you meanwhile.
 	private void Execute(float dt)
 	{
 		_blowLeft = Mathf.Max(_blowLeft - dt, 0f);
@@ -471,7 +471,7 @@ public partial class Player : Character
 		}
 		else
 		{
-			// Each click lands a blow, harder every time: a punch, a kick to the head of a goon
+			// Each click lands a blow, harder every time: a punch, a kick to the head of an enemy
 			// slumped against a wall, or the bat swung down on him.
 			if (_blowLeft > 0f || !Input.IsActionJustPressed("shoot"))
 				return;

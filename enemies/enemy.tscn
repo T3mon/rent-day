@@ -5,7 +5,7 @@
 [ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="7_ccbdt"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="9_pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="10_pistol"]
-[ext_resource type="SpriteFrames" path="res://art/anim/goon_a.tres" id="anim"]
+[ext_resource type="SpriteFrames" path="res://art/anim/enemy_a.tres" id="anim"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_28xqf"]
 radius = 8.0
