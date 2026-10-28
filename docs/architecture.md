@@ -104,7 +104,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   storage on other systems). `Main.Begin` starts a run (a new game or a save); `Main.Checkpoint` is
   what a save holds. Rules in [mechanics/saves.md](mechanics/saves.md).
 - **`Main.cs`**: the top of a run: loads the current floor from its `Floors` list, carries your gun
-  up the stairs (static fields outlive the scene reload), HUD, restart, camera limits, builds the level grid.
+  up the stairs (static fields outlive the scene reload), HUD, restart, camera limits, builds the level grid, and fences the map's edge (on the furniture layer: nobody walks or is thrown off the map, bullets fly on).
 - **`debug/`**: testing switches (`DevSettings.Current`), active in editor runs only.
 
 ## Where new things go

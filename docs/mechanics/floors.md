@@ -19,6 +19,10 @@ The building is played floor by floor, bottom to top.
 - R restarts the current floor, with the gun you came up the stairs with.
 - The last floor has no stairs up. Clearing it shows "RENT COLLECTED". R then starts again from the first floor, empty-handed.
 
+## The edge of the map
+
+- The map ends where its floor tiles end. Nobody walks off it: you stop at the edge, and so does a goon thrown at it. Bullets fly on out.
+
 ## Level design for floors
 
 - One floor = one level scene in `levels/`, listed in order in `main.tscn` (Main's Floors).

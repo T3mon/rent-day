@@ -89,9 +89,11 @@ public partial class Main : Node2D
 			Rect2I cells = floor.GetUsedRect();
 			Vector2I tile = floor.TileSet.TileSize;
 			var area = new Rect2I(cells.Position * tile, cells.Size * tile);
+			var map = new Rect2(floor.Position + area.Position, area.Size);
 			_player.SetCameraLimits(new Rect2I((Vector2I)floor.GlobalPosition + area.Position, area.Size));
-			LevelGrid.Build(level, new Rect2(floor.Position + area.Position, area.Size));
-			GooCanvas.Build(level, new Rect2(floor.Position + area.Position, area.Size));
+			LevelGrid.Build(level, map);
+			GooCanvas.Build(level, map);
+			level.AddChild(Fence(map));
 		}
 
 		// Slow motion's look over the level (effects/slow_motion.gdshader), faded in and out in _Process. At z 7
@@ -105,6 +107,23 @@ public partial class Main : Node2D
 		SaveGame.Write(SaveGame.Auto, Checkpoint());
 		_songShown = Music.Started;
 		Music.Floor(this, _floor); // keeps playing through a death or a restart
+	}
+
+	// The edge of the map stops everyone, you and anyone thrown: four thick sides just outside it, on the
+	// furniture layer, so bullets and eyesight still pass.
+	private static StaticBody2D Fence(Rect2 map)
+	{
+		const float Thick = 64f;
+		var fence = new StaticBody2D { Name = "MapEdge", CollisionLayer = Layers.Furniture, CollisionMask = 0 };
+		foreach (Rect2 side in new[]
+		{
+			new Rect2(map.Position.X - Thick, map.Position.Y - Thick, Thick, map.Size.Y + 2 * Thick), // left
+			new Rect2(map.End.X, map.Position.Y - Thick, Thick, map.Size.Y + 2 * Thick),                // right
+			new Rect2(map.Position.X, map.Position.Y - Thick, map.Size.X, Thick),                       // top
+			new Rect2(map.Position.X, map.End.Y, map.Size.X, Thick),                                    // bottom
+		})
+			fence.AddChild(new CollisionShape2D { Position = side.GetCenter(), Shape = new RectangleShape2D { Size = side.Size } });
+		return fence;
 	}
 
 	// Starts a run: a new game (the first floor, or the testing start floor), or the floor a save

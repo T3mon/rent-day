@@ -35,7 +35,7 @@ Set per goon in the level:
 - A goon that loses sight of you runs to the last place he saw or heard you. Each goon picks his own spot around it (within **Search Spread**), so they don't pile up.
 - If you are not there, he searches briefly, then returns to his routine.
 - Goons route around walls and furniture with a little room to spare, so they never scrape corners. They go through doorways, pushing doors open.
-- The edge of the map is a wall to goons: they never walk off it.
+- The edge of the map is a wall to goons: they never walk off it, and one thrown at it stops there.
 - Goons closer together than two bodies side by side push apart, so they never stand inside each other. Calm goons in their poses are left where they were placed.
 - A goon whose body is in something (sitting in a couch, knocked against a wall) first steps straight out onto open floor, never through a wall, and only then sets off.
 - A goon that stops making progress plans a new route; a patrolling or wandering one turns.
