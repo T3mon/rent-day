@@ -71,8 +71,7 @@ public partial class Main : Node2D
 		_battery.Draw += DrawBattery;
 		GetNode("HUD").AddChild(_battery);
 
-		// Testing switches that are on (debug/dev_settings.tres), so they're never mistaken for bugs.
-		GetNode<Label>("HUD/DevInfo").Text = DevSettings.Current.ActiveSummary();
+		ShowDevInfo();
 
 		// Groups are tags set in the scenes: everyone tagged "player" / "enemies".
 		_player = (Player)GetTree().GetFirstNodeInGroup("player");
@@ -153,6 +152,12 @@ public partial class Main : Node2D
 			GetNode("HUD").AddChild(menu);
 			GetTree().Paused = true;
 		}
+		else if (e.IsActionPressed("admin_panel") && OS.IsDebugBuild())
+		{
+			GetViewport().SetInputAsHandled();
+			GetNode("HUD").AddChild(new AdminPanel { FloorCount = Floors.Length, Changed = ShowDevInfo });
+			GetTree().Paused = true;
+		}
 		else if (e.IsActionPressed("next_song"))
 			Music.Skip(1);
 		else if (e.IsActionPressed("quick_save"))
@@ -165,6 +170,9 @@ public partial class Main : Node2D
 				Note("NO QUICK SAVE YET");
 		}
 	}
+
+	// Testing switches that are on (debug/dev_settings.tres, the admin panel), so they're never mistaken for bugs.
+	private void ShowDevInfo() => GetNode<Label>("HUD/DevInfo").Text = DevSettings.Current.ActiveSummary();
 
 	private void Note(string text)
 	{

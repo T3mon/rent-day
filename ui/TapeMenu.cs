@@ -313,7 +313,8 @@ public partial class TapeMenu : Control
 	// (drawn many at once, its own build) and a shape drawn in code.
 	// Listed by hand: walking the project's folders for them took over half a second. A new shader goes here.
 	private static readonly string[] Shaders =
-		{ "res://art/goo_canvas.gdshader", "res://art/goo_stamp.gdshader", "res://art/trip.gdshader", "res://ui/tape_pause.gdshader" };
+		{ "res://art/goo_canvas.gdshader", "res://art/goo_stamp.gdshader", "res://art/trip.gdshader", "res://ui/tape_pause.gdshader",
+		  "res://effects/slow_motion.gdshader", "res://effects/afterimage.gdshader" };
 
 	private void WarmUp(ulong now)
 	{

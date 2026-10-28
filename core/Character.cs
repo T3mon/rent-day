@@ -213,7 +213,7 @@ public partial class Character : CharacterBody2D
 	// (choked out), so no goo and no blood, he just slumps.
 	public void Die(Vector2 hitDirection, bool lethal = true)
 	{
-		if (IsDead)
+		if (IsDead || (this is Player && DevSettings.Current.GodMode)) // testing: you can't die
 			return;
 		IsDead = true;
 		Velocity = Vector2.Zero;

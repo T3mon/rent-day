@@ -66,6 +66,10 @@ Each gun has its own pick-up sound, so you can tell what you grabbed by ear.
 - Kills don't freeze the game for a split second while it's slowed (hit stop): it's slow already.
 - Pausing, dying, a restart or the stairs end it. Numbers are tuned on the player (`player/player.tscn`).
 
+## Admin panel (`admin_panel`, F1)
+
+Testing switches and tools, in runs from the editor only: see [testing.md](testing.md).
+
 ## Pause (`ui_cancel`, Esc)
 
 Opens the Esc menu over the frozen floor: resume, save game, load game, settings, quit to the main menu. The game stays paused until it closes; Esc goes back one page, and from the first page resumes.

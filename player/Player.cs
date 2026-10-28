@@ -232,7 +232,10 @@ public partial class Player : Character
 			SlowMotion.Set(SlowSpeed);
 
 		if (SlowMotion.On)
-			SlowMeter = Mathf.Max(SlowMeter - realDt / SlowSeconds, 0f);
+		{
+			if (!DevSettings.Current.InfiniteSlowMotion) // testing: it never runs dry
+				SlowMeter = Mathf.Max(SlowMeter - realDt / SlowSeconds, 0f);
+		}
 		else if ((_refillWait -= realDt) <= 0f)
 			SlowMeter = Mathf.Min(SlowMeter + realDt / RefillSeconds, 1f);
 

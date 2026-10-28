@@ -105,7 +105,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   what a save holds. Rules in [mechanics/saves.md](mechanics/saves.md).
 - **`Main.cs`**: the top of a run: loads the current floor from its `Floors` list, carries your gun
   up the stairs (static fields outlive the scene reload), HUD, restart, camera limits, builds the level grid, and fences the map's edge (on the furniture layer: nobody walks or is thrown off the map, bullets fly on).
-- **`debug/`**: testing switches (`DevSettings.Current`), active in editor runs only.
+- **`debug/`**: testing switches (`DevSettings.Current`) and the admin panel (`AdminPanel`, F1), in editor runs only.
 
 ## Where new things go
 
@@ -119,8 +119,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   when furniture comes within 10 px of its middle, so gaps under about 24 px are walls to them.
 - A new prop: a drawing function and a line in `PROPS` in `tools/props/build.py`, then its scene in
   `props/` (copy one of the same kind).
-- A new testing switch: a field in `DevSettings`, an `if` where it matters, and a line in
-  `ActiveSummary()`.
+- A new testing switch: a field in `DevSettings`, an `if` where it matters, a line in
+  `ActiveSummary()`, and a switch in `AdminPanel`.
 - A new shader: its path in `TapeMenu.Shaders` too, so the loading screen builds it up front (else it
   may stutter the first time it shows).
 
