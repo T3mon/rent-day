@@ -625,7 +625,7 @@ def chopper():
 
 
 # ======================================================================= the existing props, redrawn (same sizes)
-def old_armchair():
+def armchair():
     p = P(22, 22, 2)
     p.box(0, 0, 22, 22, D2, D3, D1)
     p.rect(1, 1, 20, 5, D1); p.rect(1, 1, 4, 20, D1); p.rect(17, 1, 4, 20, D1)
@@ -636,7 +636,7 @@ def old_armchair():
     p.rim()
     return p
 
-def old_bathtub():
+def bathtub():
     p = P(22, 42, 2)
     p.box(0, 0, 22, 42, SOFT, WHT, SOFT2)
     p.ellipse(11, 21.5, 8, 18.5, SOFT2); p.ellipse(11, 22.5, 7, 16.5, CY3)
@@ -645,7 +645,7 @@ def old_bathtub():
     p.rim(only={SOFT, WHT, SOFT2})
     return p
 
-def old_bed():
+def bed():
     p = P(34, 46, 3)
     grain(p, 0, 0, 34, 46, vertical=True); p.frame(0, 0, 34, 46)
     p.rect(1, 1, 32, 5, D0); p.rect(2, 3, 30, 1, MG); p.rect(2, 2, 30, 1, MGL)            # LED headboard
@@ -667,7 +667,7 @@ def old_bed():
     p.rim(only=WOOD); p.glow([MG, MGL], 2.5, 105); p.underglow(CY1, 2, 60)
     return p
 
-def old_box():
+def box():
     p = P(16, 16, 1)
     p.box(0, 0, 16, 16, K2, K1, K3)
     p.rect(7, 1, 2, 14, HP3); p.rect(7, 1, 1, 14, HP1)                                     # tape
@@ -676,7 +676,7 @@ def old_box():
     p.rim(only={K1, K2, K3})
     return p
 
-def old_cabinet():
+def cabinet():
     p = P(18, 14, 1)
     grain(p, 0, 0, 18, 14); p.frame(0, 0, 18, 14)
     p.line(9, 1, 9, 12, WD0)
@@ -684,7 +684,7 @@ def old_cabinet():
     p.rim(only=WOOD)
     return p
 
-def old_chair():
+def chair():
     p = P(12, 12, 1)
     p.chrome(0, 0, 12, 2); p.frame(0, 0, 12, 2)
     p.box(1, 2, 10, 9, HP3, HP1, HP4)
@@ -692,7 +692,7 @@ def old_chair():
     p.outline()
     return p
 
-def old_coffee_table():
+def coffee_table():
     p = P(30, 18, 1)
     p.rect(0, 0, 30, 18, CH[2]); p.frame(0, 0, 30, 18)
     p.grad(1, 1, 28, 16, [C('#1c3a4a'), CY4, C('#16303e')])                                 # smoked glass
@@ -702,7 +702,7 @@ def old_coffee_table():
     p.bloom([CY1], 1.5, 0.35)
     return p
 
-def old_couch():
+def couch():
     p = P(50, 22, 3)
     p.box(0, 0, 50, 22, D2, D3, D1)
     p.rect(1, 1, 48, 5, D1)
@@ -715,7 +715,7 @@ def old_couch():
     p.rim(); p.underglow(MG, 2, 60)
     return p
 
-def old_counter():
+def counter():
     p = P(66, 16, 2)
     p.box(0, 0, 66, 16, D1, D2, D0)
     for x0, y0, x1, y1 in ((3, 3, 8, 5), (44, 9, 50, 11), (56, 4, 60, 6)):
@@ -732,7 +732,7 @@ def old_counter():
     p.bloom([HP1, SUN[2]], 2, 0.4); p.glow([CY1], 2, 75); p.rim(only={D1, D2})
     return p
 
-def old_desk():
+def desk():
     p = P(38, 20, 2)
     grain(p, 0, 0, 38, 20); p.frame(0, 0, 38, 20)
     p.box(4, 2, 12, 5, D0, D1, INK); p.rect(5, 6, 10, 1, CY1); p.rect(9, 7, 2, 1, CH[3])
@@ -742,7 +742,7 @@ def old_desk():
     p.rim(only=WOOD); p.bloom([CY1], 2, 0.45)
     return p
 
-def old_door():
+def door():
     p = P(48, 8)
     grain(p, 0, 0, 48, 8); p.frame(0, 0, 48, 8)
     p.rect(2, 3, 44, 1, WD3)
@@ -750,7 +750,7 @@ def old_door():
     p.rim(only=WOOD)
     return p
 
-def old_dresser():
+def dresser():
     p = P(30, 14, 1)
     grain(p, 0, 0, 30, 14); p.frame(0, 0, 30, 14)
     p.box(3, 3, 6, 5, CH[2], CH[1], CH[3]); p.rect(4, 4, 4, 3, PU1)                         # a photo frame
@@ -759,7 +759,7 @@ def old_dresser():
     p.rim(only=WOOD)
     return p
 
-def old_fridge():
+def fridge():
     p = P(18, 18, 1)
     p.grad(0, 0, 18, 18, [HP2, HP1, HP3], vertical=False); p.frame(0, 0, 18, 18)           # retro pink fridge
     p.rect(1, 1, 16, 1, C('#ffb0cf'))
@@ -767,14 +767,14 @@ def old_fridge():
     p.rect(4, 4, 3, 3, YEL); p.rect(11, 5, 3, 3, CY1); p.set(12, 6, WHT)                    # magnets
     return p
 
-def old_nightstand():
+def nightstand():
     p = P(14, 14, 3)
     grain(p, 0, 0, 14, 14); p.frame(0, 0, 14, 14)
     p.disc(7, 7, 4, INK); p.disc(7, 7, 3.2, C('#ffcf7a')); p.disc(7, 7, 1.8, YEL); p.set(7, 7, WHT)  # lamp
     p.underglow(SUN[1], 2.5, 70); p.bloom([YEL], 2, 0.35); p.rim(only=WOOD)
     return p
 
-def old_office_chair():
+def office_chair():
     p = P(14, 14, 1)
     p.disc(7, 7, 7, INK); p.disc(7, 7, 6, D1); p.disc(7, 8, 4.5, D2)
     p.rect(2, 2, 10, 3, D0); p.rect(3, 2, 8, 1, HP3)                                         # backrest, pink piping
@@ -782,7 +782,7 @@ def old_office_chair():
     p.rim(only={D1, D2})
     return p
 
-def old_sink():
+def sink():
     p = P(16, 12, 1)
     p.box(0, 0, 16, 12, SOFT, WHT, SOFT2)
     p.ellipse(8, 6.5, 5.5, 3.8, SOFT2); p.ellipse(8, 7, 4.5, 3, C('#c8d8e8')); p.set(8, 7, CH[3])
@@ -790,7 +790,7 @@ def old_sink():
     p.rim(only={SOFT, WHT, SOFT2})
     return p
 
-def old_stairs():
+def stairs():
     p = P(32, 48)
     p.rect(0, 0, 32, 48, CON3)
     for y in range(0, 48, 4):                                                                 # steps, chrome nosing
@@ -805,7 +805,7 @@ def old_stairs():
     p.frame(0, 0, 32, 48)
     return p
 
-def old_table():
+def table():
     p = P(34, 26, 2)
     grain(p, 0, 0, 34, 26); p.frame(0, 0, 34, 26)
     p.rect(1, 1, 32, 1, WD3)
@@ -815,14 +815,14 @@ def old_table():
     p.bloom([YEL], 3, 0.45); p.rim(only=WOOD)
     return p
 
-def old_toilet():
+def toilet():
     p = P(14, 18, 1)
     p.box(1, 0, 12, 6, SOFT, WHT, SOFT2); p.rect(6, 1, 2, 1, CH[1])                          # tank and flush
     p.ellipse(7, 11.5, 6, 6, INK); p.ellipse(7, 11.5, 5, 5, SOFT); p.ellipse(7, 12, 3.2, 3.5, C('#c8d8e8'))
     p.rim(only={SOFT, WHT, SOFT2})
     return p
 
-def old_tv():
+def tv():
     p = P(34, 14, 2)
     grain(p, 0, 4, 34, 10); p.frame(0, 4, 34, 10)
     p.box(3, 0, 28, 5, D0, D1, INK)                                                           # slim TV
@@ -1033,11 +1033,11 @@ def floor_sheet(old):
 
 PROPS = {
     # the ones the levels already use
-    'armchair': old_armchair, 'bathtub': old_bathtub, 'bed': old_bed, 'box': old_box, 'cabinet': old_cabinet,
-    'chair': old_chair, 'coffee_table': old_coffee_table, 'couch': old_couch, 'counter': old_counter,
-    'desk': old_desk, 'door': old_door, 'dresser': old_dresser, 'fridge': old_fridge, 'nightstand': old_nightstand,
-    'office_chair': old_office_chair, 'plant': plant, 'sink': old_sink, 'stairs': old_stairs, 'table': old_table,
-    'toilet': old_toilet, 'tv': old_tv,
+    'armchair': armchair, 'bathtub': bathtub, 'bed': bed, 'box': box, 'cabinet': cabinet,
+    'chair': chair, 'coffee_table': coffee_table, 'couch': couch, 'counter': counter,
+    'desk': desk, 'door': door, 'dresser': dresser, 'fridge': fridge, 'nightstand': nightstand,
+    'office_chair': office_chair, 'plant': plant, 'sink': sink, 'stairs': stairs, 'table': table,
+    'toilet': toilet, 'tv': tv,
     # living room
     'velvet_sectional': sofa, 'bean_bag': bean_bag, 'vhs_shelf': vhs_shelf, 'floor_lamp': floor_lamp,
     'record_player': stereo, 'aquarium': aquarium,

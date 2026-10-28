@@ -126,13 +126,17 @@ Gameplay rules are in [mechanics/](mechanics/).
 
 ## Conventions
 
+- **Plain names** for code, files, art and docs: what the thing is in everyday game terms (`Enemy`,
+  `Player`, `Menu`, `vignette`), never a theme word or nickname for it.
 - Scripts find each other through groups set in the scenes: `player`, `enemies`, `pickups`, `doors`.
 - Physics layers (named in Project Settings): world, player, enemies, bullets, furniture, doors.
   `core/Layers.cs` mirrors them in code. Furniture blocks walking only; doors block bullets and
   sight only.
-- Draw order, bottom to top: floor, rugs, goo, corpses and floor guns, furniture and doors (bodies and goo
-  go under them), the living, walls (over everyone, so brushing a wall never looks like being stuck
-  in it), bullets and effects. Set with each scene's z index.
+- Draw order, bottom to top (z index): floor and rugs 0, goo 1, corpses, floor guns and clutter 2,
+  furniture and doors 3 (bodies and goo go under them), the living 4, walls 5 (over everyone, so
+  brushing a wall never looks like being stuck in it), sparks, smoke and flying goo 6, stairs and
+  slow motion's tint 7, bullets and afterimages 8, and you while slowed 9. Set with each scene's
+  z index, or in code where the thing is made.
 - Tuning values live in the Inspector (scene and data files), not in code.
 - **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in
   levels (floors, walls, props, enemies, goo), so the pointer always stands out.
@@ -147,6 +151,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   with a simplified 16 px version for small views. Both are set in Project Settings → Application → Config.
 - **A Windows build:** Project → Export → "Windows Desktop" (`export_presets.cfg`). It writes
   `RentDay.exe`, `RentDay.pck` and a `data_RentDay_windows_x86_64` folder; send all three together.
+  The editor's MCP plugin (`addons/godot_ai/`) is left out by the preset's exclude filter; the plugin
+  takes its game helper out of the build itself.
   From the command line, Godot's console exe with `--headless --export-release "Windows Desktop" <path to RentDay.exe>`
   does the same, but may not exit on its own after it's done.
 
@@ -157,6 +163,9 @@ Gameplay rules are in [mechanics/](mechanics/).
   in the background counts too: running the game saves open scenes. If in doubt, close Godot
   without saving and reopen.
 - **C# changes need a build** before the editor or the game sees them.
+- **Renaming an exported field drops its saved values.** Scenes and data files store each value under
+  the field's name; after a rename Godot quietly ignores the old name and uses the default. Rename it
+  in the `.tscn` and `.tres` files too (with those files closed in Godot).
 - **Let Godot finish importing before running the game** after rebuilding animations or replacing art.
   An import that overlapped a game start once failed silently: the new image was left as a `.tmp` in
   `.godot/imported`, yet Godot counted it as done and kept the old, shorter strip, so a 12-frame walk
