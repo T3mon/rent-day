@@ -29,6 +29,11 @@ public partial class Main : Node2D
 	private Label _ammo;
 	private ColorRect _fade;
 	private Label _note;
+	private Control _battery;
+	private float _shownMeter = 1f;
+	private ColorRect _slowLook;
+	private ShaderMaterial _slowShader;
+	private float _slowFade; // 0..1, how far slow motion's look is in
 	private int _songShown;
 	private Player _player;
 	private int _shownAmmo = int.MinValue;
@@ -61,6 +66,11 @@ public partial class Main : Node2D
 		_note.AddThemeFontSizeOverride("font_size", 16);
 		GetNode("HUD").AddChild(_note);
 
+		// Above them, while it isn't full: the slow-motion meter, a battery (DrawBattery).
+		_battery = new Control { Name = "SlowMeter", Position = new Vector2(8, 8), Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_battery.Draw += DrawBattery;
+		GetNode("HUD").AddChild(_battery);
+
 		// Testing switches that are on (debug/dev_settings.tres), so they're never mistaken for bugs.
 		GetNode<Label>("HUD/DevInfo").Text = DevSettings.Current.ActiveSummary();
 
@@ -83,6 +93,13 @@ public partial class Main : Node2D
 			LevelGrid.Build(level, new Rect2(floor.Position + area.Position, area.Size));
 			GooCanvas.Build(level, new Rect2(floor.Position + area.Position, area.Size));
 		}
+
+		// Slow motion's look over the level (effects/slow_motion.gdshader), faded in and out in _Process. At z 7
+		// it covers the walls and the stairs; you (lifted to 9 while slowed), bullets and afterimages (8) draw over it.
+		_slowShader = new ShaderMaterial { Shader = GD.Load<Shader>("res://effects/slow_motion.gdshader") };
+		_slowLook = new ColorRect { Material = _slowShader, ZIndex = 7, ZAsRelative = false, Visible = false,
+			MouseFilter = Control.MouseFilterEnum.Ignore, Position = new Vector2(-4096, -4096), Size = new Vector2(8192, 8192) };
+		AddChild(_slowLook);
 
 		FloorStarted = Time.GetTicksMsec();
 		SaveGame.Write(SaveGame.Auto, Checkpoint());
@@ -110,6 +127,8 @@ public partial class Main : Node2D
 		if (e.IsActionPressed("ui_cancel"))
 		{
 			GetViewport().SetInputAsHandled();
+			if (SlowMotion.On)
+				SlowMotion.Set(1f); // the menu runs at full speed
 			var menu = Menu.Instantiate<TapeMenu>();
 			menu.Paused = true;
 			GetNode("HUD").AddChild(menu);
@@ -153,6 +172,8 @@ public partial class Main : Node2D
 		}
 
 		UpdateAmmo();
+		UpdateBattery();
+		UpdateSlowLook(delta);
 		if (Music.Started != _songShown) // a new floor song: say what's playing
 		{
 			_songShown = Music.Started;
@@ -185,6 +206,49 @@ public partial class Main : Node2D
 		_shownAmmo = ammo;
 		_ammo.Text = ammo < 0 ? "" : ammo > 0 ? ammo.ToString() : "empty";
 		_ammo.Modulate = ammo == 0 ? new Color(1f, 0.35f, 0.35f) : Colors.White;
+	}
+
+	// Top-left corner: the slow-motion meter, only while it isn't full (and you're alive). Redrawn
+	// only when it changes. Notes move down out of its way.
+	private void UpdateBattery()
+	{
+		float meter = _player.IsDead ? 1f : _player.SlowMeter;
+		if (meter == _shownMeter)
+			return;
+		_shownMeter = meter;
+		_battery.Visible = meter < 1f;
+		_battery.QueueRedraw();
+		_note.Position = new Vector2(16, _battery.Visible ? 20 : 6);
+	}
+
+	// Slow motion's look comes in and goes out over a quarter of a second of real time.
+	private void UpdateSlowLook(double delta)
+	{
+		_slowFade = Mathf.MoveToward(_slowFade, SlowMotion.On ? 1f : 0f, (float)(delta / Engine.TimeScale) / 0.25f);
+		_slowLook.Visible = _slowFade > 0f;
+		if (!_slowLook.Visible)
+			return;
+		_slowShader.SetShaderParameter("amount", _slowFade);
+		_slowShader.SetShaderParameter("game_pixel", Vector2.One / GetViewport().GetVisibleRect().Size);
+	}
+
+	// Ten cells in a battery with a nub on the right, and its shadow. Lit cyan, red while there's too
+	// little to start; the cell filling up is dimmer.
+	private void DrawBattery()
+	{
+		const int Cells = 10;
+		var ink = new Color(0.04f, 0.02f, 0.06f);
+		var rim = new Color(0.85f, 0.82f, 0.91f);
+		Color lit = _player.SlowReady ? new Color(0.18f, 0.89f, 0.9f) : new Color(1f, 0.19f, 0.28f);
+		foreach (var (at, colour) in new[] { (new Vector2(2, 2), ink), (Vector2.Zero, rim) })
+		{
+			_battery.DrawRect(new Rect2(at, new Vector2(33, 9)), colour);
+			_battery.DrawRect(new Rect2(at + new Vector2(33, 3), new Vector2(2, 3)), colour);
+		}
+		_battery.DrawRect(new Rect2(1, 1, 31, 7), ink);
+		float cells = _shownMeter * Cells;
+		for (int i = 0; i < cells; i++)
+			_battery.DrawRect(new Rect2(2 + i * 3, 2, 2, 5), i + 1 <= cells ? lit : lit.Darkened(0.55f));
 	}
 
 	private void OnEnemyDied()

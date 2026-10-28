@@ -46,6 +46,17 @@ public partial class Player : Character
 	[Export] public float LiftTime = 0.25f;     // seconds picking him up off the floor; you stand still meanwhile
 	[Export] public float ShieldThrowSpeed = 450f; // shoving him away: how fast he flies, pixels per second (about 7 tiles)
 
+	// Slow motion ("slow_motion", Alt): hold it and the whole game slows down, you included (SlowMotion),
+	// while a meter drains; let go and it refills over time. Run dry, it ends until you press again.
+	[Export] public float SlowSpeed = 0.3f;     // the game's speed meanwhile, part of normal
+	[Export] public float SlowSeconds = 4f;     // real seconds a full meter lasts
+	[Export] public float RefillSeconds = 8f;   // real seconds it takes to refill from empty
+	[Export] public float RefillDelay = 0.5f;   // real seconds after letting go before it starts refilling
+	[Export] public float SlowMinimum = 0.15f;  // the least of the meter it takes to start
+
+	public float SlowMeter { get; private set; } = 1f; // 0..1, full = 1
+	public bool SlowReady => SlowMeter >= SlowMinimum;
+
 	private const float ShieldAhead = 12f;     // how far in front of you he's held
 	private static readonly Vector2 ShieldGunHand = new(15f, 11f); // the gun out past his right shoulder, not over his head
 	private static readonly AudioStream NeckSnap = GD.Load<AudioStream>("res://audio/neck_snap.wav");
@@ -66,6 +77,9 @@ public partial class Player : Character
 	private Vector2 _liftFrom;
 	private Vector2 _gunRest;      // the gun hand's usual spot
 	private ulong _shieldGoneFrame; // the physics frame a blast killed him in: the rest of that blast is his too
+	private float _refillWait;
+	private Node2D _legsPicture;
+	private int _ticksSlowed;
 
 	public override void _Ready()
 	{
@@ -78,7 +92,30 @@ public partial class Player : Character
 		_struggleSound = GetNode<AudioStreamPlayer2D>("StruggleSound");
 		_bodyFallSound = GetNode<AudioStreamPlayer2D>("BodyFallSound");
 		_gunRest = Gun.Position;
+		_legsPicture = GetNode<Node2D>("Legs");
 		Died += () => DropShield(Visual.Transform.X); // shot from behind: he goes down with you
+		Died += () =>
+		{
+			EndSlowMotion();
+			LiftOverSlowLook(); // back down: your body lies with the others
+		};
+	}
+
+	// Slowed, you're drawn over slow motion's look (Main: z 7, over the walls), so you keep your colours.
+	private void LiftOverSlowLook()
+	{
+		int lift = SlowMotion.On ? 5 : 0; // 4 + 5
+		if (Visual.ZIndex != lift)
+			Visual.ZIndex = _legsPicture.ZIndex = lift;
+	}
+
+	// A restart, the stairs or a load: the next floor starts at normal speed.
+	public override void _ExitTree() => EndSlowMotion();
+
+	private static void EndSlowMotion()
+	{
+		if (SlowMotion.On)
+			SlowMotion.Set(1f);
 	}
 
 	// Keep the camera inside the level, so you never see past its edges.
@@ -97,6 +134,7 @@ public partial class Player : Character
 			return;
 
 		float dt = (float)delta;
+		UpdateSlowMotion(1f / Engine.PhysicsTicksPerSecond); // ticks keep coming 60 times a real second, at any game speed
 		UpdateSwing(dt);
 		if (_victim != null)
 		{
@@ -178,6 +216,31 @@ public partial class Player : Character
 
 		if (Input.IsActionJustPressed("execute"))
 			StartExecution();
+	}
+
+	// Alt held: slow motion while the meter lasts. Let go (or run dry) and it ends; it starts again only on a
+	// fresh press, with enough in the meter. Counted in real seconds, whatever the game's speed.
+	private void UpdateSlowMotion(float realDt)
+	{
+		bool held = Input.IsActionPressed("slow_motion");
+		if (SlowMotion.On && (!held || SlowMeter <= 0f))
+		{
+			SlowMotion.Set(1f);
+			_refillWait = RefillDelay;
+		}
+		else if (!SlowMotion.On && Input.IsActionJustPressed("slow_motion") && SlowReady)
+			SlowMotion.Set(SlowSpeed);
+
+		if (SlowMotion.On)
+			SlowMeter = Mathf.Max(SlowMeter - realDt / SlowSeconds, 0f);
+		else if ((_refillWait -= realDt) <= 0f)
+			SlowMeter = Mathf.Min(SlowMeter + realDt / RefillSeconds, 1f);
+
+		// Slowed and moving, you leave an afterimage every third tick (20 a second).
+		LiftOverSlowLook();
+		_ticksSlowed = SlowMotion.On ? _ticksSlowed + 1 : 0;
+		if (_ticksSlowed % 3 == 1 && Velocity.Length() > 10f)
+			Afterimage.Leave(this);
 	}
 
 	// Grab a goon standing right in front of you, or else kneel on the nearest downed goon in reach.

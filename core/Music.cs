@@ -110,6 +110,13 @@ public static class Music
 			_player.StreamPaused = !_player.StreamPaused;
 	}
 
+	// Slow motion (SlowMotion) slows every sound down; the music plays that much faster, so it keeps its speed.
+	public static void SlowDown(float speed)
+	{
+		if (_player != null)
+			_player.PitchScale = 1f / speed;
+	}
+
 	public static void SetVolume(int volume)
 	{
 		volume = Math.Clamp(volume, 0, 10);

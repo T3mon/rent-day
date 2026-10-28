@@ -53,6 +53,19 @@ Each gun has its own pick-up sound, so you can tell what you grabbed by ear.
 - Holding Shift leans much further, to scout ahead. You always stay on screen, near the edge at most.
 - The lean follows the cursor's spot on the screen, so it eases in and out smoothly instead of running away.
 
+## Slow motion (`slow_motion`, Alt)
+
+- Holding Alt slows the whole game down, you as much as the goons, while a meter drains (a full meter lasts 4 s of real time).
+- Let go, or run the meter dry, and the game is back to normal speed. Running dry, it starts again only on a fresh press.
+- The meter refills on its own, only over time: half a second after you let go, then 8 s from empty to full. It takes a little in the meter to start (red while there's too little).
+- The meter is a battery in the top-left corner. It shows only while it isn't full.
+- Game sounds (shots, hits, doors, steps) slow down with the game. The music keeps its speed.
+- The look: the world washes a little toward blue, with soft dark edges, faint scanlines and red and cyan fringes at the edges, like a worn tape. It comes in over a quarter of a second, and goes the same way. You and the bullets keep your own colours.
+- Moving, you leave afterimages behind you: neon silhouettes fading from cyan to magenta.
+- Bullets fly with a warm tracer behind them.
+- Kills don't freeze the game for a split second while it's slowed (hit stop): it's slow already.
+- Pausing, dying, a restart or the stairs end it. Numbers are tuned on the player (`player/player.tscn`).
+
 ## Pause (`ui_cancel`, Esc)
 
 Opens the Esc menu over the frozen floor: resume, save game, load game, settings, quit to the main menu. The game stays paused until it closes; Esc goes back one page, and from the first page resumes.

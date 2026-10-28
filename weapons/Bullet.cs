@@ -14,6 +14,11 @@ public partial class Bullet : Area2D
 	[Export] public float DoorShove = 190f; // degrees per second it adds to a door's swing; two quick shots slam
 	public bool Blast; // one pellet of a shotgun blast: a human shield can't stop it
 
+	private const int Tracer = 24;          // slow motion: pixels of fading tail behind it
+	private static readonly Color TracerHot = new(1f, 0.62f, 0.11f), TracerCool = new(1f, 0.35f, 0.16f);
+	private float _flown;                   // pixels so far: the tail never reaches back past the muzzle
+	private bool _traced;                   // the tail is drawn (cleared again once slow motion ends)
+
 	public override void _Ready()
 	{
 		// Signal: "call Hit whenever a solid body touches me".
@@ -35,10 +40,28 @@ public partial class Bullet : Area2D
 			return;
 		}
 		GlobalPosition += step;
+		_flown += step.Length();
+		if (SlowMotion.On || _traced)
+			QueueRedraw();
 
 		Lifetime -= (float)delta;
 		if (Lifetime <= 0)
 			QueueFree();
+	}
+
+	// Slow motion: a warm tracer behind it, orange to red, fading out (the picture is 8 px long, centred).
+	public override void _Draw()
+	{
+		_traced = SlowMotion.On;
+		if (!_traced)
+			return;
+		int tail = Mathf.Min(Tracer, (int)_flown);
+		for (int i = 0; i < tail; i++)
+		{
+			Color colour = i < 10 ? TracerHot : TracerCool;
+			colour.A = 0.8f * Mathf.Pow(1f - (float)i / Tracer, 1.5f);
+			DrawRect(new Rect2(-5 - i, -1, 1, 2), colour);
+		}
 	}
 
 	public void Hit(Node2D body)

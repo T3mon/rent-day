@@ -13,3 +13,4 @@
 - The floor songs and the clear song are read on the loading screen and stay in memory (about 3 MB each), like the menu song, so N, a cleared floor and going back to the menu never wait on the disk.
 - The music playing goes on through the loading screen: New game keeps the menu song until the floor starts.
 - Dying is silent (the player has no death sound), so the music carries on.
+- **Slow motion** (Alt) slows the game's sounds down, but the music keeps its speed.
