@@ -72,11 +72,7 @@ Testing switches and tools, in runs from the editor only: see [testing.md](testi
 
 ## Pause (`ui_cancel`, Esc)
 
-Opens the Esc menu over the frozen floor: resume, save game, load game, music, settings, quit to the main menu. The game stays paused until it closes; Esc goes back one page, and from the first page resumes. Switching to another window (alt-tab) during a floor opens it too.
-
-## Quick save and load (`quick_save` F5, `quick_load` F9)
-
-F5 saves to the one quick save; F9 loads it. See [saves.md](saves.md).
+Opens the Esc menu over the frozen floor: resume, load game, music, settings, quit to the main menu (the game saves itself at every floor start, see [saves.md](saves.md)). The game stays paused until it closes; Esc goes back one page, and from the first page resumes. Switching to another window (alt-tab) during a floor opens it too.
 
 ## Next song (`next_song`, N)
 

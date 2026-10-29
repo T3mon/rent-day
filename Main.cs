@@ -6,10 +6,9 @@ namespace RentDay;
 
 // The top of a run. Plays the floors in order: kill every enemy on a floor and its stairs
 // up open; walk onto them and you're on the next floor, holding the gun you came with.
-// Holds the on-screen messages and ammo counter, and handles restarting. Every floor start is
-// autosaved; Esc (or switching to another window) opens the Esc menu (Menu), F5 quick-saves, F9 loads
-// the quick save.
-// A run starts from the main menu through Begin (a new game or a save).
+// Holds the on-screen messages and ammo counter, and handles restarting. Every floor start saves the
+// playthrough (SaveGame); Esc (or switching to another window) opens the Esc menu (Menu).
+// A run starts from the main menu: NewGame, or Continue a saved playthrough.
 public partial class Main : Node2D
 {
 	[Export] public PackedScene[] Floors = [];
@@ -19,9 +18,11 @@ public partial class Main : Node2D
 	private static WeaponData _carried;  // the gun you came up the stairs with, and its rounds
 	private static int _carriedAmmo;
 	private static bool _arriving;
+	private static string _save, _name; // the playthrough: its save's file (null in a test run of main.tscn) and name
 	private static readonly PackedScene MenuScene = GD.Load<PackedScene>(Menu.ScenePath);
 
 	public static ulong FloorStarted { get; private set; } // engine ticks when this floor began
+	public static string CurrentSave => _save;
 
 	// Every enemy on this floor is dead (the stairs up open).
 	public bool Cleared { get; private set; }
@@ -61,7 +62,7 @@ public partial class Main : Node2D
 			CreateTween().TweenProperty(_fade, "modulate:a", 0f, 0.3);
 		_arriving = false;
 
-		// Short notes in the top left corner, in the menu's lettering: "QUICK SAVED".
+		// Short notes in the top left corner, in the menu's lettering: "NOW PLAYING  ...".
 		_note = new Label { Position = new Vector2(16, 6), Visible = false };
 		_note.AddThemeFontOverride("font", Style.OsdFont);
 		_note.AddThemeFontSizeOverride("font_size", 16);
@@ -104,7 +105,8 @@ public partial class Main : Node2D
 		AddChild(_slowLook);
 
 		FloorStarted = Time.GetTicksMsec();
-		SaveGame.Write(SaveGame.Auto, Checkpoint());
+		if (_save != null)
+			SaveGame.Write(_save, Checkpoint());
 		_songShown = Music.Started;
 		Music.Floor(this, _floor); // keeps playing through a death or a restart
 	}
@@ -126,9 +128,24 @@ public partial class Main : Node2D
 		return fence;
 	}
 
-	// Starts a run: a new game (the first floor, or the testing start floor), or the floor a save
-	// was made on, holding the gun it was made with.
-	public static void Begin(SceneTree tree, SaveGame.Data save = null)
+	// A new playthrough: the first floor (or the testing start floor), empty-handed.
+	public static void NewGame(SceneTree tree, string name)
+	{
+		(_save, _name) = (SaveGame.NewId(), name);
+		Begin(tree, null);
+	}
+
+	// A saved playthrough, from the floor it was saved on, holding the gun it was saved with.
+	public static void Continue(SceneTree tree, SaveGame.Entry entry)
+	{
+		(_save, _name) = (entry.Id, entry.Name);
+		Begin(tree, entry.Data);
+	}
+
+	// Testing (the admin panel): another floor of this playthrough, empty-handed.
+	public static void GoTo(SceneTree tree, int floor) => Begin(tree, new SaveGame.Data(SaveGame.Version, floor, null, 0, DateTime.Now, _name));
+
+	private static void Begin(SceneTree tree, SaveGame.Data save)
 	{
 		_floor = save != null ? save.Floor - 1 : -1;
 		_carried = save != null ? SaveGame.WeaponOf(save) : null;
@@ -138,8 +155,8 @@ public partial class Main : Node2D
 	}
 
 	// What a save holds: this floor, and the gun you came onto it with (loading starts the floor over).
-	public static SaveGame.Data Checkpoint() =>
-		new(SaveGame.Version, _floor + 1, _carried?.ResourcePath, _carried != null ? _carriedAmmo : 0, DateTime.Now);
+	private static SaveGame.Data Checkpoint() =>
+		new(SaveGame.Version, _floor + 1, _carried?.ResourcePath, _carried != null ? _carriedAmmo : 0, DateTime.Now, _name);
 
 	public override void _UnhandledInput(InputEvent e)
 	{
@@ -156,15 +173,6 @@ public partial class Main : Node2D
 		}
 		else if (e.IsActionPressed("next_song"))
 			Music.Skip(1);
-		else if (e.IsActionPressed("quick_save"))
-			Note(SaveGame.Write(SaveGame.Quick, Checkpoint()) ? "QUICK SAVED" : "COULD NOT SAVE");
-		else if (e.IsActionPressed("quick_load"))
-		{
-			if (SaveGame.Read(SaveGame.Quick) is { } save)
-				Begin(GetTree(), save);
-			else
-				Note("NO QUICK SAVE YET");
-		}
 	}
 
 	// Switching to another window (alt-tab) pauses the game the way Esc does.

@@ -102,9 +102,10 @@ Gameplay rules are in [mechanics/](mechanics/).
   its crisp pixels.
 - **`core/Music.cs`**: all music, one player that outlives scene changes (menu song, floor songs, the
   clear song, skip, shuffle, loop, volume). Rules in [mechanics/music.md](mechanics/music.md).
-- **`core/SaveGame.cs`**: saves as JSON files in `Documents/My Games/Rent Day/Saves` (the game's own
-  storage on other systems). `Main.Begin` starts a run (a new game or a save); `Main.Checkpoint` is
-  what a save holds. Rules in [mechanics/saves.md](mechanics/saves.md).
+- **`core/SaveGame.cs`**: one JSON file per named playthrough in `Documents/My Games/Rent Day/Saves`
+  (the game's own storage on other systems), each with a backup of the one before. `Main.NewGame` and
+  `Main.Continue` start a run; every floor start saves it (`Main.Checkpoint`: the floor and the gun you
+  came with). Rules in [mechanics/saves.md](mechanics/saves.md).
 - **`core/Settings.cs`** (an autoload, so it runs before any scene): the player's settings in
   `settings.json` next to the Saves folder, applied at start and on every change: window, vsync, the
   Master, Music and Effects bus volumes, screen shake, flashes, and keys moved off their defaults. The
@@ -154,7 +155,7 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in
   levels (floors, walls, props, enemies, goo), so the pointer always stands out.
 - Every enemy's defaults are in `enemies/enemy.tscn`; set a single enemy's values in the level.
-- **Change scenes with `Menu.LoadScene`** (or `Main.Begin` for a run), never `ChangeSceneToFile`:
+- **Change scenes with `Menu.LoadScene`** (or `Main.NewGame` / `Main.Continue` for a run), never `ChangeSceneToFile`:
   that reads the scene on the spot and freezes the game. The scene it loaded stays in memory, so the
   stairs and restarts (which reload the same scene) never touch the disk.
 

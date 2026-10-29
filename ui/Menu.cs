@@ -18,9 +18,9 @@ public partial class Menu : Control
 
 	private const int W = 400, H = 225;
 
-	private enum View { Main, Pause, Load, Settings, Confirm, Music, Loading }
+	private enum View { Main, Pause, Load, NewGame, Settings, Confirm, Music, Loading }
 
-	private static readonly string[] PauseItems = { "RESUME", "SAVE GAME", "LOAD GAME", "MUSIC", "SETTINGS", "QUIT TO MENU" };
+	private static readonly string[] PauseItems = { "RESUME", "LOAD GAME", "MUSIC", "SETTINGS", "QUIT TO MENU" };
 	private static readonly string[] MusicRows = { "PLAYER", "SHUFFLE", "LOOP", "VOLUME", "BACK" }; // PLAYER: back, pause, next
 
 	// The Settings page: each row's value is in Settings.Values, under its key.
@@ -43,8 +43,8 @@ public partial class Menu : Control
 		(null, "SLOW MOTION", "slow_motion"),
 		("MOVE", null, null), (null, "MOVE UP", "move_up"), (null, "MOVE DOWN", "move_down"), (null, "MOVE LEFT", "move_left"),
 		(null, "MOVE RIGHT", "move_right"), (null, "LOOK AHEAD", "look"),
-		("GAME", null, null), (null, "RESTART FLOOR", "restart"), (null, "PAUSE", "ui_cancel"), (null, "QUICK SAVE", "quick_save"),
-		(null, "QUICK LOAD", "quick_load"), (null, "NEXT SONG", "next_song"), (null, "RESET TO DEFAULT KEYS", ""),
+		("GAME", null, null), (null, "RESTART FLOOR", "restart"), (null, "PAUSE", "ui_cancel"), (null, "NEXT SONG", "next_song"),
+		(null, "RESET TO DEFAULT KEYS", ""),
 	};
 	private static readonly (string Label, string Action)[] KeyRows = Keys.Where(k => k.Group == null).Select(k => (k.Label, k.Action)).ToArray();
 
@@ -52,6 +52,7 @@ public partial class Menu : Control
 	private readonly Stack<(View View, int Sel)> _back = new();
 	private int _sel, _tab, _col, _scroll; // _sel -1 = the settings tabs
 	private bool _rebinding; // the picked key box is waiting for its new key
+	private string _name;    // the new playthrough's name, as it's typed
 	private string _askLine, _askSub;
 	private Action _onYes;
 	private string _toast;
@@ -97,12 +98,13 @@ public partial class Menu : Control
 		View.Main => MainItems().Length,
 		View.Pause => PauseItems.Length,
 		View.Load => _saves.Count + 1,
+		View.NewGame => 3, // START, NEW NAME, BACK
 		View.Settings => (_tab == ControlsTab ? KeyRows.Length : Rows[_tab].Length) + 1,
 		View.Music => Music.Songs.Length + MusicRows.Length, // the song list, then the player's rows
 		_ => 2,
 	};
 
-	private bool IsBack(int i) => _view is View.Load or View.Settings or View.Music && i == Count() - 1;
+	private bool IsBack(int i) => _view is View.Load or View.NewGame or View.Settings or View.Music && i == Count() - 1;
 
 	private void Activate()
 	{
@@ -118,9 +120,16 @@ public partial class Menu : Control
 			case View.Main or View.Pause:
 				switch (_view == View.Main ? MainItems()[_sel] : PauseItems[_sel])
 				{
-					case "CONTINUE": Main.Begin(GetTree(), _saves[0].Data); break;
-					case "NEW GAME": Main.Begin(GetTree()); break;
-					case "LOAD" or "LOAD GAME": _saves = SaveGame.All(); Go(View.Load); break;
+					case "CONTINUE": Main.Continue(GetTree(), _saves[0]); break;
+					case "NEW GAME":
+						_name = SaveGame.RandomName();
+						Go(View.NewGame);
+						break;
+					case "LOAD" or "LOAD GAME":
+						_saves = SaveGame.All();
+						Go(View.Load);
+						_col = 0;
+						break;
 					case "SETTINGS": Go(View.Settings); break;
 					case "MUSIC":
 						Go(View.Music);
@@ -128,17 +137,32 @@ public partial class Menu : Control
 						break;
 					case "QUIT": GetTree().Quit(); break;
 					case "RESUME": Resume(); break;
-					case "SAVE GAME":
-						string slot = SaveGame.NextSlot();
-						Toast(SaveGame.Write(slot, Main.Checkpoint()) ? "SAVED AS " + SaveGame.Title(slot) : "COULD NOT SAVE");
-						break;
 					case "QUIT TO MENU":
 						Ask("EJECT THE TAPE?", "THE FLOOR STARTS OVER NEXT TIME", () => LoadScene(GetTree(), ScenePath));
 						break;
 				}
 				break;
-			case View.Load:
-				Main.Begin(GetTree(), _saves[_sel].Data);
+			case View.Load: // a save, or its DELETE box
+				SaveGame.Entry entry = _saves[_sel];
+				if (_col == 0)
+					Main.Continue(GetTree(), entry);
+				else if (Paused && entry.Id == Main.CurrentSave)
+					Toast("THAT'S THE ONE YOU'RE PLAYING");
+				else
+					Ask($"DELETE {entry.Name}?", $"FLOOR {entry.Data.Floor}, SAVED {entry.Data.Saved:MM/dd HH:mm}", () =>
+					{
+						SaveGame.Delete(entry.Id);
+						_saves = SaveGame.All();
+						Back();
+						_col = 0;
+						_sel = Math.Min(_sel, Count() - 1);
+					});
+				break;
+			case View.NewGame:
+				if (_sel == 0)
+					Main.NewGame(GetTree(), _name.Trim() is { Length: > 0 } typed ? typed : SaveGame.RandomName());
+				else
+					_name = SaveGame.RandomName(); // NEW NAME
 				break;
 			case View.Settings:
 				if (_tab != ControlsTab)
@@ -197,6 +221,26 @@ public partial class Menu : Control
 			Ask($"{KeyLabel(key)} IS ALREADY {label}", "USE IT HERE INSTEAD?", () => { Settings.Bind(action, slot, key, other); Back(); });
 	}
 
+	// Typing the new playthrough's name: letters, digits and spaces (in capitals); Backspace deletes. False
+	// for any other key, which works the page as usual (arrows, Enter, Esc).
+	private bool Typed(InputEventKey key)
+	{
+		char c = char.ToUpperInvariant((char)key.Unicode);
+		if (key.Keycode == Key.Backspace)
+		{
+			if (_name.Length > 0)
+				_name = _name[..^1];
+		}
+		else if (c is (>= 'A' and <= 'Z') or (>= '0' and <= '9') or ' ')
+		{
+			if (_name.Length < SaveGame.NameLength)
+				_name += c;
+		}
+		else
+			return false;
+		return true;
+	}
+
 	private void Go(View view)
 	{
 		_back.Push((_view, _sel));
@@ -243,6 +287,11 @@ public partial class Menu : Control
 			GetViewport().SetInputAsHandled();
 			return;
 		}
+		if (_view == View.NewGame && e is InputEventKey { Pressed: true } typed && Typed(typed))
+		{
+			GetViewport().SetInputAsHandled();
+			return;
+		}
 		if (e is not (InputEventKey or InputEventJoypadButton or InputEventJoypadMotion))
 			return; // the mouse comes through _GuiInput
 		Viewport viewport = GetViewport(); // picking New game or Load takes this menu out of the tree
@@ -268,13 +317,15 @@ public partial class Menu : Control
 	private static bool Pressed(InputEvent e, string action, string alsoAction) =>
 		e.IsActionPressed(action, allowEcho: true) || e.IsActionPressed(alsoAction, allowEcho: true);
 
-	// Left and right: the tab, a setting's value, the key box, or yes and no.
+	// Left and right: the tab, a setting's value, a key box, a save or its DELETE box, or yes and no.
 	private void Sideways(int dir)
 	{
 		if (_view == View.Confirm)
 			_sel = 1 - _sel;
 		else if (_view == View.Music && !IsBack(_sel) && _sel >= Music.Songs.Length)
 			MusicRow(_sel - Music.Songs.Length, dir, enter: false);
+		else if (_view == View.Load && !IsBack(_sel))
+			_col = dir > 0 ? 1 : 0;
 		else if (_view != View.Settings || IsBack(_sel))
 			return;
 		else if (_sel == -1)
@@ -358,6 +409,7 @@ public partial class Menu : Control
 			case View.Main: DrawMain(now); break;
 			case View.Pause: DrawPause(now); break;
 			case View.Load: DrawLoad(now); break;
+			case View.NewGame: DrawNewGame(now); break;
 			case View.Settings: DrawSettings(now); break;
 			case View.Music: DrawMusic(now); break;
 			case View.Loading: DrawLoading(now); break;
@@ -433,7 +485,8 @@ public partial class Menu : Control
 
 	// One line of a list; the picked one inverted, like a VCR menu: a white bar with a pointer. A `width`
 	// sets the bar across the page; 0 fits it to the label. `off`: the label's colour when not picked.
-	private void Line(string label, int index, float x, float y, float width = 0, Color? off = null)
+	// `col`: the column a click on it picks, on a page whose lines have boxes (see Box).
+	private void Line(string label, int index, float x, float y, float width = 0, Color? off = null, int col = -1)
 	{
 		float box = width > 0 ? width : Width(label) + 26;
 		if (_sel == index)
@@ -444,7 +497,17 @@ public partial class Menu : Control
 		}
 		else
 			Osd(label, x + 12, y, off ?? Soft);
-		_hits.Add((new Rect2(x - 6, y - 12, width > 0 ? width : Math.Max(240, box), 15), index, -1, -1));
+		_hits.Add((new Rect2(x - 6, y - 12, width > 0 ? width : Math.Max(240, box), 15), index, -1, col));
+	}
+
+	// A small box on line `index`, its column `col` (a key, DELETE): dark, outlined when picked. What's in it
+	// is drawn over it.
+	private void Box(float x, float y, float w, float h, bool picked, int index, int col)
+	{
+		R(x, y, w, h, new Color(0f, 0f, 0f, 0.4f));
+		if (picked)
+			Outline(x - 1, y - 1, w + 2, h + 2, Colors.White);
+		_hits.Add((new Rect2(x - 1, y - 1, w + 2, h + 2), index, -1, col));
 	}
 
 	// A value at the right end of its line (ON, OFF, 1600 X 900...); on the picked line between arrows: left
@@ -526,7 +589,7 @@ public partial class Menu : Control
 		{
 			if (items[i] == "QUIT")
 				y += 6;
-			Line(items[i] == "CONTINUE" ? $"CONTINUE  FLOOR {_saves[0].Data.Floor}" : items[i], i, 34, y);
+			Line(items[i] == "CONTINUE" ? $"CONTINUE  {_saves[0].Name}, FLOOR {_saves[0].Data.Floor}" : items[i], i, 34, y);
 			y += 17;
 		}
 	}
@@ -555,10 +618,29 @@ public partial class Menu : Control
 		for (int i = _scroll; i < Math.Min(_saves.Count, _scroll + shown); i++)
 		{
 			SaveGame.Entry save = _saves[i];
-			Line($"{i + 1:00}  {SaveGame.Title(save.Name),-10} FL.{save.Data.Floor:00}   {save.Data.Saved:MM/dd HH:mm}", i, 34, top + (i - _scroll) * 18);
+			float y = top + (i - _scroll) * 18;
+			bool delete = _sel == i && _col == 1;
+			Line($"{save.Name,-16}  FL.{save.Data.Floor:00}  {save.Data.Saved:MM/dd HH:mm}", i, 34, y, 270, col: 0);
+			Box(306, y - 11, 56, 13, delete, i, 1);
+			Text("DELETE", 334, y - 2, SmallFont, 8, delete ? Colors.White : Dim, HorizontalAlignment.Center);
 		}
 		Scrollbar(372, top - 12, shown * 18 - 3, _saves.Count, shown, _scroll);
 		Line("BACK", _saves.Count, 34, top + Math.Min(Math.Max(_saves.Count, 1), shown) * 18 + 10);
+	}
+
+	// Naming a new playthrough: a made-up name to keep or type over, START, another name, BACK.
+	private void DrawNewGame(ulong now)
+	{
+		Page(now, "NEW GAME");
+		Osd("NAME", 46, 92, Dim);
+		R(96, 79, 200, 17, new Color(0f, 0f, 0f, 0.4f));
+		float w = Text(_name, 102, 92, OsdFont, 16, Colors.White);
+		if (!Settings.Flashes || now / 500 % 2 == 0)
+			R(103 + w, 82, 2, 12, Colors.White); // the cursor
+		string[] lines = { "START", "NEW NAME", "BACK" };
+		for (int i = 0; i < lines.Length; i++)
+			Line(lines[i], i, 34, 122 + i * 17 + (i == lines.Length - 1 ? 6 : 0));
+		Text("TYPE TO CHANGE THE NAME", 34, 212, SmallFont, 8, Dim);
 	}
 
 	private void DrawSettings(ulong now)
@@ -738,14 +820,11 @@ public partial class Menu : Control
 			for (int col = 0; col < 2 && !reset; col++)
 			{
 				float cx = col == 1 ? 282 : 196, cw = 80;
-				R(cx, ly + 1, cw, rowH - 3, new Color(0f, 0f, 0f, 0.4f));
-				if (on && _col == col)
-					Outline(cx - 1, ly, cw + 2, rowH - 1, Colors.White);
+				Box(cx, ly + 1, cw, rowH - 3, on && _col == col, l.Key, col);
 				if (on && _col == col && _rebinding)
 					Text("PRESS A KEY", cx + cw / 2, ly + 9, SmallFont, 8, Colors.White, HorizontalAlignment.Center);
 				else
 					Keycap(KeyName(KeyRows[l.Key].Action, col), cx + cw / 2, ly + 6);
-				_hits.Add((new Rect2(cx - 1, ly, cw + 2, rowH), l.Key, -1, col));
 			}
 		}
 		Scrollbar(372, top, view, total, view, _scroll);

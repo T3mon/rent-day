@@ -72,7 +72,7 @@ public partial class AdminPanel : Control
 		for (int floor = 1; floor <= FloorCount; floor++)
 		{
 			int to = floor;
-			Button(go, to.ToString(), () => Close(() => Main.Begin(GetTree(), new SaveGame.Data(SaveGame.Version, to, null, 0, DateTime.Now))));
+			Button(go, to.ToString(), () => Close(() => Main.GoTo(GetTree(), to)));
 		}
 		Choice(Row(rows, "New game starts on"), Enumerable.Range(1, FloorCount).Select(f => f.ToString()).ToArray(),
 			Math.Clamp(s.StartFloor, 1, FloorCount) - 1, i => s.StartFloor = i + 1);
