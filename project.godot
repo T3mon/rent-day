@@ -123,6 +123,7 @@ next_song={
 2d_physics/layer_4="bullets"
 2d_physics/layer_5="furniture"
 2d_physics/layer_6="doors"
+2d_physics/layer_7="glass"
 
 [physics]
 

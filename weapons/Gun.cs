@@ -84,7 +84,7 @@ public partial class Gun : Node2D
 			Ammo--;
 
 		// What the bullets can hit. Enemies never shoot each other.
-		uint mask = Layers.World | Layers.Doors | (HeldByEnemy ? Layers.Player : Layers.Enemies);
+		uint mask = Layers.World | Layers.Doors | Layers.Glass | (HeldByEnemy ? Layers.Player : Layers.Enemies);
 
 		// The barrel can poke through a wall the shooter is touching. Check the stretch from the
 		// shooter's center (Owner, never inside a wall) to the muzzle: whatever is in the way takes the shot.

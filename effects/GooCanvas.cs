@@ -7,7 +7,7 @@ namespace RentDay;
 // drawn into it once and forgotten, so a thousand splats cost the same as one. The canvas
 // shows on the goo layer (under bodies, walls and furniture); every splat gets its own fixed colour mix.
 //   - Splats are clipped to the floor around where they land: they flow through doorways,
-//     never through walls.
+//     never through walls or under glass.
 //   - Drops fly out of a hit, slow down, stop at walls and land as small splats.
 //   - Pools spread under a body for a few seconds.
 //   - Whoever walks through goo leaves footprints for a few steps.
@@ -17,7 +17,7 @@ public partial class GooCanvas : Node2D
 	private const int Cell = 8;               // clip grid cell: the size of a wall tile
 	private const float DropDamping = 380f;   // how quickly a flying drop slows (pixels per second, per second)
 	private const float PoolTime = 2.5f;      // seconds a pool keeps spreading
-	private const uint WallStops = Layers.World | Layers.Doors; // what drops splash against
+	private const uint WallStops = Layers.World | Layers.Doors | Layers.Glass; // what drops splash against
 
 	private static readonly Texture2D Mask = GD.Load<Texture2D>("res://art/goo_mask.png");
 	private static readonly Shader StampShader = GD.Load<Shader>("res://art/goo_stamp.gdshader");
@@ -131,7 +131,7 @@ public partial class GooCanvas : Node2D
 
 		foreach (SplatOrder order in _orders)
 		{
-			var wall = space.IntersectRay(PhysicsRayQueryParameters2D.Create(order.From, order.From + order.Offset, Layers.World));
+			var wall = space.IntersectRay(PhysicsRayQueryParameters2D.Create(order.From, order.From + order.Offset, Layers.World | Layers.Glass));
 			Vector2 at = wall.Count > 0 ? (Vector2)wall["position"] - order.Offset.Normalized() * 2f : order.From + order.Offset;
 			Paint(at, order.Size, order.Angle, order.Stretch, order.Strength, GD.Randf(), ClipFor(at, order.Size * Mathf.Max(order.Stretch, 1f) / 2f));
 		}
@@ -309,7 +309,8 @@ public partial class GooCanvas : Node2D
 					_wet[x, y] = Mathf.Max(_wet[x, y], strength);
 	}
 
-	// Every wall tile in the level (any tile that has a collision shape) marks its grid cells.
+	// Every wall tile in the level (any tile that has a collision shape) marks its grid cells, and so
+	// does every glass pane, whole or broken: goo never flows under one.
 	private void FindWalls()
 	{
 		_wall = new bool[Mathf.CeilToInt(_area.Size.X / Cell), Mathf.CeilToInt(_area.Size.Y / Cell)];
@@ -329,6 +330,14 @@ public partial class GooCanvas : Node2D
 						if (CellAt(new Vector2(x, y)) is Vector2I c)
 							_wall[c.X, c.Y] = true;
 			}
+		}
+		foreach (Node node in GetTree().GetNodesInGroup("glass"))
+		{
+			var pane = (Glass)node;
+			Vector2 along = pane.GlobalTransform.X.Normalized() * pane.Length;
+			for (float t = -0.5f; t <= 0.5f; t += 0.125f) // every 4 px along it
+				if (CellAt(pane.GlobalPosition + along * t) is Vector2I c)
+					_wall[c.X, c.Y] = true;
 		}
 	}
 }

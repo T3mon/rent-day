@@ -14,4 +14,7 @@ public static class Layers
 
 	// layer 6: doors stop bullets and eyesight, but people walk through (pushing them open)
 	public const uint Doors = 1 << 5;
+
+	// layer 7: glass panes until they break (they're furniture too): bullets and flying guns shatter them
+	public const uint Glass = 1 << 6;
 }

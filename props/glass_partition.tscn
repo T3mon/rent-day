@@ -1,24 +1,33 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bjyh0jmn83uuu"]
 
-[ext_resource type="Texture2D" path="res://props/glass_partition.png" id="1_tex"]
-[ext_resource type="Script" path="res://props/Prop.cs" id="p_script"]
+[ext_resource type="Script" uid="uid://bpi0dqag5u10x" path="res://props/Glass.cs" id="1_03nly"]
+[ext_resource type="Texture2D" uid="uid://neyhr1te78au" path="res://props/glass_partition.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://2v5dmh66a6ss" path="res://props/glass_partition_broken.png" id="2_iqdtl"]
+[ext_resource type="Texture2D" uid="uid://cufuqj48f1y68" path="res://props/glass_shards.png" id="3_sw5ng"]
+[ext_resource type="AudioStream" path="res://audio/glass_shatter.tres" id="5_iqdtl"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_a"]
 size = Vector2(32, 4)
 
-[node name="GlassPartition" type="StaticBody2D"]
-script = ExtResource("p_script")
-Height = 6.0
-collision_layer = 16
+[node name="GlassPartition" type="StaticBody2D" unique_id=85908808]
+collision_layer = 80
 collision_mask = 0
+script = ExtResource("1_03nly")
+BrokenLook = ExtResource("2_iqdtl")
+ShardLook = ExtResource("3_sw5ng")
+Height = 6.0
 
-[node name="Shadow" type="Sprite2D" parent="."]
+[node name="Shadow" type="Sprite2D" parent="." unique_id=1258494943]
 self_modulate = Color(0, 0, 0, 0.5)
 position = Vector2(2, 2)
 texture = ExtResource("1_tex")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1687012618]
 texture = ExtResource("1_tex")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1216952740]
 shape = SubResource("RectangleShape2D_a")
+
+[node name="ShatterSound" type="AudioStreamPlayer2D" parent="." unique_id=1467308165]
+stream = ExtResource("5_iqdtl")
+volume_db = -8.0

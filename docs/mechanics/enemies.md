@@ -65,5 +65,5 @@ Set per enemy in the level:
 
 ## Going for guns
 
-An enemy with no weapon runs to the nearest weapon he can see (gun, bat or knife) and picks it up. Enemies never punch. He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room.
+An enemy with no weapon runs to the nearest weapon he can see (gun, bat or knife) and picks it up. Enemies never punch. He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room. He doesn't go for one behind a glass pane until the glass is shattered.
 Enemies with guns never run out of ammo.

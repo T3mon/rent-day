@@ -29,7 +29,7 @@ What you hold decides: a gun shoots, a bat or knife swings, empty hands punch.
 One button does two jobs, depending on what is under your feet:
 
 1. **A weapon lies within reach:** you pick it up. The one you were holding is thrown toward the mouse, with its remaining ammo, like any throw.
-2. **Nothing within reach, and you hold one:** you throw it toward the mouse. A thrown weapon can knock an enemy down; a thrown knife kills (see [enemies.md](enemies.md)).
+2. **Nothing within reach, and you hold one:** you throw it toward the mouse. A thrown weapon can knock an enemy down; a thrown knife kills (see [enemies.md](enemies.md)). It shatters glass in its way and flies on (see [shooting.md](shooting.md)).
 
 Throwing does nothing if you hold nothing.
 

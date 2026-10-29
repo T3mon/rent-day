@@ -10,7 +10,7 @@ gives off light. Sprites that glow are padded with see-through pixels; they stay
 A new prop: a function here, a line in PROPS, then its scene in props/ (see docs/architecture.md).
 """
 import math, os, random, sys
-from PIL import Image
+from PIL import Image, ImageDraw
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from synthkit import *
 
@@ -525,16 +525,41 @@ def pillar():
     p.glow([CY1], 2, 80); p.rim(only={CON1, CON2, CON3})
     return p
 
+GLASS, GLASS_HI = C('#a9dce8'), C('#d4eef5')                                              # clear glass, and its lit top edge
+
 def glass_partition():
+    """Clear glass in a thin metal frame, seen from above."""
     p = P(34, 6, 2)
     p.box(0, 0, 34, 6, CH[3], CH[2], CH[4])
-    p.rect(1, 2, 32, 2, C('#a9dce8'))
-    for x in range(1, 33):
-        if x % 3 == 0:
-            p.set(x, 2, SOFT)
-    p.rect(1, 1, 32, 1, MG); p.rect(1, 4, 32, 1, MG)                                       # LED edges
+    p.rect(1, 2, 32, 1, GLASS_HI); p.rect(1, 3, 32, 1, GLASS)
     p.set(5, 2, WHT); p.set(16, 3, WHT); p.set(28, 2, WHT)
-    p.glow([MG], 2, 85)
+    return p
+
+def glass_partition_broken():
+    """The pane once it's shot out: the empty frame, with jagged teeth of glass left in it."""
+    p = P(34, 6, 2)
+    p.box(0, 0, 34, 6, CH[3], CH[2], CH[4])
+    p.rect(1, 2, 32, 2, (0, 0, 0, 0))                                                      # the floor shows through
+    for x in range(1, 33):
+        if x < 3 or x > 30:
+            p.rect(x, 2, 1, 2, GLASS)
+        elif x in (3, 30) or random.random() < 0.3:
+            p.set(x, random.choice((2, 3)), GLASS)
+    p.set(2, 2, WHT); p.set(31, 3, WHT)
+    return p
+
+def glass_shards():
+    """The shards of a shattered pane, side by side, 6 px each: every shard is one of them."""
+    p = P(66, 6)
+    draw = ImageDraw.Draw(p.im)
+    for k in range(11):
+        while True:
+            pts = [(k * 6 + random.uniform(0, 5), random.uniform(0, 5)) for _ in range(3)]
+            (ax, ay), (bx, by), (cx, cy) = pts
+            if abs((bx - ax) * (cy - ay) - (cx - ax) * (by - ay)) >= 8:                      # twice the area: no specks
+                break
+        draw.polygon(pts, fill=GLASS)
+        p.set(ax, ay, WHT)
     return p
 
 # ======================================================================= clutter
@@ -1056,6 +1081,7 @@ PROPS = {
     'rug_shag': shag_rug, 'rug_memphis': memphis_rug,
     # walls, windows and corners
     'window': night_window, 'radiator': radiator, 'pillar': pillar, 'glass_partition': glass_partition,
+    'glass_partition_broken': glass_partition_broken, 'glass_shards': glass_shards,
     # clutter
     'pizza_boxes': pizza_boxes, 'duffel_bag': duffel_bag, 'keytar': keytar,
     # outside

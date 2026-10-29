@@ -66,6 +66,9 @@ Gameplay rules are in [mechanics/](mechanics/).
   call `Main.NextFloor`. Rules in [mechanics/floors.md](mechanics/floors.md).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
   bullets and sight and slam enemies. Rules, including how to place doors, in [mechanics/doors.md](mechanics/doors.md).
+- **`props/Glass.cs`**: glass panes (furniture you can shoot through), shattered by bullets, flying guns
+  and doors (`Shatter`): the look swaps to the empty frame and the shards fly out and stay on the floor.
+  Rules in [mechanics/shooting.md](mechanics/shooting.md).
 - **`effects/`**: particles, screen shake (`ShakeCamera.Shake(pixels)`), hit stop (`HitStop.Freeze`), slow
   motion (`SlowMotion.Set`: game speed, sound speed and the music in one place; the player runs its meter),
   and its look: `slow_motion.gdshader` on a rect `Main` lays over the level at z 7 (over walls 5 and stairs 7);
@@ -73,7 +76,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   `Effects.Spawn` for dropping an effect into the level, and spent casings (`Shell.Eject`, one per shot).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
   clears (a hidden `SubViewport`, redrawn only on frames where a splat lands), so splats cost nothing once they've landed. Splats are clipped
-  to the floor they can reach without crossing a wall. Anything that bleeds calls the static
+  to the floor they can reach without crossing a wall or a glass pane. Anything that bleeds calls the static
   `GooCanvas.Splat` / `Spray` / `Bleed`; `Main` builds one per level, like the level grid.
 - **`audio/`**: sounds: effects as WAV (cheapest to play; Godot packs them small), music as MP3 (a WAV
   song would be ten times the size). A sound that should vary is an `AudioStreamRandomizer` file (`*.tres`)
@@ -143,9 +146,10 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **Plain names** for code, files, art and docs: what the thing is in everyday game terms (`Enemy`,
   `Player`, `Menu`, `vignette`), never a theme word or nickname for it.
 - Scripts find each other through groups set in the scenes: `player`, `enemies`, `pickups`, `doors`.
-- Physics layers (named in Project Settings): world, player, enemies, bullets, furniture, doors.
+- Physics layers (named in Project Settings): world, player, enemies, bullets, furniture, doors, glass.
   `core/Layers.cs` mirrors them in code. Furniture blocks walking only; doors block bullets and
-  sight only.
+  sight only; a glass pane is furniture plus glass until it breaks (bullets and flying guns hit glass,
+  and shatter it).
 - Draw order, bottom to top (z index): floor and rugs 0, goo 1, corpses, floor guns and clutter 2,
   furniture and doors 3 (bodies and goo go under them), the living 4, walls 5 (over everyone, so
   brushing a wall never looks like being stuck in it), sparks, smoke and flying goo 6, stairs and

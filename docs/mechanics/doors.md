@@ -9,7 +9,7 @@ How doors behave, and how to place them in a level. Tuning values live in the do
 - A swinging door slows down at a steady rate and stays where it stops. Doors don't close by themselves.
 - A door drifting slowly back past its doorway clicks shut.
 - Each side has a hard stop; the door bounces off it just as fast as it hit it.
-- Walls and furniture bounce a door back at half speed.
+- Walls and furniture bounce a door back at half speed. A glass pane shatters first; its empty frame still bounces the door.
 - A door that is still swinging hard ignores new pushes until it slows down.
 - A door drifting slowly into someone standing still comes to rest against them.
 - Nobody is ever blocked by a door: a door swinging hard passes through people.

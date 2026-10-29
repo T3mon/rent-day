@@ -22,6 +22,12 @@ Settings a gun controls:
 - Bullets fly straight and stop at the first thing they hit.
 - Each bullet checks the whole stretch it flies every frame, so a fast bullet can't skip over a thin door.
 - Walls and doors stop bullets. Furniture does not. Bullets also push doors (see [doors.md](doors.md)).
+- **Glass panes** (`props/glass_partition.tscn`): nobody walks through one, but bullets and sight pass.
+  Any bullet (yours or an enemy's) shatters it and flies on; so does a gun flying into it (thrown or
+  dropped), and a door swung into it. Its 24 shards fly out of the far side, spinning and slowing
+  down, stop at walls, and stay on the floor for good. The empty frame still blocks walking. One of
+  two shatter sounds plays (`audio/glass_shatter.tres`, picked at random), never two at once; enemies
+  hear only the gunshot, not the glass. Windows in outer walls are part of the wall and never break.
 - Bullets fly over dead bodies, but a knocked-down enemy can still be shot.
 - A shot is checked from the shooter's center to the muzzle, so a barrel poking through a wall
   can't shoot through it: the shot hits the wall (or whoever stands in between) right there.
@@ -43,7 +49,7 @@ Settings a gun controls:
 
 - A kill sprays drops the way the shot went. They slow down, stop at walls and land as small splats.
 - A big splat lands just past the body, with a smear the way it slid, and a pool spreads under it for a few seconds.
-- Goo stays on the floor it lands on: it can flow through an open doorway in front of it, never through or around a wall. Walls and furniture are drawn over it.
+- Goo stays on the floor it lands on: it can flow through an open doorway in front of it, never through or around a wall, or under a glass pane (whole or broken). Flying goo splashes against whole glass, and flies on through a broken pane's empty frame. Walls and furniture are drawn over it.
 - Each blow of an execution leaves a small splat and a few drops. Stealth kills leave none.
 - Walking through goo leaves footprints for a few steps, fading out. Enemies leave them too.
 - Every splat gets its own fixed mix of two colours. Nothing cycles or changes colour over time.

@@ -136,14 +136,18 @@ public partial class Door : Node2D
 		float step = _spin * dt;
 		_angle += step;
 
-		// Walls and furniture bounce it back at half speed. The probe starts a bit out
-		// from the hinge, which always sits against the wall the door hangs in.
+		// Walls and furniture bounce it back at half speed; glass shatters first, its frame still
+		// stops the door. The probe starts a bit out from the hinge, which always sits against the
+		// wall the door hangs in.
 		Vector2 along = Vector2.Right.Rotated(GlobalRotation + Mathf.DegToRad(_angle));
 		var probe = PhysicsRayQueryParameters2D.Create(
 			GlobalPosition + along * 10f, GlobalPosition + along * (Length - 2f), Layers.World | Layers.Furniture);
 		probe.HitFromInside = true; // it may already be poking into a wall
-		if (GetWorld2D().DirectSpaceState.IntersectRay(probe).Count > 0)
+		var hit = GetWorld2D().DirectSpaceState.IntersectRay(probe);
+		if (hit.Count > 0)
 		{
+			if (hit["collider"].AsGodotObject() is Glass glass)
+				glass.Shatter(along.Orthogonal() * -_spin); // the way the door swings
 			_angle -= step;
 			_spin *= -0.5f;
 		}

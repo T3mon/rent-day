@@ -5,7 +5,8 @@ namespace RentDay;
 
 // A weapon lying on the floor, or flying through the air after being thrown or
 // dropped. Stand on it and press "grab" to pick it up. A thrown weapon knocks down
-// the first enemy it hits (a knife kills him), then clatters to the floor.
+// the first enemy it hits (a knife kills him), then clatters to the floor. Any flying
+// gun shatters glass and flies on.
 public partial class WeaponPickup : CharacterBody2D
 {
 	[Export] public WeaponData Data;
@@ -90,6 +91,10 @@ public partial class WeaponPickup : CharacterBody2D
 			else if (hit.GetCollider() is Character someone)
 			{
 				AddCollisionExceptionWith(someone); // a slow gun just slides past people
+			}
+			else if (hit.GetCollider() is Glass glass)
+			{
+				glass.Shatter(Velocity);
 			}
 			else
 			{

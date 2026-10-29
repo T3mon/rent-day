@@ -69,6 +69,12 @@ public partial class Bullet : Area2D
 		if (IsQueuedForDeletion())
 			return; // already hit something this frame
 
+		if (body is Glass glass)
+		{
+			glass.Shatter(Transform.X);
+			return; // and flies on
+		}
+
 		// Anyone killable (player or enemy) dies, unless an enemy held up in front takes it; a wall just stops
 		// the bullet, a door also gets pushed.
 		if (body is Character target)

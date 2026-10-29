@@ -1,0 +1,10 @@
+[gd_resource type="AudioStreamRandomizer" format=3]
+
+[ext_resource type="AudioStream" path="res://audio/glass_shatter_1.wav" id="1"]
+[ext_resource type="AudioStream" path="res://audio/glass_shatter_2.wav" id="2"]
+
+[resource]
+playback_mode = 1
+streams_count = 2
+stream_0/stream = ExtResource("1")
+stream_1/stream = ExtResource("2")

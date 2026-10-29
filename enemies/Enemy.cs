@@ -419,10 +419,10 @@ public partial class Enemy : Character
 		return direction;
 	}
 
-	// Empty-handed: run to the nearest gun he can see and pick it up.
+	// Empty-handed: run to the nearest gun he can see (never one behind glass) and pick it up.
 	private void GoForAGun(float dt)
 	{
-		WeaponPickup nearest = WeaponPickup.Nearest(GetTree(), GlobalPosition, SightRange, ClearView);
+		WeaponPickup nearest = WeaponPickup.Nearest(GetTree(), GlobalPosition, SightRange, spot => ClearView(spot, Layers.Glass));
 
 		if (nearest == null)
 		{
@@ -584,10 +584,11 @@ public partial class Enemy : Character
 		return toPlayer.Length() <= SightRange && ClearView(_player.GlobalPosition);
 	}
 
-	// A ray from him to the spot that only notices walls and doors. If it hits nothing, nothing's in the way.
-	private bool ClearView(Vector2 spot)
+	// A ray from him to the spot that only notices walls and doors (and `alsoStops`). If it hits nothing,
+	// nothing's in the way.
+	private bool ClearView(Vector2 spot, uint alsoStops = 0)
 	{
-		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, spot, Layers.World | Layers.Doors);
+		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, spot, Layers.World | Layers.Doors | alsoStops);
 		return GetWorld2D().DirectSpaceState.IntersectRay(query).Count == 0;
 	}
 
