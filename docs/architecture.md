@@ -87,9 +87,11 @@ Gameplay rules are in [mechanics/](mechanics/).
   A route may cut across the corner of a closed square (the line was checked), so "closed" is not
   "stuck": an enemy only counts as wedged when his body actually overlaps something (`Wedged`), and then
   steps straight out (`StepOut`) with nothing stopping him before routing on.
+- **`ui/Style.cs`**: the game's own colours and pixel fonts, shared by the menus, the HUD, the admin panel
+  and the stairs' arrow. A colour or font used in more than one place goes here.
 - **`ui/Menu.cs`** (scene `ui/menu.tscn`, where the game starts): the main menu and the Esc menu,
   drawn in code like a VCR's on-screen display (VT323 and Silkscreen fonts in `ui/fonts/`, licences
-  beside them). Settings are placeholders: they keep their values while the game runs, nothing more.
+  beside them). The Settings page works through `core/Settings.cs` (below).
   It is also the loading screen (`ui/MenuLoading.cs`): `Menu.LoadScene` reads a scene (with every floor in it, and all
   the music) a few pieces a frame while the game waits paused under it, then switches. It only shows
   if that takes a moment (over 0.25 s), then stays at least 0.6 s. The first load of a run also draws
@@ -103,8 +105,12 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`core/SaveGame.cs`**: saves as JSON files in `Documents/My Games/Rent Day/Saves` (the game's own
   storage on other systems). `Main.Begin` starts a run (a new game or a save); `Main.Checkpoint` is
   what a save holds. Rules in [mechanics/saves.md](mechanics/saves.md).
+- **`core/Settings.cs`** (an autoload, so it runs before any scene): the player's settings in
+  `settings.json` next to the Saves folder, applied at start and on every change: window, vsync, the
+  Master, Music and Effects bus volumes, screen shake, flashes, and keys moved off their defaults. The
+  Settings page in `ui/Menu.cs` edits them. Rules in [mechanics/settings.md](mechanics/settings.md).
 - **`Main.cs`**: the top of a run: loads the current floor from its `Floors` list, carries your gun
-  up the stairs (static fields outlive the scene reload), HUD, restart, camera limits, builds the level grid, and fences the map's edge (on the furniture layer: nobody walks or is thrown off the map, bullets fly on).
+  up the stairs (static fields outlive the scene reload), HUD, restart, the Esc menu (on Esc, or when the window loses focus), camera limits, builds the level grid, and fences the map's edge (on the furniture layer: nobody walks or is thrown off the map, bullets fly on).
 - **`debug/`**: testing switches (`DevSettings.Current`) and the admin panel (`AdminPanel`, F1), in editor runs only.
 
 ## Where new things go
@@ -123,6 +129,13 @@ Gameplay rules are in [mechanics/](mechanics/).
   `ActiveSummary()`, and a switch in `AdminPanel`.
 - A new shader: its path in `Menu.Shaders` (`ui/MenuLoading.cs`) too, so the loading screen builds it up front (else it
   may stutter the first time it shows).
+- A new action (key): in Project Settings → Input Map, and a line in `Keys` in `ui/Menu.cs`, so it shows
+  on the controls page and can be changed.
+- A new sound effect: an `AudioStreamPlayer2D` as usual; it lands on the Effects bus by itself.
+- A new setting: its normal value in `Settings.Values`, what it does in `Settings.Apply` (or read it where
+  it matters), and a row in `Rows` in `ui/Menu.cs`.
+- A new menu page: build it from the pieces in `ui/Menu.cs` (`Page`, `Line`, `Value`, `Bar`, `Progress`,
+  `Scrollbar`, `KeepInView`, `Tri`, `PauseSign`), so it looks and works like the others.
 
 ## Conventions
 

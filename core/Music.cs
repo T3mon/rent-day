@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Godot;
 
 namespace RentDay;
@@ -10,7 +8,7 @@ namespace RentDay;
 // level). The main menu loops menu.mp3. A floor plays one of the floor songs, which keeps going
 // through deaths and restarts; a new floor starts the next song (a random one with shuffle, the
 // same one from the start with loop). Clearing a floor cuts to win.mp3. N skips a floor song; the
-// Esc menu's MUSIC page has the rest. Volume, shuffle and loop are remembered in settings.json.
+// Esc menu's MUSIC page has the rest. Volume, shuffle and loop are settings (Settings); it plays on the Music bus.
 public static class Music
 {
 	// Floor songs: every mp3 in this folder, in name order. A new song is just a new file there.
@@ -18,9 +16,9 @@ public static class Music
 	public static readonly string[] Songs = ResourceLoader.ListDirectory(FloorFolder).Where(f => f.EndsWith(".mp3")).Order().Select(f => f[..^4]).ToArray();
 	private const string MenuSong = "res://audio/music/menu.mp3", ClearSong = "res://audio/music/win.mp3";
 
-	public static int Volume { get; private set; } = 8;  // 0..10
-	public static bool Shuffle { get; private set; }
-	public static bool Loop { get; private set; }
+	public static int Volume => Settings.Values["music"]; // 0..10
+	public static bool Shuffle => Settings.Values["shuffle"] == 1;
+	public static bool Loop => Settings.Values["loop"] == 1;
 	public static int Current { get; private set; } = -1; // the floor song (index into Songs); -1 before the first floor
 	public static bool OnFloorSong => _player != null && Current >= 0 && _floor >= 0 && !_cleared;
 	public static bool Paused => _player != null && _player.StreamPaused;
@@ -53,9 +51,6 @@ public static class Music
 	private static AudioStreamPlayer _player;
 	private static int _floor = -1; // the floor the song belongs to; -1 = the menu
 	private static bool _cleared;
-
-	private record Prefs(int MusicVolume, bool Shuffle, bool Loop);
-	private static string PrefsFile => Path.Combine(Path.GetDirectoryName(SaveGame.Folder), "settings.json");
 
 	public static void Menu(Node from)
 	{
@@ -117,17 +112,9 @@ public static class Music
 			_player.PitchScale = 1f / speed;
 	}
 
-	public static void SetVolume(int volume)
-	{
-		volume = Math.Clamp(volume, 0, 10);
-		if (volume == Volume)
-			return; // a drag sends many of the same
-		Volume = volume;
-		Apply();
-		Save();
-	}
-	public static void SetShuffle(bool on) { Shuffle = on; Save(); }
-	public static void SetLoop(bool on) { Loop = on; Save(); }
+	public static void SetVolume(int volume) => Settings.Set("music", Math.Clamp(volume, 0, 10));
+	public static void SetShuffle(bool on) => Settings.Set("shuffle", on ? 1 : 0);
+	public static void SetLoop(bool on) => Settings.Set("loop", on ? 1 : 0);
 
 	private static int Next(int dir)
 	{
@@ -161,12 +148,12 @@ public static class Music
 	}
 
 	// The player is made once, on the first call, and added to the root (deferred: the root may be busy
-	// adding the scene that called). Settings are read then too.
+	// adding the scene that called).
 	private static void Ready(Node from)
 	{
 		if (_player != null && GodotObject.IsInstanceValid(_player))
 			return;
-		_player = new AudioStreamPlayer { Name = "Music", ProcessMode = Node.ProcessModeEnum.Always };
+		_player = new AudioStreamPlayer { Name = "Music", Bus = "Music", ProcessMode = Node.ProcessModeEnum.Always };
 		_player.Finished += () =>
 		{
 			if (OnFloorSong) // a floor song ended: the same one again with loop, else the next
@@ -177,35 +164,5 @@ public static class Music
 			}
 		};
 		from.GetTree().Root.CallDeferred(Node.MethodName.AddChild, _player);
-		if (!InputMap.HasAction("next_song")) // shortcut: added here, not in Project Settings; move it there when keys get rebindable (#8)
-		{
-			InputMap.AddAction("next_song");
-			InputMap.ActionAddEvent("next_song", new InputEventKey { PhysicalKeycode = Key.N });
-		}
-		try
-		{
-			var prefs = JsonSerializer.Deserialize<Prefs>(File.ReadAllText(PrefsFile));
-			(Volume, Shuffle, Loop) = (Math.Clamp(prefs.MusicVolume, 0, 10), prefs.Shuffle, prefs.Loop);
-		}
-		catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException or NullReferenceException)
-		{
-			// no settings yet (or a broken file): the defaults
-		}
-		Apply();
-	}
-
-	private static void Apply() => _player.VolumeDb = Volume == 0 ? -80f : Mathf.LinearToDb(Volume / 10f);
-
-	private static void Save()
-	{
-		try
-		{
-			Directory.CreateDirectory(Path.GetDirectoryName(PrefsFile));
-			File.WriteAllText(PrefsFile, JsonSerializer.Serialize(new Prefs(Volume, Shuffle, Loop)));
-		}
-		catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-		{
-			GD.PushWarning($"Could not save the music settings: {e.Message}");
-		}
 	}
 }

@@ -62,7 +62,7 @@ public partial class Gun : Node2D
 
 		// The muzzle flash only shows for a split second after each shot.
 		_flashLeft -= (float)delta;
-		_flash.Visible = _flashLeft > 0;
+		_flash.Visible = _flashLeft > 0 && Settings.Flashes;
 	}
 
 	// Fires if the gun is ready. Returns true if bullets came out.

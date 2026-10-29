@@ -18,7 +18,7 @@ public partial class ShakeCamera : Camera2D
 	public static void Shake(float pixels)
 	{
 		if (_active != null)
-			_active._shake = Mathf.Max(_active._shake, pixels);
+			_active._shake = Mathf.Max(_active._shake, pixels * Settings.ShakeScale); // the SCREEN SHAKE setting
 	}
 
 	public override void _EnterTree() => _active = this;

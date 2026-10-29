@@ -27,7 +27,6 @@ public partial class AdminPanel : Control
 	private static ImageTexture SwitchPicture(bool on)
 	{
 		const int W = 36, H = 20, R = H / 2;
-		var light = new Color(0.85f, 0.82f, 0.91f);
 		var image = Image.CreateEmpty(W, H, false, Image.Format.Rgba8);
 		for (int y = 0; y < H; y++)
 			for (int x = 0; x < W; x++)
@@ -36,9 +35,9 @@ public partial class AdminPanel : Control
 				float pill = at.DistanceTo(new Vector2(Mathf.Clamp(at.X, R, W - R), R));
 				float knob = at.DistanceTo(new Vector2(on ? W - R : R, R));
 				if (knob <= R - 4)
-					image.SetPixel(x, y, on ? Colors.White : light);
+					image.SetPixel(x, y, on ? Colors.White : Style.Soft);
 				else if (pill <= R && (on || pill > R - 2))
-					image.SetPixel(x, y, on ? new Color(1f, 0.17f, 0.43f) : light);
+					image.SetPixel(x, y, on ? Style.Pink : Style.Soft);
 			}
 		return ImageTexture.CreateFromImage(image);
 	}
@@ -94,7 +93,7 @@ public partial class AdminPanel : Control
 		rows.AddChild(new Label { Text = "F1 or Esc closes", Modulate = new Color(1f, 1f, 1f, 0.5f) });
 
 		var box = new PanelContainer();
-		var back = new StyleBoxFlat { BgColor = new Color(0.05f, 0.01f, 0.13f, 0.95f), BorderColor = new Color(1f, 0.17f, 0.43f) };
+		var back = new StyleBoxFlat { BgColor = new Color(0.05f, 0.01f, 0.13f, 0.95f), BorderColor = Style.Pink };
 		back.SetBorderWidthAll(2);
 		box.AddThemeStyleboxOverride("panel", back); // solid, so it reads over any floor
 		var margin = new MarginContainer();

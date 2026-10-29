@@ -7,7 +7,7 @@ namespace RentDay;
 public static class Afterimage
 {
 	private const float Life = 0.3f; // real seconds
-	private static readonly Color Fresh = new(0.18f, 0.89f, 0.9f, 0.5f), Gone = new(0.97f, 0.02f, 0.81f, 0f);
+	private static readonly Color Fresh = Style.Cyan with { A = 0.5f }, Gone = new(0.97f, 0.02f, 0.81f, 0f);
 	private static readonly Material Flat = new ShaderMaterial { Shader = GD.Load<Shader>("res://effects/afterimage.gdshader") };
 
 	public static void Leave(Node2D who)

@@ -10,8 +10,6 @@ public partial class Stairs : Area2D
 {
 	[Export] public bool LeadsUp = true; // false: the stairs you came up by, just for show
 
-	private static readonly Color Pink = new(1f, 0.17f, 0.84f);
-	private static readonly Color Ink = new(0.04f, 0.02f, 0.06f);
 	private static readonly Vector2[] Arrow = [new(0, -10), new(7, -3), new(3, -3), new(3, 6), new(-3, 6), new(-3, -3), new(-7, -3)];
 
 	private bool _open;
@@ -36,7 +34,7 @@ public partial class Stairs : Area2D
 			return;
 		Vector2 bob = new(0f, -3f * Mathf.Sin(_time * 8f));
 		Vector2[] arrow = Arrow.Select(point => point + bob).ToArray();
-		DrawColoredPolygon(arrow, Pink);
-		DrawPolyline([.. arrow, arrow[0]], Ink, 1f);
+		DrawColoredPolygon(arrow, Style.Magenta);
+		DrawPolyline([.. arrow, arrow[0]], Style.Ink, 1f);
 	}
 }

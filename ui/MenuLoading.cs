@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using static RentDay.Style;
 
 namespace RentDay;
 
@@ -155,13 +156,12 @@ public partial class Menu
 			DrawTextureRect(_art, new Rect2((new Vector2(W, H) - size) / 2, size), false);
 		}
 		float w = Osd("FF", 16, 26, Colors.White);
-		if (now / 300 % 2 == 0)
+		if (now / 300 % 2 == 0 || !Settings.Flashes) // blinking, unless flashes are off
 		{
 			Tri(16 + w + 7, 15, Colors.White);
 			Tri(16 + w + 13, 15, Colors.White);
 		}
 		Osd("LOADING", 16, H - 12, Colors.White);
-		R(W - 96, H - 17, 80, 3, Faint); // how far the read has got
-		R(W - 96, H - 17, Mathf.Round(80 * _progress), 3, Colors.White);
+		Progress(W - 96, H - 17, 80, _progress); // how far the read has got
 	}
 }

@@ -1,6 +1,6 @@
 # Triggers, pick up and throw
 
-What the buttons do. Control names refer to the Input Map in project settings.
+What the buttons do. Control names refer to the Input Map in project settings; the keys named here are the defaults, and the player can change them (Settings → CONTROLS, see [settings.md](settings.md)).
 
 ## Attack (`shoot`, left mouse button)
 
@@ -72,7 +72,7 @@ Testing switches and tools, in runs from the editor only: see [testing.md](testi
 
 ## Pause (`ui_cancel`, Esc)
 
-Opens the Esc menu over the frozen floor: resume, save game, load game, settings, quit to the main menu. The game stays paused until it closes; Esc goes back one page, and from the first page resumes.
+Opens the Esc menu over the frozen floor: resume, save game, load game, music, settings, quit to the main menu. The game stays paused until it closes; Esc goes back one page, and from the first page resumes. Switching to another window (alt-tab) during a floor opens it too.
 
 ## Quick save and load (`quick_save` F5, `quick_load` F9)
 

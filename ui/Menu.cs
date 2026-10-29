@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using static RentDay.Style;
 
 namespace RentDay;
 
@@ -16,45 +17,41 @@ public partial class Menu : Control
 	[Export] public bool Paused;
 
 	private const int W = 400, H = 225;
-	private static readonly Color Ink = new("07030f"), Soft = new("d8d2e8"), Dim = new("8f88a6"), Red = new("ff2a6d"), Cyan = new("2de2e6");
-	private static readonly Color Faint = new(1f, 1f, 1f, 0.3f);
 
 	private enum View { Main, Pause, Load, Settings, Confirm, Music, Loading }
 
 	private static readonly string[] PauseItems = { "RESUME", "SAVE GAME", "LOAD GAME", "MUSIC", "SETTINGS", "QUIT TO MENU" };
 	private static readonly string[] MusicRows = { "PLAYER", "SHUFFLE", "LOOP", "VOLUME", "BACK" }; // PLAYER: back, pause, next
 
-	// Settings are placeholders for now: they keep their values while the game runs, nothing more.
+	// The Settings page: each row's value is in Settings.Values, under its key.
 	private record Row(string Label, string Key, string Kind, params string[] Choices);
 	private static readonly string[] Tabs = { "DISPLAY", "AUDIO", "CONTROLS", "ACCESS" };
 	private const int ControlsTab = 2;
 	private static readonly Row[][] Rows =
 	{
-		new Row[] { new("FULLSCREEN", "full", "toggle"), new("WINDOW SIZE", "scale", "choice", "2X", "3X", "4X", "5X"), new("VSYNC", "vsync", "toggle") },
+		new Row[] { new("SCREEN MODE", "screen", "choice", "WINDOWED", "FULLSCREEN WINDOW", "FULLSCREEN"), new("RESOLUTION", "resolution", "choice", Settings.Resolutions), new("VSYNC", "vsync", "toggle") },
 		new Row[] { new("MASTER", "master", "bar"), new("MUSIC", "music", "bar"), new("EFFECTS", "sfx", "bar") },
 		null, // the controls tab lists Keys instead
-		new Row[] { new("SCREEN SHAKE", "shake", "bar"), new("FLASHES", "flash", "toggle"), new("COLOR DRIFT", "drift", "bar") },
-	};
-	private static readonly Dictionary<string, int> Values = new()
-	{
-		["full"] = 0, ["scale"] = 2, ["vsync"] = 1, ["master"] = 8, ["music"] = 6, ["sfx"] = 8, ["shake"] = 10, ["flash"] = 1, ["drift"] = 5,
+		new Row[] { new("SCREEN SHAKE", "shake", "bar"), new("FLASHES", "flash", "toggle") },
 	};
 
-	// The controls tab: actions in groups, each with its main and second key, read from the input map.
+	// The controls tab: actions in groups, each with its main and second key, read from the input map. Picking
+	// a key box waits for the new key (_rebinding). PAUSE stays on Esc; the row with no action resets every key.
 	private static readonly (string Group, string Label, string Action)[] Keys =
 	{
 		("COMBAT", null, null), (null, "SHOOT, SWING", "shoot"), (null, "GRAB, THROW", "grab"), (null, "EXECUTE", "execute"), (null, "HUMAN SHIELD", "shield"),
+		(null, "SLOW MOTION", "slow_motion"),
 		("MOVE", null, null), (null, "MOVE UP", "move_up"), (null, "MOVE DOWN", "move_down"), (null, "MOVE LEFT", "move_left"),
 		(null, "MOVE RIGHT", "move_right"), (null, "LOOK AHEAD", "look"),
 		("GAME", null, null), (null, "RESTART FLOOR", "restart"), (null, "PAUSE", "ui_cancel"), (null, "QUICK SAVE", "quick_save"),
-		(null, "QUICK LOAD", "quick_load"), (null, "NEXT SONG", "next_song"),
+		(null, "QUICK LOAD", "quick_load"), (null, "NEXT SONG", "next_song"), (null, "RESET TO DEFAULT KEYS", ""),
 	};
 	private static readonly (string Label, string Action)[] KeyRows = Keys.Where(k => k.Group == null).Select(k => (k.Label, k.Action)).ToArray();
 
-	private Font _osd, _small, _title;
 	private View _view;
 	private readonly Stack<(View View, int Sel)> _back = new();
 	private int _sel, _tab, _col, _scroll; // _sel -1 = the settings tabs
+	private bool _rebinding; // the picked key box is waiting for its new key
 	private string _askLine, _askSub;
 	private Action _onYes;
 	private string _toast;
@@ -64,9 +61,6 @@ public partial class Menu : Control
 
 	public override void _Ready()
 	{
-		_osd = PixelFont("res://ui/fonts/VT323-Regular.ttf");
-		_small = PixelFont("res://ui/fonts/Silkscreen-Regular.ttf");
-		_title = PixelFont("res://ui/Blox2.ttf");
 		ProcessMode = ProcessModeEnum.Always; // keeps running while the game is paused
 		_opened = Time.GetTicksMsec();
 		if (_loading != null)
@@ -147,10 +141,17 @@ public partial class Menu : Control
 				Main.Begin(GetTree(), _saves[_sel].Data);
 				break;
 			case View.Settings:
-				if (_tab == ControlsTab)
-					Toast("KEY CHANGES COME LATER");
+				if (_tab != ControlsTab)
+				{
+					if (Rows[_tab][_sel].Kind != "bar") // a bar: left and right, or the mouse (SetBarAt)
+						Change(Rows[_tab][_sel], 1);
+				}
+				else if (KeyRows[_sel].Action == "")
+					Ask("RESET EVERY KEY?", "BACK TO THE KEYS THE GAME CAME WITH", () => { Settings.ResetKeys(); Back(); });
+				else if (KeyRows[_sel].Action == "ui_cancel")
+					Toast("PAUSE IS ALWAYS ESC");
 				else
-					Change(Rows[_tab][_sel], 1, wrap: true);
+					_rebinding = true;
 				break;
 			case View.Music:
 				if (_sel < Music.Songs.Length)
@@ -167,15 +168,33 @@ public partial class Menu : Control
 		}
 	}
 
-	private static void Change(Row row, int dir, bool wrap = false)
+	private void Change(Row row, int dir)
 	{
-		int v = Values[row.Key];
-		Values[row.Key] = row.Kind switch
+		if (Settings.Locked(row.Key) is string why)
 		{
-			"toggle" => 1 - v,
-			"choice" => (v + dir + row.Choices.Length) % row.Choices.Length,
-			_ => wrap ? (v + 1) % 11 : Math.Clamp(v + dir, 0, 10),
-		};
+			Toast(why);
+			return;
+		}
+		int v = Settings.Values[row.Key];
+		Settings.Set(row.Key, row.Kind switch
+		{
+			"toggle" => v == 1 ? 0 : 1,
+			"choice" => (Math.Min(v, row.Choices.Length - 1) + dir + row.Choices.Length) % row.Choices.Length,
+			_ => Math.Clamp(v + dir, 0, 10),
+		});
+	}
+
+	// The picked key box gets `key`. If another action has it, that's asked first, and it loses it there.
+	private void Rebind(InputEvent key)
+	{
+		_rebinding = false;
+		string action = KeyRows[_sel].Action;
+		int slot = _col;
+		var (label, other) = KeyRows.FirstOrDefault(row => row.Action != action && row.Action != "" && Settings.KeysOf(row.Action).Any(k => Settings.Same(k, key)));
+		if (other == null)
+			Settings.Bind(action, slot, key);
+		else
+			Ask($"{KeyLabel(key)} IS ALREADY {label}", "USE IT HERE INSTEAD?", () => { Settings.Bind(action, slot, key, other); Back(); });
 	}
 
 	private void Go(View view)
@@ -215,6 +234,15 @@ public partial class Menu : Control
 	// ---------------------------------------------------------------- input
 	public override void _UnhandledInput(InputEvent e)
 	{
+		if (_rebinding) // the next key goes in the key box; Esc changes nothing
+		{
+			if (e.IsActionPressed("ui_cancel"))
+				_rebinding = false;
+			else if (e is InputEventKey { Pressed: true, Echo: false } key && key.Keycode != Key.None)
+				Rebind(new InputEventKey { Keycode = key.Keycode });
+			GetViewport().SetInputAsHandled();
+			return;
+		}
 		if (e is not (InputEventKey or InputEventJoypadButton or InputEventJoypadMotion))
 			return; // the mouse comes through _GuiInput
 		Viewport viewport = GetViewport(); // picking New game or Load takes this menu out of the tree
@@ -259,6 +287,14 @@ public partial class Menu : Control
 
 	public override void _GuiInput(InputEvent e)
 	{
+		if (_rebinding) // a mouse button goes in the key box (not the wheel)
+		{
+			if (e is InputEventMouseButton { Pressed: true } click && click.ButtonIndex is not (MouseButton.WheelUp or MouseButton.WheelDown or MouseButton.WheelLeft or MouseButton.WheelRight))
+				Rebind(new InputEventMouseButton { ButtonIndex = click.ButtonIndex });
+			if (e is InputEventMouseButton)
+				AcceptEvent();
+			return;
+		}
 		if (e is InputEventMouseMotion motion)
 		{
 			if (HitAt(motion.Position) is { } hover)
@@ -266,8 +302,8 @@ public partial class Menu : Control
 				_sel = hover.Tab >= 0 ? -1 : hover.Index;
 				if (hover.Col >= 0)
 					_col = hover.Col;
-				if (motion.ButtonMask.HasFlag(MouseButtonMask.Left) && IsVolumeRow(hover.Index)) // dragging along the volume bar
-					VolumeAt(motion.Position.X);
+				if (motion.ButtonMask.HasFlag(MouseButtonMask.Left)) // dragging along a bar
+					SetBarAt(hover.Index, motion.Position.X);
 			}
 			return;
 		}
@@ -289,8 +325,8 @@ public partial class Menu : Control
 			_sel = hit.Index;
 			if (hit.Col >= 0)
 				_col = hit.Col;
-			if (IsVolumeRow(hit.Index))
-				VolumeAt(button.Position.X);
+			if (BarOn(hit.Index) != null)
+				SetBarAt(hit.Index, button.Position.X);
 			else if (_view == View.Music && hit.Index == Music.Songs.Length) // the player row: back, pause or next by where you click
 				MusicRow(0, button.Position.X < 260 ? -1 : button.Position.X < 300 ? 0 : 1, enter: false);
 			else
@@ -342,7 +378,7 @@ public partial class Menu : Control
 		R(0, 0, W, H, Ink);
 		for (int y = 0; y < H; y += 3)
 			R(0, y, W, 3, new Color(60 / 255f, 14 / 255f, 120 / 255f, 0.55f * (1f - (float)y / H)));
-		uint s = (uint)(now / 50) * 9301u + 49297u;
+		uint s = (uint)(Settings.Flashes ? now / 50 : 0) * 9301u + 49297u; // with flashes off, still
 		for (uint k = 0; k < 280; k++)
 		{
 			s = Hash(s + k);
@@ -355,7 +391,7 @@ public partial class Menu : Control
 	// to read) and scanlines.
 	private void Scanlines(ulong now)
 	{
-		if (_view != View.Settings)
+		if (_view != View.Settings && Settings.Flashes)
 		{
 			int y = (int)(now / 38 % (H + 40)) - 20;
 			for (int k = 0; k < 7; k++)
@@ -376,45 +412,121 @@ public partial class Menu : Control
 	{
 		float w = Osd(Paused ? "PAUSE" : "PLAY", 16, 26, Colors.White);
 		if (Paused)
-		{
-			R(16 + w + 7, 15, 3, 10, Colors.White);
-			R(16 + w + 12, 15, 3, 10, Colors.White);
-		}
+			PauseSign(16 + w + 7, 15, Colors.White);
 		else
 			Tri(16 + w + 7, 15, Colors.White);
 		ulong sec = (Paused ? _opened - Main.FloorStarted : now - _opened) / 1000;
 		Osd($"SP {sec / 3600}:{sec / 60 % 60:00}:{sec % 60:00}", W - 16, H - 12, Colors.White, HorizontalAlignment.Right);
 	}
 
-	// One line of a list; the picked one inverted, like a VCR menu.
-	private void Item(string label, int i, float x, float y)
+	// ---------------------------------------------------------------- the pieces every page is made of
+	// A page under the corner: its dark band and its title.
+	private void Page(ulong now, string title)
 	{
-		float w = Width(label);
-		if (_sel == i)
-		{
-			R(x - 6, y - 12, w + 26, 15, Colors.White);
-			Tri(x - 1, y - 10, Ink);
-			Text(label, x + 12, y, _osd, 16, Ink);
-		}
-		else
-			Osd(label, x + 12, y, Soft);
-		_hits.Add((new Rect2(x - 6, y - 13, Math.Max(240, w + 26), 16), i, -1, -1));
+		Corner(now);
+		Panel(34, 186);
+		Osd(title, 34, 56, Colors.White);
 	}
 
+	// The dark band a page or a question sits on.
+	private void Panel(float top, float height) => R(0, top, W, height, new Color(0f, 0f, 0f, 0.6f));
+
+	// One line of a list; the picked one inverted, like a VCR menu: a white bar with a pointer. A `width`
+	// sets the bar across the page; 0 fits it to the label. `off`: the label's colour when not picked.
+	private void Line(string label, int index, float x, float y, float width = 0, Color? off = null)
+	{
+		float box = width > 0 ? width : Width(label) + 26;
+		if (_sel == index)
+		{
+			R(x - 6, y - 12, box, 15, Colors.White);
+			Tri(x - 1, y - 10, Ink);
+			Text(label, x + 12, y, OsdFont, 16, Ink);
+		}
+		else
+			Osd(label, x + 12, y, off ?? Soft);
+		_hits.Add((new Rect2(x - 6, y - 12, width > 0 ? width : Math.Max(240, box), 15), index, -1, -1));
+	}
+
+	// A value at the right end of its line (ON, OFF, 1600 X 900...); on the picked line between arrows: left
+	// and right change it. A locked one is greyed out, with no arrows.
+	private void Value(string text, float y, bool on, bool locked = false)
+	{
+		const float right = 354;
+		Color ink = on ? Ink : locked ? Dim : Colors.White;
+		float w = on ? Text(text, right, y, OsdFont, 16, ink, HorizontalAlignment.Right) : Osd(text, right, y, ink, HorizontalAlignment.Right);
+		if (!on || locked)
+			return;
+		Tri(right - w - 9, y - 9, ink, left: true, size: 5);
+		Tri(right + 5, y - 9, ink, size: 5);
+	}
+
+	// A value from 0 to 10 as ten blocks, the same on every page (volumes, screen shake). Left and right
+	// step it; a click or drag sets the block under the mouse (left of the first block: 0).
+	private const float BarLeft = 284, BarStep = 8;
+
+	private void Bar(float y, int value, bool on)
+	{
+		for (int k = 0; k < 10; k++)
+			R(BarLeft + k * BarStep, y - 10, BarStep - 2, 9, k < value ? (on ? Ink : Colors.White) : on ? new Color("c9c3d8") : Track);
+	}
+
+	// What the bar on row `index` of this page sets; null when that row has none.
+	private Action<int> BarOn(int index)
+	{
+		if (_view == View.Music && index == Music.Songs.Length + Array.IndexOf(MusicRows, "VOLUME"))
+			return Music.SetVolume;
+		if (_view == View.Settings && _tab != ControlsTab && index >= 0 && index < Rows[_tab].Length && Rows[_tab][index].Kind == "bar")
+		{
+			string key = Rows[_tab][index].Key;
+			return value => Settings.Set(key, value);
+		}
+		return null;
+	}
+
+	private void SetBarAt(int index, float x)
+	{
+		if (x >= BarLeft - 6 && BarOn(index) is { } set)
+			set(Math.Clamp((int)Mathf.Floor((x - BarLeft) / BarStep) + 1, 0, 10));
+	}
+
+	// A thin bar filling up from the left: how much is done, 0 to 1 (the loading screen, a song).
+	private void Progress(float x, float y, float width, float done)
+	{
+		R(x, y, width, 3, Track);
+		R(x, y, Mathf.Round(width * done), 3, Colors.White);
+	}
+
+	// Scrolls a list of `count` lines, `shown` at a time, to keep the picked line in view.
+	private void KeepInView(int count, int shown)
+	{
+		if (_sel >= 0 && _sel < count)
+			_scroll = Math.Clamp(_scroll, _sel - shown + 1, _sel);
+		_scroll = Math.Clamp(_scroll, 0, Math.Max(0, count - shown));
+	}
+
+	// Where you are in a list longer than its view (counted in lines or pixels): a thin track and a thumb.
+	private void Scrollbar(float x, int top, int height, int total, int shown, int scroll)
+	{
+		if (total <= shown)
+			return;
+		int thumb = Math.Max(10, height * shown / total);
+		R(x + 1, top, 1, height, Track);
+		R(x, top + (height - thumb) * scroll / (total - shown), 3, thumb, Colors.White);
+	}
+
+	// ---------------------------------------------------------------- the pages
 	private void DrawMain(ulong now)
 	{
 		Corner(now);
-		int jx = now / 2700 % 3 == 0 && now % 2700 < 140 ? 3 : 0; // now and then the title slips
-		Text("RENT DAY", 32 + jx, 74, _title, 32, Red);
-		Text("RENT DAY", 36 + jx, 74, _title, 32, Cyan);
-		Text("RENT DAY", 34 + jx, 74, _title, 32, Colors.White);
+		int jx = Settings.Flashes && now / 2700 % 3 == 0 && now % 2700 < 140 ? 3 : 0; // now and then the title slips
+		Osd("RENT DAY", 34 + jx, 74, Colors.White, font: TitleFont, size: 32, split: 2);
 		string[] items = MainItems();
 		float y = 106;
 		for (int i = 0; i < items.Length; i++)
 		{
 			if (items[i] == "QUIT")
 				y += 6;
-			Item(items[i] == "CONTINUE" ? $"CONTINUE  FLOOR {_saves[0].Data.Floor}" : items[i], i, 34, y);
+			Line(items[i] == "CONTINUE" ? $"CONTINUE  FLOOR {_saves[0].Data.Floor}" : items[i], i, 34, y);
 			y += 17;
 		}
 	}
@@ -422,41 +534,36 @@ public partial class Menu : Control
 	private void DrawPause(ulong now)
 	{
 		Corner(now);
-		R(0, 76, W, 108, new Color(0f, 0f, 0f, 0.55f));
+		Panel(76, 108);
 		float y = 100;
 		for (int i = 0; i < PauseItems.Length; i++)
 		{
 			if (i == PauseItems.Length - 1)
 				y += 6;
-			Item(PauseItems[i], i, 34, y);
+			Line(PauseItems[i], i, 34, y);
 			y += 17;
 		}
 	}
 
 	private void DrawLoad(ulong now)
 	{
-		const int shown = 5;
-		Corner(now);
-		R(0, 46, W, 156, new Color(0f, 0f, 0f, 0.5f));
-		Osd("TAPE INDEX", 34, 68, Colors.White);
+		const int shown = 5, top = 80;
+		Page(now, "TAPE INDEX");
 		if (_saves.Count == 0)
-			Osd("NO SAVES YET", 46, 96, Dim);
-		if (_sel < _saves.Count) // keep the picked save in view
-			_scroll = Math.Clamp(_scroll, _sel - shown + 1, _sel);
-		_scroll = Math.Clamp(_scroll, 0, Math.Max(0, _saves.Count - shown));
+			Osd("NO SAVES YET", 46, top, Dim);
+		KeepInView(_saves.Count, shown);
 		for (int i = _scroll; i < Math.Min(_saves.Count, _scroll + shown); i++)
 		{
 			SaveGame.Entry save = _saves[i];
-			Item($"{i + 1:00}  {SaveGame.Title(save.Name),-10} FL.{save.Data.Floor:00}   {save.Data.Saved:MM/dd HH:mm}", i, 34, 96 + (i - _scroll) * 18);
+			Line($"{i + 1:00}  {SaveGame.Title(save.Name),-10} FL.{save.Data.Floor:00}   {save.Data.Saved:MM/dd HH:mm}", i, 34, top + (i - _scroll) * 18);
 		}
-		Item("BACK", _saves.Count, 34, 96 + Math.Min(Math.Max(_saves.Count, 1), shown) * 18 + 10);
+		Scrollbar(372, top - 12, shown * 18 - 3, _saves.Count, shown, _scroll);
+		Line("BACK", _saves.Count, 34, top + Math.Min(Math.Max(_saves.Count, 1), shown) * 18 + 10);
 	}
 
 	private void DrawSettings(ulong now)
 	{
-		Corner(now);
-		R(0, 34, W, 186, new Color(0f, 0f, 0f, 0.58f));
-		Osd("SETTINGS", 34, 56, Colors.White);
+		Page(now, "SETTINGS");
 		float x = 34;
 		for (int i = 0; i < Tabs.Length; i++)
 		{
@@ -464,7 +571,7 @@ public partial class Menu : Control
 			if (_tab == i)
 			{
 				R(x - 4, 64, w + 8, 15, Colors.White);
-				Text(Tabs[i], x, 76, _osd, 16, Ink);
+				Text(Tabs[i], x, 76, OsdFont, 16, Ink);
 			}
 			else
 				Osd(Tabs[i], x, 76, Dim);
@@ -480,45 +587,18 @@ public partial class Menu : Control
 			return;
 		}
 		Row[] rows = Rows[_tab];
-		for (int i = 0; i <= rows.Length; i++)
+		for (int i = 0; i < rows.Length; i++)
 		{
-			bool on = _sel == i, back = i == rows.Length;
-			float y = 100 + i * 15 + (back ? 5 : 0);
-			string label = back ? "BACK" : rows[i].Label;
-			if (on)
-			{
-				R(28, y - 12, 344, 15, Colors.White);
-				Tri(33, y - 10, Ink);
-				Text(label, 46, y, _osd, 16, Ink);
-			}
+			float y = 100 + i * 15;
+			int v = Settings.Values[rows[i].Key];
+			Line(rows[i].Label, i, 34, y, 344);
+			if (rows[i].Kind == "bar")
+				Bar(y, v, _sel == i);
 			else
-				Osd(label, 46, y, Soft);
-			if (!back)
-				DrawValue(rows[i], 362, y, on);
-			_hits.Add((new Rect2(28, y - 12, 344, 15), i, -1, -1));
+				Value(Settings.Shown(rows[i].Key) ?? (rows[i].Kind == "toggle" ? (v == 1 ? "ON" : "OFF") : rows[i].Choices[Math.Min(v, rows[i].Choices.Length - 1)]),
+					y, _sel == i, Settings.Locked(rows[i].Key) != null);
 		}
-	}
-
-	private void DrawValue(Row row, float right, float y, bool on)
-	{
-		Color ink = on ? Ink : Colors.White;
-		int v = Values[row.Key];
-		if (row.Kind == "bar")
-		{
-			for (int k = 0; k < 10; k++)
-				R(right - 88 + k * 9, y - 10, 7, 9, k < v ? ink : on ? new Color("c9c3d8") : new Color(1f, 1f, 1f, 0.2f));
-			return;
-		}
-		string text = row.Kind == "toggle" ? (v == 1 ? "ON" : "OFF") : row.Choices[v];
-		float w = on ? Text(text, right - 8, y, _osd, 16, ink, HorizontalAlignment.Right) : Osd(text, right - 8, y, ink, HorizontalAlignment.Right);
-		if (!on)
-			return;
-		for (int r = 0; r < 5; r++) // arrows: left and right change it
-		{
-			int len = r <= 2 ? r + 1 : 5 - r;
-			R(right - 8 - w - 6 - len, y - 9 + r, len, 1, ink);
-			R(right - 3, y - 9 + r, len, 1, ink);
-		}
+		Line("BACK", rows.Length, 34, 100 + rows.Length * 15 + 5, 344);
 	}
 
 	// The MUSIC page: the floor song playing, and back / pause / next, shuffle, loop, volume.
@@ -535,7 +615,7 @@ public partial class Menu : Control
 			case "SHUFFLE": Music.SetShuffle(!Music.Shuffle); break;
 			case "LOOP": Music.SetLoop(!Music.Loop); break;
 			case "VOLUME":
-				if (!enter) // left and right; a click or drag sets it on the bar (VolumeAt)
+				if (!enter) // left and right; a click or drag sets it on the bar (SetBarAt)
 					Music.SetVolume(Music.Volume + dir);
 				break;
 		}
@@ -545,56 +625,40 @@ public partial class Menu : Control
 	{
 		const int shown = 8, top = 80;
 		int songs = Music.Songs.Length;
-		Corner(now);
-		R(0, 34, W, 186, new Color(0f, 0f, 0f, 0.62f));
-		Osd("MUSIC", 34, 56, Colors.White);
+		Page(now, "MUSIC");
 
 		// left: the floor songs; pick one to play it
-		if (_sel < songs) // keep the picked song in view
-			_scroll = Math.Clamp(_scroll, _sel - shown + 1, _sel);
-		_scroll = Math.Clamp(_scroll, 0, Math.Max(0, songs - shown));
+		KeepInView(songs, shown);
 		for (int i = _scroll; i < Math.Min(songs, _scroll + shown); i++)
 		{
 			float y = top + (i - _scroll) * 15;
-			string title = Music.Songs[i].Replace('_', ' ').ToUpperInvariant();
 			bool on = _sel == i, playing = Music.OnFloorSong && Music.Current == i;
-			if (on)
-			{
-				R(28, y - 12, 172, 15, Colors.White);
-				Tri(33, y - 10, Ink);
-				Text(title, 46, y, _osd, 16, Ink);
-			}
-			else
-				Osd(title, 46, y, playing ? Colors.White : Soft);
+			Line(Music.Songs[i].Replace('_', ' ').ToUpperInvariant(), i, 34, y, 172, playing ? Colors.White : Soft);
 			if (playing) // what's playing: a little bar, or a pause sign
 			{
-				Color mark = on ? Ink : new Color("ff2bd6");
+				Color mark = on ? Ink : Magenta;
 				if (Music.Paused)
-				{
-					R(186, y - 10, 2, 8, mark);
-					R(190, y - 10, 2, 8, mark);
-				}
+					PauseSign(186, y - 10, mark);
 				else
 				{
 					for (int b = 0; b < 3; b++)
 						R(184 + b * 3, y - 2 - (int)(3 + 3 * Mathf.Sin(now / 120f + b * 2)), 2, (int)(3 + 3 * Mathf.Sin(now / 120f + b * 2)) + 1, mark);
 				}
 			}
-			_hits.Add((new Rect2(28, y - 12, 172, 15), i, -1, -1));
 		}
-		Text("N  NEXT SONG, ANY TIME", 34, 212, _small, 8, Dim);
+		Scrollbar(202, top - 12, shown * 15, songs, shown, _scroll);
+		Text("N  NEXT SONG, ANY TIME", 34, 212, SmallFont, 8, Dim);
 
 		// right: what's playing, then the controls
 		const float x = 214, right = 370;
 		if (Music.OnFloorSong)
 		{
-			Text("NOW PLAYING", x, 58, _small, 8, Dim);
+			Text("NOW PLAYING", x, 58, SmallFont, 8, Dim);
 			Osd(Music.Title, x, 76, Colors.White);
 			float len = Mathf.Max(Music.Length, 1f), at = Mathf.Min(Music.Position, len);
-			R(x, 84, right - x, 3, new Color(1f, 1f, 1f, 0.2f));
-			R(x, 84, Mathf.Round((right - x) * at / len), 3, Colors.White);
-			Text(Clock(at), x, 99, _small, 8, Dim);
-			Text(Clock(len), right, 99, _small, 8, Dim, HorizontalAlignment.Right);
+			Progress(x, 84, right - x, at / len);
+			Text(Clock(at), x, 99, SmallFont, 8, Dim);
+			Text(Clock(len), right, 99, SmallFont, 8, Dim, HorizontalAlignment.Right);
 		}
 		else
 			Osd("FLOOR CLEARED", x, 76, Dim);
@@ -604,63 +668,28 @@ public partial class Menu : Control
 			int index = songs + i;
 			bool on = _sel == index;
 			float y = 126 + i * 15 + (row == "BACK" ? 6 : 0);
+			Line(row == "PLAYER" ? "" : row, index, x, y, right - x + 8);
 			Color ink = on ? Ink : Soft;
-			if (on)
+			switch (row)
 			{
-				R(x - 6, y - 12, right - x + 8, 15, Colors.White);
-				Tri(x - 1, y - 10, Ink);
+				case "PLAYER": // back, pause or play, next
+					Tri(x + 18, y - 10, ink, left: true);
+					Tri(x + 23, y - 10, ink, left: true);
+					if (Music.Paused)
+						Tri(x + 58, y - 10, ink);
+					else
+						PauseSign(x + 58, y - 10, ink);
+					Tri(x + 98, y - 10, ink);
+					Tri(x + 103, y - 10, ink);
+					break;
+				case "SHUFFLE": Value(Music.Shuffle ? "ON" : "OFF", y, on); break;
+				case "LOOP": Value(Music.Loop ? "ON" : "OFF", y, on); break;
+				case "VOLUME": Bar(y, Music.Volume, on); break;
 			}
-			if (row == "PLAYER")
-			{
-				TriLeft(x + 18, y - 10, ink); TriLeft(x + 23, y - 10, ink); // back
-				if (Music.Paused)
-					Tri(x + 58, y - 10, ink);
-				else
-				{
-					R(x + 58, y - 10, 3, 9, ink);
-					R(x + 63, y - 10, 3, 9, ink);
-				}
-				Tri(x + 98, y - 10, ink); Tri(x + 103, y - 10, ink); // next
-			}
-			else
-			{
-				if (on) Text(row, x + 12, y, _osd, 16, Ink); else Osd(row, x + 12, y, Soft);
-				string value = row switch { "SHUFFLE" => Music.Shuffle ? "ON" : "OFF", "LOOP" => Music.Loop ? "ON" : "OFF", _ => "" };
-				if (value != "")
-				{
-					if (on) Text(value, right, y, _osd, 16, Ink, HorizontalAlignment.Right); else Osd(value, right, y, Colors.White, HorizontalAlignment.Right);
-				}
-				if (row == "VOLUME")
-				{
-					for (int k = 0; k < 10; k++)
-						R(VolumeBar + k * 8, y - 10, 6, 9, k < Music.Volume ? (on ? Ink : Colors.White) : on ? new Color("c9c3d8") : new Color(1f, 1f, 1f, 0.2f));
-				}
-			}
-			_hits.Add((new Rect2(x - 6, y - 12, right - x + 8, 15), index, -1, -1));
 		}
-	}
-
-	private const float VolumeBar = 292; // where the volume bar's first block starts; each block is 8 wide
-
-	private bool IsVolumeRow(int index) => _view == View.Music && index == Music.Songs.Length + Array.IndexOf(MusicRows, "VOLUME");
-
-	// The block clicked becomes the volume (left of the first block: silent).
-	private static void VolumeAt(float x)
-	{
-		if (x >= VolumeBar - 6)
-			Music.SetVolume((int)Mathf.Floor((x - VolumeBar) / 8f) + 1);
 	}
 
 	private static string Clock(float seconds) => $"{(int)seconds / 60}:{(int)seconds % 60:00}";
-
-	private void TriLeft(float x, float y, Color color)
-	{
-		for (int r = 0; r < 9; r++)
-		{
-			int len = r <= 4 ? r + 1 : 9 - r;
-			R(x + 5 - len, y + r, len, 1, color);
-		}
-	}
 
 	// The controls tab: a scrolling list of groups, each action with its main and second key.
 	private void DrawKeys()
@@ -704,33 +733,25 @@ public partial class Menu : Control
 				Tri(33, ly + 2, Colors.White);
 			}
 			Osd(KeyRows[l.Key].Label, 46, ly + 11, on ? Colors.White : Soft);
-			_hits.Add((new Rect2(28, ly, 166, rowH), l.Key, -1, -1));
-			for (int col = 0; col < 2; col++)
+			bool reset = KeyRows[l.Key].Action == "";
+			_hits.Add((new Rect2(28, ly, reset ? 344 : 166, rowH), l.Key, -1, -1));
+			for (int col = 0; col < 2 && !reset; col++)
 			{
 				float cx = col == 1 ? 282 : 196, cw = 80;
 				R(cx, ly + 1, cw, rowH - 3, new Color(0f, 0f, 0f, 0.4f));
 				if (on && _col == col)
 					Outline(cx - 1, ly, cw + 2, rowH - 1, Colors.White);
-				Keycap(KeyName(KeyRows[l.Key].Action, col), cx + cw / 2, ly + 6);
+				if (on && _col == col && _rebinding)
+					Text("PRESS A KEY", cx + cw / 2, ly + 9, SmallFont, 8, Colors.White, HorizontalAlignment.Center);
+				else
+					Keycap(KeyName(KeyRows[l.Key].Action, col), cx + cw / 2, ly + 6);
 				_hits.Add((new Rect2(cx - 1, ly, cw + 2, rowH), l.Key, -1, col));
 			}
 		}
-		if (total > view) // where you are in the list
-		{
-			int bar = Math.Max(10, view * view / total);
-			R(373, top, 1, view, new Color(1f, 1f, 1f, 0.2f));
-			R(372, top + (view - bar) * _scroll / (total - view), 3, bar, Colors.White);
-		}
-		int backIndex = KeyRows.Length;
-		if (_sel == backIndex)
-		{
-			R(28, 200, 60, 15, Colors.White);
-			Tri(33, 202, Ink);
-			Text("BACK", 46, 212, _osd, 16, Ink);
-		}
-		else
-			Osd("BACK", 46, 212, Soft);
-		_hits.Add((new Rect2(28, 200, 120, 15), backIndex, -1, -1));
+		Scrollbar(372, top, view, total, view, _scroll);
+		Line("BACK", KeyRows.Length, 34, 212);
+		if (_rebinding)
+			Text("A KEY OR MOUSE BUTTON  ESC CANCELS", 372, 211, SmallFont, 8, Dim, HorizontalAlignment.Right);
 	}
 
 	// A key as a little white keycap; a mouse button as a mouse with that button lit.
@@ -748,36 +769,34 @@ public partial class Menu : Control
 			R(x + 1, y + 1, 5, 9, Ink);
 			R(x + 1, y + 4, 5, 1, Colors.White);
 			R(x + 3, y + 1, 1, 3, Colors.White);
-			R(key == "RMB" ? x + 4 : x + 1, y + 1, 2, 3, Red);
+			R(key == "RMB" ? x + 4 : x + 1, y + 1, 2, 3, Pink);
 			return;
 		}
-		float w = Math.Max(11, Width(key, _small, 8) + 6), left = Mathf.Round(cx - w / 2);
+		float w = Math.Max(11, Width(key, SmallFont, 8) + 6), left = Mathf.Round(cx - w / 2);
 		R(left, cy - 5, w, 10, Colors.White);
 		R(left, cy + 5, w, 1, Dim);
-		Text(key, cx, cy + 3, _small, 8, Ink, HorizontalAlignment.Center);
+		Text(key, cx, cy + 3, SmallFont, 8, Ink, HorizontalAlignment.Center);
 	}
 
 	private static string KeyName(string action, int index)
 	{
-		if (!InputMap.HasAction(action))
-			return "";
-		var events = InputMap.ActionGetEvents(action).Where(e => e is InputEventKey or InputEventMouseButton).ToList();
-		if (index >= events.Count)
-			return "";
-		return events[index] switch
-		{
-			InputEventMouseButton { ButtonIndex: MouseButton.Left } => "LMB",
-			InputEventMouseButton { ButtonIndex: MouseButton.Right } => "RMB",
-			InputEventMouseButton mouse => "MOUSE " + (int)mouse.ButtonIndex,
-			InputEventKey k => OS.GetKeycodeString(k.PhysicalKeycode != Key.None ? k.PhysicalKeycode : k.Keycode).ToUpperInvariant().Replace("ESCAPE", "ESC"),
-			_ => "",
-		};
+		List<InputEvent> keys = Settings.KeysOf(action);
+		return index < keys.Count ? KeyLabel(keys[index]) : "";
 	}
+
+	private static string KeyLabel(InputEvent key) => key switch
+	{
+		InputEventMouseButton { ButtonIndex: MouseButton.Left } => "LMB",
+		InputEventMouseButton { ButtonIndex: MouseButton.Right } => "RMB",
+		InputEventMouseButton mouse => "MOUSE " + (int)mouse.ButtonIndex,
+		InputEventKey k => OS.GetKeycodeString(k.PhysicalKeycode != Key.None ? k.PhysicalKeycode : k.Keycode).ToUpperInvariant().Replace("ESCAPE", "ESC"),
+		_ => "",
+	};
 
 	private void DrawConfirm(ulong now)
 	{
 		Corner(now);
-		R(0, 72, W, 88, new Color(0f, 0f, 0f, 0.7f));
+		Panel(72, 88);
 		Osd(_askLine, 200, 102, Colors.White, HorizontalAlignment.Center);
 		Osd(_askSub, 200, 118, Dim, HorizontalAlignment.Center);
 		string[] answers = { "NO", "YES" };
@@ -786,22 +805,13 @@ public partial class Menu : Control
 			float x = 170 + i * 60;
 			if (_sel == i)
 				R(x - 18, 130, 36, 15, Colors.White);
-			Text(answers[i], x, 142, _osd, 16, _sel == i ? Ink : Soft, HorizontalAlignment.Center);
+			Text(answers[i], x, 142, OsdFont, 16, _sel == i ? Ink : Soft, HorizontalAlignment.Center);
 			_hits.Add((new Rect2(x - 18, 130, 36, 15), i, -1, -1));
 		}
 	}
 
 	// ---------------------------------------------------------------- small helpers
-	private static FontFile PixelFont(string path)
-	{
-		var font = GD.Load<FontFile>(path);
-		font.Antialiasing = TextServer.FontAntialiasing.None;
-		font.Hinting = TextServer.Hinting.None;
-		font.SubpixelPositioning = TextServer.SubpixelPositioning.Disabled;
-		return font;
-	}
-
-	private float Width(string text, Font font = null, int size = 16) => (font ?? _osd).GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
+	private float Width(string text, Font font = null, int size = 16) => (font ?? OsdFont).GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
 
 	// y is the baseline. Returns the width.
 	private float Text(string text, float x, float y, Font font, int size, Color color, HorizontalAlignment align = HorizontalAlignment.Left)
@@ -812,12 +822,13 @@ public partial class Menu : Control
 		return w;
 	}
 
-	// On-screen text with a slight red and cyan colour split.
-	private float Osd(string text, float x, float y, Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+	// Text with the slight red and cyan colour split of an on-screen display, `split` pixels each way.
+	private float Osd(string text, float x, float y, Color color, HorizontalAlignment align = HorizontalAlignment.Left, Font font = null, int size = 16, int split = 1)
 	{
-		Text(text, x - 1, y, _osd, 16, Red, align);
-		Text(text, x + 1, y, _osd, 16, Cyan, align);
-		return Text(text, x, y, _osd, 16, color, align);
+		font ??= OsdFont;
+		Text(text, x - split, y, font, size, Pink, align);
+		Text(text, x + split, y, font, size, Cyan, align);
+		return Text(text, x, y, font, size, color, align);
 	}
 
 	private void R(float x, float y, float w, float h, Color color) => DrawRect(new Rect2(x, y, w, h), color);
@@ -830,10 +841,20 @@ public partial class Menu : Control
 		R(x + w - 1, y, 1, h, color);
 	}
 
-	private void Tri(float x, float y, Color color)
+	// A solid triangle `size` rows tall, pointing right (or left).
+	private void Tri(float x, float y, Color color, bool left = false, int size = 9)
 	{
-		for (int r = 0; r < 9; r++)
-			R(x, y + r, r <= 4 ? r + 1 : 9 - r, 1, color);
+		for (int r = 0; r < size; r++)
+		{
+			int len = r <= size / 2 ? r + 1 : size - r;
+			R(left ? x + size / 2 + 1 - len : x, y + r, len, 1, color);
+		}
+	}
+
+	private void PauseSign(float x, float y, Color color)
+	{
+		R(x, y, 3, 9, color);
+		R(x + 5, y, 3, 9, color);
 	}
 
 	private static uint Hash(uint n)

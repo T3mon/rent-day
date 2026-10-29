@@ -38,7 +38,7 @@ public partial class Shell : Node2D
 
 	public override void _Draw()
 	{
-		DrawRect(new Rect2(-2f, -1f, 4f, 2f), new Color(0.04f, 0.02f, 0.07f));
+		DrawRect(new Rect2(-2f, -1f, 4f, 2f), Style.Ink);
 		DrawRect(new Rect2(-1f, -0.5f, 2f, 1f), _color);
 	}
 }

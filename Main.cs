@@ -7,7 +7,8 @@ namespace RentDay;
 // The top of a run. Plays the floors in order: kill every enemy on a floor and its stairs
 // up open; walk onto them and you're on the next floor, holding the gun you came with.
 // Holds the on-screen messages and ammo counter, and handles restarting. Every floor start is
-// autosaved; Esc opens the Esc menu (Menu), F5 quick-saves, F9 loads the quick save.
+// autosaved; Esc (or switching to another window) opens the Esc menu (Menu), F5 quick-saves, F9 loads
+// the quick save.
 // A run starts from the main menu through Begin (a new game or a save).
 public partial class Main : Node2D
 {
@@ -62,7 +63,7 @@ public partial class Main : Node2D
 
 		// Short notes in the top left corner, in the menu's lettering: "QUICK SAVED".
 		_note = new Label { Position = new Vector2(16, 6), Visible = false };
-		_note.AddThemeFontOverride("font", GD.Load<Font>("res://ui/fonts/VT323-Regular.ttf"));
+		_note.AddThemeFontOverride("font", Style.OsdFont);
 		_note.AddThemeFontSizeOverride("font_size", 16);
 		GetNode("HUD").AddChild(_note);
 
@@ -145,12 +146,7 @@ public partial class Main : Node2D
 		if (e.IsActionPressed("ui_cancel"))
 		{
 			GetViewport().SetInputAsHandled();
-			if (SlowMotion.On)
-				SlowMotion.Set(1f); // the menu runs at full speed
-			var menu = MenuScene.Instantiate<Menu>();
-			menu.Paused = true;
-			GetNode("HUD").AddChild(menu);
-			GetTree().Paused = true;
+			OpenMenu();
 		}
 		else if (e.IsActionPressed("admin_panel") && OS.IsDebugBuild())
 		{
@@ -169,6 +165,23 @@ public partial class Main : Node2D
 			else
 				Note("NO QUICK SAVE YET");
 		}
+	}
+
+	// Switching to another window (alt-tab) pauses the game the way Esc does.
+	public override void _Notification(int what)
+	{
+		if (what == NotificationApplicationFocusOut && !GetTree().Paused)
+			OpenMenu();
+	}
+
+	private void OpenMenu()
+	{
+		if (SlowMotion.On)
+			SlowMotion.Set(1f); // the menu runs at full speed
+		var menu = MenuScene.Instantiate<Menu>();
+		menu.Paused = true;
+		GetNode("HUD").AddChild(menu);
+		GetTree().Paused = true;
 	}
 
 	// Testing switches that are on (debug/dev_settings.tres, the admin panel), so they're never mistaken for bugs.
@@ -264,15 +277,13 @@ public partial class Main : Node2D
 	private void DrawBattery()
 	{
 		const int Cells = 10;
-		var ink = new Color(0.04f, 0.02f, 0.06f);
-		var rim = new Color(0.85f, 0.82f, 0.91f);
-		Color lit = _player.SlowReady ? new Color(0.18f, 0.89f, 0.9f) : new Color(1f, 0.19f, 0.28f);
-		foreach (var (at, colour) in new[] { (new Vector2(2, 2), ink), (Vector2.Zero, rim) })
+		Color lit = _player.SlowReady ? Style.Cyan : new Color(1f, 0.19f, 0.28f);
+		foreach (var (at, colour) in new[] { (new Vector2(2, 2), Style.Ink), (Vector2.Zero, Style.Soft) })
 		{
 			_battery.DrawRect(new Rect2(at, new Vector2(33, 9)), colour);
 			_battery.DrawRect(new Rect2(at + new Vector2(33, 3), new Vector2(2, 3)), colour);
 		}
-		_battery.DrawRect(new Rect2(1, 1, 31, 7), ink);
+		_battery.DrawRect(new Rect2(1, 1, 31, 7), Style.Ink);
 		float cells = _shownMeter * Cells;
 		for (int i = 0; i < cells; i++)
 			_battery.DrawRect(new Rect2(2 + i * 3, 2, 2, 5), i + 1 <= cells ? lit : lit.Darkened(0.55f));
