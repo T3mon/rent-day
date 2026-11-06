@@ -27,6 +27,7 @@
 [ext_resource type="PackedScene" path="res://props/kitchen_island.tscn" id="43_btoiy"]
 [ext_resource type="PackedScene" path="res://props/window.tscn" id="44_lwb16"]
 [ext_resource type="PackedScene" uid="uid://bjyh0jmn83uuu" path="res://props/glass_partition.tscn" id="45_itu4x"]
+[ext_resource type="Resource" path="res://weapons/silenced_pistol.tres" id="51_irxyt"]
 [ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/enemy_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
@@ -422,6 +423,10 @@ Data = ExtResource("shotgun")
 [node name="Uzi3" parent="Weapons" unique_id=2113067241 instance=ExtResource("pickup")]
 position = Vector2(300, 120)
 Data = ExtResource("uzi")
+
+[node name="SilencedPistol" parent="Weapons" unique_id=1753287017 instance=ExtResource("pickup")]
+position = Vector2(190, 470)
+Data = ExtResource("51_irxyt")
 
 [node name="Player" parent="." unique_id=1214512477 instance=ExtResource("player")]
 position = Vector2(88, 478)

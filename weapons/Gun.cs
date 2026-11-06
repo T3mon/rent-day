@@ -48,6 +48,8 @@ public partial class Gun : Node2D
 		_look.Texture = data.Look;
 		_look.Position = data.HoldOffset;
 		_muzzle.Position = data.Muzzle;
+		_flash.Scale = Vector2.One * data.FlashSize;
+		_flash.Position = new Vector2(_flash.Texture.GetWidth() / 2f * data.FlashSize, 0f); // its near edge stays at the muzzle
 		_shotSound.Stream = data.ShotSound;
 		if (playSound)
 		{

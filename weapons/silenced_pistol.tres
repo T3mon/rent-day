@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" uid="uid://bsqyeexacgudx" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://weapons/silenced_pistol.png" id="2_look"]
+[ext_resource type="Texture2D" path="res://weapons/silenced_pistol_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" path="res://audio/silenced_pistol.wav" id="4_sound"]
+[ext_resource type="AudioStream" uid="uid://d0p32unjq1x5a" path="res://audio/pickup_pistol.wav" id="5_pickup"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "Silenced pistol"
+Look = ExtResource("2_look")
+FloorLook = ExtResource("3_floor")
+HoldOffset = Vector2(5.5, 0)
+Muzzle = Vector2(13.5, 0)
+Shake = 0.67
+FlashSize = 0.5
+Noise = 0.0
+ShotSound = ExtResource("4_sound")
+PickupSound = ExtResource("5_pickup")

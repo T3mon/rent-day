@@ -14,8 +14,10 @@ Settings a gun controls:
 - **Spread:** random angle on each bullet.
 - **Speed and range:** each bullet has its own speed (with optional variation) and a maximum distance.
 - **Cooldown:** minimum time between shots, separate values for the player and for enemies.
-- **Feel:** screen shake (in pixels, your shots only), recoil push-back on the shooter, sound pitch.
+- **Feel:** screen shake (in pixels, your shots only), recoil push-back on the shooter, muzzle flash size, sound pitch.
 - **Noise:** how far a shot can be heard.
+
+The silenced pistol (`weapons/silenced_pistol.tres`) has Noise 0: nobody hears it at any distance. It has 6 rounds like the pistol, half the flash, less shake and a quiet shot (`audio/silenced_pistol.wav`). Enemies can pick it up and use it like any gun.
 
 ## Hitting things
 
@@ -60,4 +62,4 @@ Settings a gun controls:
 - Player shots make noise. Enemies' shots do not.
 - Noise has a radius and goes through walls.
 - Enemies inside the radius may react (see [enemies.md](enemies.md)).
-- Different guns have different radii.
+- Different guns can have different radii; the silenced pistol has none.

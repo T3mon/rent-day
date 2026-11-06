@@ -40,6 +40,7 @@ public partial class WeaponData : Resource
 	[ExportGroup("Feel")]
 	[Export] public float Shake = 1f;            // screen shake per shot or melee hit, in pixels (yours only)
 	[Export] public float Kickback;              // pushes you backwards per shot, pixels per second
+	[Export] public float FlashSize = 1f;        // the muzzle flash, 0.5 = half as big
 	[Export] public float Noise = 240f;          // patrolling and wandering enemies this close hear your shot, through walls
 	[Export] public AudioStream ShotSound;       // the bang, or the whoosh of a swing
 	[Export] public float ShotPitch = 1f;        // the same sound pitched down sounds bigger, up sounds smaller
