@@ -169,8 +169,10 @@ Gameplay rules are in [mechanics/](mechanics/).
   with a simplified 16 px version for small views. Both are set in Project Settings → Application → Config.
 - **A Windows build:** Project → Export → "Windows Desktop" (`export_presets.cfg`). It writes
   `RentDay.exe`, `RentDay.pck` and a `data_RentDay_windows_x86_64` folder; send all three together.
-  The editor's MCP plugin (`addons/godot_ai/`) is left out by the preset's exclude filter; the plugin
-  takes its game helper out of the build itself.
+  The editor's MCP plugin (`addons/godot_ai/`) is a personal tool, not in the repo: git ignores it, so a
+  fresh copy needs it installed, or shows errors because `project.godot` still names it. Where it is
+  installed, the preset's exclude filter leaves it out of the build, and the plugin takes its game
+  helper out of the build itself.
   From the command line, Godot's console exe with `--headless --export-release "Windows Desktop" <path to RentDay.exe>`
   does the same, but may not exit on its own after it's done.
 
