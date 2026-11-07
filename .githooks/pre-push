@@ -1,0 +1,3 @@
+#!/bin/sh
+# A failing test stops the push. Turned on per copy with: git config core.hooksPath .githooks
+exec bash test.sh

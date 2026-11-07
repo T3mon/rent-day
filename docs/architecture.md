@@ -140,6 +140,9 @@ Gameplay rules are in [mechanics/](mechanics/).
   it matters), and a row in `Rows` in `ui/Menu.cs`.
 - A new menu page: build it from the pieces in `ui/Menu.cs` (`Page`, `Line`, `Value`, `Bar`, `Progress`,
   `Scrollbar`, `KeepInView`, `Tri`, `PauseSign`), so it looks and works like the others.
+- A new check: a method and a line in `RunAll` in `tests/TestRunner.cs`, run by `test.sh` (see
+  `docs/mechanics/testing.md`). An animation the code plays by name goes in its list there too. `tests/` is left
+  out of exports twice: the preset's exclude filter for the file, `RentDay.csproj` for the compiled code.
 
 ## Conventions
 
