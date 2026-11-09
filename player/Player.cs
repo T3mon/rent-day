@@ -111,7 +111,7 @@ public partial class Player : Character
 		_bodyFallSound = GetNode<AudioStreamPlayer2D>("BodyFallSound");
 		_gunRest = Gun.Position;
 		_legsPicture = GetNode<Node2D>("Legs");
-		_dashSound = new AudioStreamPlayer2D { Stream = DashWhoosh };
+		_dashSound = new AudioStreamPlayer2D { Stream = DashWhoosh, VolumeDb = 6f }; // the recordings are quiet
 		AddChild(_dashSound);
 		Died += () => DropShield(Visual.Transform.X); // shot from behind: he goes down with you
 		Died += () =>
