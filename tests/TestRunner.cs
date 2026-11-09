@@ -49,6 +49,62 @@ public partial class TestRunner : SceneTree
 		foreach (PackedScene floor in floors.Floors)
 			await Run(floor?.ResourcePath + " runs", "res://main.tscn", floor);
 		floors.Free();
+		await DashDodges();
+	}
+
+	private async Task Frames(int n)
+	{
+		for (int i = 0; i < n; i++)
+			await ToSignal(this, SignalName.PhysicsFrame);
+	}
+
+	// The player alone in an empty world: a bullet flies on through him mid-dash, kills him standing, and a
+	// second dash right after the first doesn't happen.
+	private async Task DashDodges()
+	{
+		var world = new Node2D(); // afterimages go into the current scene
+		Root.AddChild(world);
+		CurrentScene = world;
+		var player = GD.Load<PackedScene>("res://player/player.tscn").Instantiate<Player>();
+		world.AddChild(player);
+		await Frames(2);
+		var problems = new List<string>();
+		await Press("dash");
+		if (!player.Dodging)
+			problems.Add("the dash key didn't dash");
+		Vector2 ahead = player.Velocity.Normalized();
+		Bullet bullet = Shoot(player, -ahead); // from behind: it catches him up
+		await Frames(12);
+		if (player.IsDead || !IsInstanceValid(bullet) || (bullet.GlobalPosition - player.GlobalPosition).Dot(ahead) <= 0f) // not past him
+			problems.Add("a bullet stopped at the dashing player");
+		await Frames(30);
+		await Press("dash");
+		if (player.Dodging)
+			problems.Add("dashed again before it recharged");
+		Shoot(player, Vector2.Right);
+		await Frames(6);
+		if (!player.IsDead)
+			problems.Add("a bullet didn't kill the player standing");
+		Check("a bullet flies through a dash, kills you standing, and the dash recharges", problems);
+		world.Free();
+	}
+
+	private async Task Press(string action)
+	{
+		Input.ActionPress(action);
+		await Frames(2); // a frame's signal comes before the player's own update in it
+		Input.ActionRelease(action);
+	}
+
+	// From 30 px off to one side of him, straight at him.
+	private Bullet Shoot(Player at, Vector2 side)
+	{
+		var bullet = GD.Load<PackedScene>("res://weapons/bullet.tscn").Instantiate<Bullet>();
+		bullet.CollisionMask = Layers.Player;
+		Root.AddChild(bullet);
+		bullet.GlobalPosition = at.GlobalPosition + side * 30f;
+		bullet.Rotation = (-side).Angle();
+		return bullet;
 	}
 
 	private void Check(string what, IEnumerable<string> problems)
@@ -126,6 +182,7 @@ public partial class TestRunner : SceneTree
 		everyone.AddRange(kinds.Where(k => k != "" && k != "gun_").Select(k => k + "swing"));
 		var player = new List<string> { "choke", "fin_knife", "fin_bat", "fin_fists", "kick", "shield_grab", "snap", "shove" };
 		player.AddRange(kinds.Select(k => k + "shield"));
+		player.AddRange(kinds.SelectMany(k => "fblr".Select(way => k + "dash_" + way)));
 		var enemy = new List<string> { "held" };
 		enemy.AddRange(kinds.Select(k => k + "look"));
 		enemy.AddRange(Enum.GetNames<Enemy.Idle>().Where(n => n != nameof(Enemy.Idle.None)).Select(n => n.ToLowerInvariant()));

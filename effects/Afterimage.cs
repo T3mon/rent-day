@@ -2,7 +2,7 @@ using Godot;
 
 namespace RentDay;
 
-// Slow motion's afterimages: how someone looks this moment (legs, body, gun), left where he stands as a flat
+// Afterimages (slow motion, a dash): how someone looks this moment (legs, body, gun), left where he stands as a flat
 // neon silhouette that turns from cyan to magenta as it fades, over a moment of real time.
 public static class Afterimage
 {
@@ -12,8 +12,8 @@ public static class Afterimage
 
 	public static void Leave(Node2D who)
 	{
-		// Above slow motion's look (z 7), under you (lifted to 9 meanwhile).
-		var ghost = new Node2D { ZIndex = 8, ZAsRelative = false, Modulate = Fresh, Material = Flat };
+		// Slowed: above slow motion's look (z 7), under you (lifted to 9 meanwhile). Otherwise just under you (z 4).
+		var ghost = new Node2D { ZIndex = SlowMotion.On ? 8 : 3, ZAsRelative = false, Modulate = Fresh, Material = Flat };
 		foreach (Node node in who.FindChildren("*", "", true, false))
 		{
 			if (node is not CanvasItem { Visible: true } part || !part.IsVisibleInTree())

@@ -37,6 +37,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   a gun on the floor or in the air (dropped or thrown). On the floor a weapon is drawn the size it is
   in hand, with no outline, over its shadow. Its floor picture (`FloorLook`) is seen from the side, so
   a pistol shows its grip.
+- **Ability icons** for the HUD (and later the progression system): **`tools/icons/<name>.py`** (Python, no
+  packages) draws `art/icons/<name>.png`, a strip of 14 px frames; rebuild with `py tools/icons/dash.py`.
 - **Props, walls and floors** are generated too: **`tools/props/build.py`** (Python with Pillow) draws
   every `props/<name>.png`, the wall tiles `levels/walls3.png` and the floor tiles `levels/floors3.png`;
   rebuild with `python tools/props/build.py` (or name some props: `... build.py sofa bed`).
@@ -72,7 +74,8 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`effects/`**: particles, screen shake (`ShakeCamera.Shake(pixels)`), hit stop (`HitStop.Freeze`), slow
   motion (`SlowMotion.Set`: game speed, sound speed and the music in one place; the player runs its meter),
   and its look: `slow_motion.gdshader` on a rect `Main` lays over the level at z 7 (over walls 5 and stairs 7);
-  bullets and afterimages (`Afterimage.Leave`) sit at 8 and the player is lifted to 9 while slowed, so they keep their colours,
+  bullets and afterimages (`Afterimage.Leave`) sit at 8 and the player is lifted to 9 while slowed, so they keep their colours
+  (unslowed, a dash's afterimages sit at 3, just under the living),
   `Effects.Spawn` for dropping an effect into the level, and spent casings (`Shell.Eject`, one per shot).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
   clears (a hidden `SubViewport`, redrawn only on frames where a splat lands), so splats cost nothing once they've landed. Splats are clipped
@@ -156,7 +159,7 @@ Gameplay rules are in [mechanics/](mechanics/).
 - Draw order, bottom to top (z index): floor and rugs 0, goo 1, corpses, floor guns and clutter 2,
   furniture and doors 3 (bodies and goo go under them), the living 4, walls 5 (over everyone, so
   brushing a wall never looks like being stuck in it), sparks, smoke and flying goo 6, stairs and
-  slow motion's tint 7, bullets and afterimages 8, and you while slowed 9. Set with each scene's
+  slow motion's tint 7, bullets and afterimages 8 (a dash's at normal speed: 3), and you while slowed 9. Set with each scene's
   z index, or in code where the thing is made.
 - Tuning values live in the Inspector (scene and data files), not in code.
 - **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in

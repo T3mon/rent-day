@@ -33,6 +33,9 @@ public partial class Main : Node2D
 	private Label _note;
 	private Control _battery;
 	private float _shownMeter = 1f;
+	private Control _dash;
+	private float _dashGlow; // seconds the dash tile stays up, fully lit, after it recharges
+	private static readonly Texture2D DashIcon = GD.Load<Texture2D>("res://art/icons/dash.png"); // 4 frames of 14 px: a run cycle
 	private ColorRect _slowLook;
 	private ShaderMaterial _slowShader;
 	private float _slowFade; // 0..1, how far slow motion's look is in
@@ -68,7 +71,10 @@ public partial class Main : Node2D
 		_note.AddThemeFontSizeOverride("font_size", 16);
 		GetNode("HUD").AddChild(_note);
 
-		// Above them, while it isn't full: the slow-motion meter, a battery (DrawBattery).
+		// Above them, while they recharge: the dash (DrawDash), and the slow-motion meter, a battery (DrawBattery).
+		_dash = new Control { Name = "Dash", Position = new Vector2(8, 8), Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_dash.Draw += DrawDash;
+		GetNode("HUD").AddChild(_dash);
 		_battery = new Control { Name = "SlowMeter", Position = new Vector2(8, 8), Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_battery.Draw += DrawBattery;
 		GetNode("HUD").AddChild(_battery);
@@ -221,6 +227,7 @@ public partial class Main : Node2D
 
 		UpdateAmmo();
 		UpdateBattery();
+		UpdateDash(delta);
 		UpdateSlowLook(delta);
 		if (Music.Started != _songShown) // a new floor song: say what's playing
 		{
@@ -257,7 +264,7 @@ public partial class Main : Node2D
 	}
 
 	// Top-left corner: the slow-motion meter, only while it isn't full (and you're alive). Redrawn
-	// only when it changes. Notes move down out of its way.
+	// only when it changes.
 	private void UpdateBattery()
 	{
 		float meter = _player.IsDead ? 1f : _player.SlowMeter;
@@ -266,7 +273,37 @@ public partial class Main : Node2D
 		_shownMeter = meter;
 		_battery.Visible = meter < 1f;
 		_battery.QueueRedraw();
-		_note.Position = new Vector2(16, _battery.Visible ? 20 : 6);
+	}
+
+	// Top-left corner, while it recharges (and you're alive): the dash, lit for a moment more once it's ready.
+	// The battery moves over beside it, notes go below.
+	private void UpdateDash(double delta)
+	{
+		bool waiting = !_player.IsDead && _player.DashWait > 0f;
+		_dashGlow = waiting ? 0.3f : _player.IsDead ? 0f : Mathf.Max(_dashGlow - (float)delta, 0f);
+		_dash.Visible = waiting || _dashGlow > 0f;
+		if (_dash.Visible)
+			_dash.QueueRedraw(); // the runner runs
+		_battery.Position = _dash.Visible ? new Vector2(30, 11) : new Vector2(8, 8);
+		_note.Position = new Vector2(16, _dash.Visible ? 28 : _battery.Visible ? 20 : 6);
+	}
+
+	// A square with its shadow, like the battery. Recharging: the icon runs dimly under the seconds left, and a
+	// cyan line fills along the bottom. Ready: the icon lit.
+	private void DrawDash()
+	{
+		_dash.DrawRect(new Rect2(2, 2, 16, 16), Style.Ink);
+		_dash.DrawRect(new Rect2(0, 0, 16, 16), Style.Soft);
+		_dash.DrawRect(new Rect2(1, 1, 14, 14), Style.Ink);
+		float wait = _player.DashWait;
+		float frame = 14 * (int)(Time.GetTicksMsec() / 120 % 4);
+		_dash.DrawTextureRectRegion(DashIcon, new Rect2(1, 1, 14, 14), new Rect2(frame, 0, 14, 14), new Color(1f, 1f, 1f, wait > 0f ? 0.35f : 1f));
+		if (wait <= 0f)
+			return;
+		_dash.DrawRect(new Rect2(1, 14, Mathf.Round(14f * (1f - wait / _player.DashCooldown)), 1), Style.Cyan);
+		string seconds = Mathf.CeilToInt(wait).ToString();
+		_dash.DrawStringOutline(Style.OsdFont, new Vector2(0, 13), seconds, HorizontalAlignment.Center, 16, 16, 3, Style.Ink);
+		_dash.DrawString(Style.OsdFont, new Vector2(0, 13), seconds, HorizontalAlignment.Center, 16, 16, Style.Soft);
 	}
 
 	// Slow motion's look comes in and goes out over a quarter of a second of real time.

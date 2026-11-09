@@ -23,6 +23,10 @@ public partial class Character
 	// Holding a human shield (ShieldPose), or held up as one ("held"): this plays walking or standing; null = none.
 	protected StringName HoldPose;
 	protected string ShieldPose => Kind + "shield";
+	protected string DashPose(string way) => Kind + "dash_" + way; // way: f, b, l, r from where he aims
+
+	// Squash and stretch on top: x along where he faces, y across (the dash: Player.DashSmush).
+	protected Vector2 Smush = Vector2.One;
 
 	private string _action;               // the one-off animation playing, if any
 	private Vector2 _lean;                // where the upper body sits over the legs, in the level's frame
@@ -65,7 +69,8 @@ public partial class Character
 	{
 		if (_action != null && _bodySprite.IsPlaying())
 		{
-			Gun.Visible = false; // the one-offs show the hands, not a gun
+			Gun.Visible = _action.StartsWith("gun_dash"); // the one-offs show the hands, not a gun; a dash still holds it
+			_legs.Visible = !_action.Contains("dash"); // the dash has its legs in the poses
 			return;
 		}
 		_action = null;
@@ -97,7 +102,7 @@ public partial class Character
 		_push = 1f;
 		_pushDirection = direction;
 		string hand = _pushDirection.Rotated(-Visual.GlobalRotation).Y >= 0f ? "push_r" : "push_l";
-		if (Kind == "" && _action != hand)
+		if (Kind == "" && _action != hand && _action?.Contains("dash") != true) // a dash keeps its poses, the shoulder still shoves
 			Act(hand);
 	}
 
@@ -137,7 +142,7 @@ public partial class Character
 			- Vector2.Right * (1f * startle);
 		_alive.Rotation = -0.35f * _throwFollow * _throwFollow
 			- 0.35f * push * (door.Y < 0f ? -1f : 1f); // the shoulder on the door's side leads
-		_alive.Scale = Vector2.One * (1f - 0.08f * dip + 0.08f * startle);
+		_alive.Scale = Vector2.One * (1f - 0.08f * dip + 0.08f * startle) * Smush;
 	}
 
 	// 0 -> 1 -> 0 while `left` runs from 1 down to 0.

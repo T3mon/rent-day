@@ -232,6 +232,44 @@ def walk_cycle(base, frames=12, swing=3.5, shear=1.5, free_left=True, free_right
     return out
 
 
+def dash(base, way, free_right=True):
+    """The dash (Player.DashTime, 0.3 s), still facing the cursor; `way` is where he goes from there: 'f'
+    forward, 'b' back, 'l'/'r' to his left or right side. Each is load, launch, a pose held for most of it,
+    brake, settle. The legs are in the poses; a weapon hand keeps its grip (the free hand still moves)."""
+    def pose(shear, body, head, rh, lh, legs):
+        p = dict(base, shear=shear, body=body, head=head, lh=lh, legs=legs)
+        if free_right:
+            p['rh'] = rh
+        return p
+    if way == 'f':  # a lunge: arms swept back, legs split
+        load = pose(-1.0, (-1, 0), (-1, 0), (-3, 11), (-3, -11), (((-1, 4), (-5, 8)), ((-1, -4), (4, -8))))
+        launch = pose(2.5, (2, 0), (3, 0), (-8, 9), (-8, -9), (((-1, 4), (-12, 6)), ((-1, -4), (7, -9))))
+        fly = pose(3.0, (2.5, 0), (4, 0), (-10, 8), (-10, -8), (((-1, 4), (-15, 6)), ((-1, -4), (8, -10))))
+        brake = pose(-1.5, (-1, 0), (-1.5, 0), (7, 11), (7, -11), (((-1, 4), (10, 6)), ((-1, -4), (-6, -5))))
+    elif way == 'b':  # a hop back: leaning in toward the aim, both feet pushing off ahead, arms out for balance
+        load = pose(1.0, (1, 0), (1.5, 0), (6, 10), (6, -10), (((-1, 4), (3, 7)), ((-1, -4), (3, -7))))
+        launch = pose(1.5, (-2, 0), (-1, 0), (4, 12), (4, -12), (((-1, 4), (8, 5)), ((-1, -4), (6, -7))))
+        fly = pose(2.0, (-3, 0), (-2, 0), (4, 13), (4, -13), (((-1, 4), (9, 6)), ((-1, -4), (7, -8))))
+        brake = pose(-0.5, (-1, 0), (-1, 0), (3, 11), (3, -11), (((-1, 4), (-8, 6)), ((-1, -4), (2, -6))))
+    else:  # a sidestep: s = +1 to his right (+y), -1 to his left; the lead foot reaches, the other trails
+        s = 1 if way == 'r' else -1
+        side = lambda x, y: (x, y * s)
+        hands = lambda lead, trail: (side(*lead), side(*trail)) if s > 0 else (side(*trail), side(*lead))
+        legs = lambda lead, trail: (((-1, 4 * s), side(*lead)), ((-1, -4 * s), side(*trail)))
+        rh, lh = hands((1, 11), (1, -12))
+        load = pose(0.0, side(0, -1), side(0, -1), rh, lh, legs((1, 6), (0, -9)))
+        rh, lh = hands((3, 12), (-2, -12))
+        launch = pose(0.5, side(0, 2), side(0, 2.5), rh, lh, legs((2, 9), (-1, -14)))
+        rh, lh = hands((4, 13), (-3, -13))
+        fly = pose(0.5, side(0, 2.5), side(0, 3), rh, lh, legs((3, 10), (0, -15)))
+        rh, lh = hands((5, 11), (5, -11))
+        brake = pose(0.0, side(0, -1), side(0, -1.5), rh, lh, legs((0, 12), (1, -5)))
+    # in-betweens at every step so it flows; each frame lasts at least one tick at 60 fps (Player.Smush follows)
+    return [(blend(base, load, 0.5), 20), (load, 20), (blend(load, launch, 0.5), 20), (launch, 25),
+            (blend(launch, fly, 0.5), 20), (fly, 95), (blend(fly, brake, 0.5), 25), (brake, 35),
+            (blend(brake, base, 0.4), 20), (blend(brake, base, 0.75), 20)]
+
+
 def breathe(base, extra=None):
     """Standing still: a slow breath, the hands drifting out a pixel and back."""
     a = dict(base)
@@ -274,6 +312,11 @@ def animations():
                                bob=lambda p, s: p.update(bat_pose(0.0 - 0.03 * s)))
     A['knife_idle'] = breathe(knife_rest)
     A['knife_walk'] = walk_cycle(knife_rest, free_right=False)
+    for way in 'fblr':  # the dash, each way he can go from where he aims
+        A['dash_' + way] = dash(fists, way)
+        A['gun_dash_' + way] = dash(gun, way, free_right=False)
+        A['bat_dash_' + way] = dash(bat_rest, way, free_right=False)
+        A['knife_dash_' + way] = dash(knife_rest, way, free_right=False)
 
     # attacks: short wind-up, smears on the fast part, a held follow-through, a quick recovery
     A['punch'] = [(fists, 20), ({'rh': (-3, 10.5), 'shear': -1.0}, 30), ({'rh': (15, 3), 'shear': 2.0}, 40),

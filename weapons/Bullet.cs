@@ -31,8 +31,14 @@ public partial class Bullet : Area2D
 		Vector2 step = GlobalTransform.X * Speed * (float)delta;
 
 		// Check the whole stretch it flies this frame, or it could skip right over a thin door.
-		var hit = GetWorld2D().DirectSpaceState.IntersectRay(
-			PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + step, CollisionMask));
+		PhysicsDirectSpaceState2D space = GetWorld2D().DirectSpaceState;
+		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + step, CollisionMask);
+		var hit = space.IntersectRay(query);
+		if (hit.Count > 0 && hit["collider"].As<GodotObject>() is Player { Dodging: true } dodger)
+		{
+			query.Exclude = [dodger.GetRid()]; // a dashing player: it flies on through him
+			hit = space.IntersectRay(query);
+		}
 		if (hit.Count > 0)
 		{
 			GlobalPosition = (Vector2)hit["position"];
@@ -66,8 +72,8 @@ public partial class Bullet : Area2D
 
 	public void Hit(Node2D body)
 	{
-		if (IsQueuedForDeletion())
-			return; // already hit something this frame
+		if (IsQueuedForDeletion() || body is Player { Dodging: true })
+			return; // already hit something this frame, or flies on through a dashing player
 
 		if (body is Glass glass)
 		{

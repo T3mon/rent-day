@@ -66,6 +66,20 @@ Each gun has its own pick-up sound, so you can tell what you grabbed by ear.
 - Kills don't freeze the game for a split second while it's slowed (hit stop): it's slow already.
 - Pausing, dying, a restart or the stairs end it. Numbers are tuned on the player (`player/player.tscn`).
 
+## Dash (`dash`, Space)
+
+- A quick burst: moving, the way you're moving; standing still, toward the cursor. So you can shoot ahead and dash to the side or back.
+- Nothing can hurt you during it: bullets fly on through you, swings miss, nothing knocks you down.
+- No shooting, swinging, grabbing or finishing off mid-dash. You keep aiming at the cursor.
+- Walls, furniture and glass stop it; doors get pushed as when walking; enemies don't block it (they don't when walking either).
+- Not while holding a human shield, finishing off an enemy or lifting one.
+- It runs on game time: slowed, you dash slowly too, and the wait runs slowly.
+- Then a wait before the next. While it recharges, a square in the top-left corner shows it: a little runner (`art/icons/dash.png`, drawn by `tools/icons/dash.py`) running dimly under the seconds left, and a cyan line filling along the bottom. Once ready he lights up fully for a moment and the square goes. The slow-motion battery sits beside it.
+- The look: he keeps facing the cursor, and the way he goes from there picks one of four animations: forward a lunge (arms swept back, legs split), back a hop (leaning in toward the aim, both feet pushing off ahead), left or right a sidestep (the lead foot reaching, the other trailing). Each runs crouch, launch, a held pose for most of it, a brake, settle, with in-between frames. He's smushed along the way he goes, easing in and out: squashed loading up, stretched in flight, squashed braking (a sidestep less). Whatever he holds stays in hand; a door he dashes through gets the shoulder but doesn't stop the poses. Poses are `dash_f`/`_b`/`_l`/`_r` (and the `gun_`, `bat_`, `knife_` ones) in `tools/anim/anims.py`, timed to 0.3 s: a different Dash Time ends them early or late. The smush is `DashSmush` in `player/Player.cs`.
+- You leave afterimages, under you, and a whoosh plays (one of six, at random: `audio/dash.tres`).
+- You have it from the start; later it moves into the progression system with the other skills (#10).
+- Tuning is on the Player: Dash Speed, Dash Time (how long it lasts, all of it safe), Dash Cooldown.
+
 ## Admin panel (`admin_panel`, F1)
 
 Testing switches and tools, in runs from the editor only: see [testing.md](testing.md).
@@ -78,7 +92,7 @@ Opens the Esc menu over the frozen floor: resume, load game, music, settings, qu
 
 Skips to the next floor song, without pausing. See [music.md](music.md).
 
-## Execute (`execute`, Space)
+## Execute (`execute`, F)
 
 One key, two takedowns. An enemy standing right in front of you comes first; otherwise the nearest enemy lying on the floor within reach.
 

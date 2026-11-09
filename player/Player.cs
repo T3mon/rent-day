@@ -57,10 +57,20 @@ public partial class Player : Character
 	public float SlowMeter { get; private set; } = 1f; // 0..1, full = 1
 	public bool SlowReady => SlowMeter >= SlowMinimum;
 
+	// Dash ("dash", Space): a burst the way you're moving, or toward the cursor standing still. Nothing can hurt
+	// you meanwhile: bullets fly on through you, swings miss. No attacking or grabbing until it ends.
+	[Export] public float DashSpeed = 450f;     // pixels per second
+	[Export] public float DashTime = 0.3f;      // seconds it lasts, all of it safe
+	[Export] public float DashCooldown = 5f;    // seconds before the next one
+
+	public float DashWait { get; private set; } // seconds until you can dash again; 0 = ready
+	public bool Dodging => _dashLeft > 0f;
+
 	private const float ShieldAhead = 12f;     // how far in front of you he's held
 	private static readonly Vector2 ShieldGunHand = new(15f, 11f); // the gun out past his right shoulder, not over his head
 	private static readonly AudioStream NeckSnap = GD.Load<AudioStream>("res://audio/neck_snap.wav");
 	private static readonly AudioStream Whoosh = GD.Load<AudioStream>("res://audio/melee/swoosh.tres");
+	private static readonly AudioStream DashWhoosh = GD.Load<AudioStream>("res://audio/dash.tres"); // one of six, at random
 
 	private Camera2D _camera;
 	private AudioStreamPlayer2D _blowSound, _finalBlowSound, _grabSound, _struggleSound, _bodyFallSound;
@@ -80,6 +90,14 @@ public partial class Player : Character
 	private float _refillWait;
 	private Node2D _legsPicture;
 	private int _ticksSlowed;
+	private float _dashLeft;
+	private Vector2 _dashDirection;
+	private bool _dashSideways; // to his side of where he aims: the smush turns across
+	// The dash's smush (x along where he aims, y across) through it, 0 to 1, eased between; it follows the
+	// dash animation's stages (anims.py dash): squashed loading up, stretched in flight, squashed braking.
+	private static readonly (float At, Vector2 Size)[] DashSmush = { (0f, Vector2.One), (0.1f, new(0.75f, 1.25f)),
+		(0.28f, new(1.35f, 0.8f)), (0.62f, new(1.3f, 0.82f)), (0.8f, new(0.8f, 1.2f)), (0.93f, new(1.05f, 0.95f)), (1f, Vector2.One) };
+	private AudioStreamPlayer2D _dashSound;
 
 	public override void _Ready()
 	{
@@ -93,6 +111,8 @@ public partial class Player : Character
 		_bodyFallSound = GetNode<AudioStreamPlayer2D>("BodyFallSound");
 		_gunRest = Gun.Position;
 		_legsPicture = GetNode<Node2D>("Legs");
+		_dashSound = new AudioStreamPlayer2D { Stream = DashWhoosh };
+		AddChild(_dashSound);
 		Died += () => DropShield(Visual.Transform.X); // shot from behind: he goes down with you
 		Died += () =>
 		{
@@ -107,6 +127,17 @@ public partial class Player : Character
 		int lift = SlowMotion.On ? 5 : 0; // 4 + 5
 		if (Visual.ZIndex != lift)
 			Visual.ZIndex = _legsPicture.ZIndex = lift;
+	}
+
+	private static Vector2 SmushAt(float dashed)
+	{
+		for (int i = 1; i < DashSmush.Length; i++)
+			if (dashed <= DashSmush[i].At)
+			{
+				var (from, to) = (DashSmush[i - 1], DashSmush[i]);
+				return from.Size.Lerp(to.Size, Mathf.SmoothStep(0f, 1f, (dashed - from.At) / (to.At - from.At)));
+			}
+		return Vector2.One;
 	}
 
 	// A restart, the stairs or a load: the next floor starts at normal speed.
@@ -136,6 +167,10 @@ public partial class Player : Character
 		float dt = (float)delta;
 		UpdateSlowMotion(1f / Engine.PhysicsTicksPerSecond); // ticks keep coming 60 times a real second, at any game speed
 		UpdateSwing(dt);
+		DashWait = Mathf.Max(DashWait - dt, 0f);
+		_dashLeft -= dt;
+		Vector2 smush = Dodging ? SmushAt(1f - _dashLeft / DashTime) : Vector2.One;
+		Smush = _dashSideways ? Vector2.One + (new Vector2(smush.Y, smush.X) - Vector2.One) * 0.6f : smush; // wide shoulders read worse than a long body
 		if (_victim != null)
 		{
 			Execute(dt);
@@ -155,10 +190,22 @@ public partial class Player : Character
 		// WASD -> a direction. Right = (1, 0), up-left = (-0.7, -0.7), nothing held = (0, 0).
 		Vector2 direction = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 
-		// Ease toward full speed in that direction, or ease to a stop.
+		if (Input.IsActionJustPressed("dash") && DashWait <= 0f && _shield == null)
+		{
+			_dashDirection = direction != Vector2.Zero ? direction.Normalized() : Vector2.Right.Rotated(Visual.Rotation);
+			_dashLeft = DashTime;
+			DashWait = DashCooldown;
+			_dashSound.Play();
+			Vector2 way = _dashDirection.Rotated(-Visual.Rotation); // from where he aims, which he keeps facing
+			float off = Mathf.Abs(way.Angle());
+			_dashSideways = off > Mathf.Pi / 4f && off < Mathf.Pi * 3f / 4f;
+			Act(DashPose(off <= Mathf.Pi / 4f ? "f" : off >= Mathf.Pi * 3f / 4f ? "b" : way.Y > 0f ? "r" : "l"));
+		}
+
+		// Dashing: straight on at full burst. Otherwise ease toward full speed in that direction, or ease to a stop.
 		Vector2 target = direction * MaxSpeed * (_shield != null ? ShieldSpeed : 1f);
 		float rate = direction == Vector2.Zero ? Friction : Acceleration;
-		Velocity = Velocity.MoveToward(target, rate * dt);
+		Velocity = Dodging ? _dashDirection * DashSpeed : Velocity.MoveToward(target, rate * dt);
 
 		// Move by Velocity, sliding along walls instead of sticking to them.
 		MoveAndSlide();
@@ -176,6 +223,13 @@ public partial class Player : Character
 		float lean = Input.IsActionPressed("look") ? ShiftLookAhead : LookAhead;
 		Vector2 limit = screen / 2 - new Vector2(24, 24); // you stay at least 24 px inside the screen
 		_camera.Position = (fromCenter * lean).Clamp(-limit, limit);
+
+		if (Dodging)
+		{
+			if (Engine.GetPhysicsFrames() % 2 == 0)
+				Afterimage.Leave(this);
+			return; // no shooting, swinging, grabbing or finishing off mid-dash
+		}
 
 		// Guns shoot, bats and knives swing, empty hands punch. Single-shot guns fire once per
 		// click; automatic guns and swings keep going while the button is held. Holding a shield,

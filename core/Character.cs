@@ -212,7 +212,7 @@ public partial class Character : CharacterBody2D
 	// (choked out), so no goo and no blood, he just slumps.
 	public void Die(Vector2 hitDirection, bool lethal = true)
 	{
-		if (IsDead || (this is Player && DevSettings.Current.GodMode)) // testing: you can't die
+		if (IsDead || this is Player { Dodging: true } || (this is Player && DevSettings.Current.GodMode)) // testing: you can't die
 			return;
 		IsDead = true;
 		Velocity = Vector2.Zero;
@@ -285,7 +285,7 @@ public partial class Character : CharacterBody2D
 	// Still alive: he gets up after a while, unless someone finishes him off first.
 	public void KnockDown(Vector2 direction)
 	{
-		if (IsDead || IsDown)
+		if (IsDead || IsDown || this is Player { Dodging: true })
 			return;
 		IsDown = true;
 		_downLeft = (float)GD.RandRange(DownTimeMin, DownTimeMax);

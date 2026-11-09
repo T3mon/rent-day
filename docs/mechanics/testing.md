@@ -8,8 +8,9 @@ The last lines tell you the result: `all passed` and `exit=0 error_lines=0` is a
 - **Files:** every scene and resource loads, and everything they need exists.
 - **Rules:** animation frames lie inside their pictures, characters have every animation the code plays, weapons have their pictures and sound, every floor has one player, a Floor and enemies with looks, every shader is in the warm-up list, and the export leaves out the plugin, the graph cache and the tests.
 - **Running:** the menu and each floor run for 10 game seconds with nobody playing. Any error logged fails the run.
+- **Dash:** a bullet flies on through a dashing player, kills a standing one, and the dash waits before the next.
 
-The tests don't check that the game plays right: if bullets stopped killing, they would still pass. They use normal switch values in memory, and never write saves, settings or `debug/dev_settings.tres`.
+The tests don't check that the game plays right: if bullets stopped killing enemies, they would still pass. They use normal switch values in memory, and never write saves, settings or `debug/dev_settings.tres`.
 
 They run by themselves before every `git push`, and a failure stops the push. `git push --no-verify` skips them. The hook is switched on once per copy of the project: `git config core.hooksPath .githooks`.
 

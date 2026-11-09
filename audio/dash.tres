@@ -1,0 +1,18 @@
+[gd_resource type="AudioStreamRandomizer" format=3]
+
+[ext_resource type="AudioStream" path="res://audio/dash_1.wav" id="1"]
+[ext_resource type="AudioStream" path="res://audio/dash_2.wav" id="2"]
+[ext_resource type="AudioStream" path="res://audio/dash_3.wav" id="3"]
+[ext_resource type="AudioStream" path="res://audio/dash_4.wav" id="4"]
+[ext_resource type="AudioStream" path="res://audio/dash_5.wav" id="5"]
+[ext_resource type="AudioStream" path="res://audio/dash_6.wav" id="6"]
+
+[resource]
+playback_mode = 1
+streams_count = 6
+stream_0/stream = ExtResource("1")
+stream_1/stream = ExtResource("2")
+stream_2/stream = ExtResource("3")
+stream_3/stream = ExtResource("4")
+stream_4/stream = ExtResource("5")
+stream_5/stream = ExtResource("6")
