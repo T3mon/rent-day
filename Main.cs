@@ -35,7 +35,7 @@ public partial class Main : Node2D
 	private float _shownMeter = 1f;
 	private Control _dash;
 	private float _dashGlow; // seconds the dash tile stays up, fully lit, after it recharges
-	private static readonly Texture2D DashIcon = GD.Load<Texture2D>("res://art/icons/dash.png"); // 4 frames of 14 px: a run cycle
+	private static readonly Texture2D DashIcon = GD.Load<Texture2D>("res://art/icons/dash.png"); // 14 px
 	private ColorRect _slowLook;
 	private ShaderMaterial _slowShader;
 	private float _slowFade; // 0..1, how far slow motion's look is in
@@ -283,27 +283,83 @@ public partial class Main : Node2D
 		_dashGlow = waiting ? 0.3f : _player.IsDead ? 0f : Mathf.Max(_dashGlow - (float)delta, 0f);
 		_dash.Visible = waiting || _dashGlow > 0f;
 		if (_dash.Visible)
-			_dash.QueueRedraw(); // the runner runs
-		_battery.Position = _dash.Visible ? new Vector2(30, 11) : new Vector2(8, 8);
-		_note.Position = new Vector2(16, _dash.Visible ? 28 : _battery.Visible ? 20 : 6);
+			_dash.QueueRedraw(); // the seconds count down
+		_battery.Position = _dash.Visible ? new Vector2(8 + Tile + 6, 11) : new Vector2(8, 8);
+		_note.Position = new Vector2(16, _dash.Visible ? 8 + Tile + 18 : _battery.Visible ? 20 : 6);
 	}
 
-	// A square with its shadow, like the battery. Recharging: the icon runs dimly under the seconds left, and a
-	// cyan line fills along the bottom. Ready: the icon lit.
+	// The look every ability's recharge will share: a square with its shadow, like the battery, the icon under a
+	// dark wedge that sweeps away clockwise as it recharges, the seconds left over it, and below it the key it's on,
+	// a keycap as in the controls menu, never wider than the square.
+	private const int Tile = 16;
+
 	private void DrawDash()
 	{
-		_dash.DrawRect(new Rect2(2, 2, 16, 16), Style.Ink);
-		_dash.DrawRect(new Rect2(0, 0, 16, 16), Style.Soft);
-		_dash.DrawRect(new Rect2(1, 1, 14, 14), Style.Ink);
+		_dash.DrawRect(new Rect2(2, 2, Tile, Tile), Style.Ink);
+		_dash.DrawRect(new Rect2(0, 0, Tile, Tile), Style.Soft);
+		_dash.DrawRect(new Rect2(1, 1, Tile - 2, Tile - 2), Style.Ink);
+		_dash.DrawTextureRect(DashIcon, new Rect2(1, 1, Tile - 2, Tile - 2), false);
 		float wait = _player.DashWait;
-		float frame = 14 * (int)(Time.GetTicksMsec() / 120 % 4);
-		_dash.DrawTextureRectRegion(DashIcon, new Rect2(1, 1, 14, 14), new Rect2(frame, 0, 14, 14), new Color(1f, 1f, 1f, wait > 0f ? 0.35f : 1f));
+		if (wait > 0f)
+			_dash.DrawColoredPolygon(Wedge(wait / _player.DashCooldown), Style.Ink with { A = 0.7f });
+		DrawKeycap(FitKey(Menu.KeyName("dash", 0)));
 		if (wait <= 0f)
 			return;
-		_dash.DrawRect(new Rect2(1, 14, Mathf.Round(14f * (1f - wait / _player.DashCooldown)), 1), Style.Cyan);
 		string seconds = Mathf.CeilToInt(wait).ToString();
-		_dash.DrawStringOutline(Style.OsdFont, new Vector2(0, 13), seconds, HorizontalAlignment.Center, 16, 16, 3, Style.Ink);
-		_dash.DrawString(Style.OsdFont, new Vector2(0, 13), seconds, HorizontalAlignment.Center, 16, 16, Style.Soft);
+		_dash.DrawStringOutline(Style.OsdFont, new Vector2(0, 13), seconds, HorizontalAlignment.Center, Tile, 16, 3, Style.Ink);
+		_dash.DrawString(Style.OsdFont, new Vector2(0, 13), seconds, HorizontalAlignment.Center, Tile, 16, Style.Soft);
+	}
+
+	// The share still to recharge (1 down to 0) as a pie over the icon, from 12 o'clock round to where the sweep
+	// has got to, its edge running along the square's border.
+	private static Vector2[] Wedge(float left)
+	{
+		const int Steps = 64;
+		Vector2 centre = new(Tile / 2f, Tile / 2f);
+		float half = Tile / 2f - 1f;
+		var points = new Vector2[Steps + 2];
+		points[0] = centre;
+		for (int i = 0; i <= Steps; i++)
+		{
+			Vector2 way = Vector2.FromAngle(-Mathf.Pi / 2f + Mathf.Tau * (1f - left * (1f - (float)i / Steps)));
+			points[i + 1] = centre + way * (half / Mathf.Max(Mathf.Abs(way.X), Mathf.Abs(way.Y)));
+		}
+		return points;
+	}
+
+	// Under the square: a white keycap with its shadow. Space shows as the space bar's bracket, since no word fits.
+	private void DrawKeycap(string key)
+	{
+		if (key == "")
+			return;
+		float w = key == "SPACE" ? 12 : KeyWidth(key), x = Mathf.Round((Tile - w) / 2);
+		_dash.DrawRect(new Rect2(x + 1, Tile + 3, w, 10), Style.Ink);
+		_dash.DrawRect(new Rect2(x, Tile + 2, w, 10), Colors.White);
+		if (key != "SPACE")
+		{
+			_dash.DrawString(Style.SmallFont, new Vector2(x, Tile + 10), key, HorizontalAlignment.Center, w, 8, Style.Ink);
+			return;
+		}
+		_dash.DrawRect(new Rect2(x + 3, Tile + 5, 1, 4), Style.Ink);
+		_dash.DrawRect(new Rect2(x + 3, Tile + 8, 6, 1), Style.Ink);
+		_dash.DrawRect(new Rect2(x + 8, Tile + 5, 1, 4), Style.Ink);
+	}
+
+	private static float KeyWidth(string key) => Mathf.Round(Style.SmallFont.GetStringSize(key, HorizontalAlignment.Left, -1, 8).X) + 2;
+
+	// A key's name short enough for its keycap to fit under the square: long names shortened, then cut.
+	private static string FitKey(string key)
+	{
+		if (key == "SPACE")
+			return key; // drawn as a symbol
+		key = key switch
+		{
+			"BACKSPACE" => "BKSP", "CAPSLOCK" => "CAPS", "PAGEUP" => "PGUP", "PAGEDOWN" => "PGDN",
+			"DELETE" => "DEL", "INSERT" => "INS", "ESCAPE" => "ESC", _ => key.Replace("MOUSE ", "M"),
+		};
+		while (key.Length > 1 && KeyWidth(key) > Tile)
+			key = key[..^1];
+		return key;
 	}
 
 	// Slow motion's look comes in and goes out over a quarter of a second of real time.

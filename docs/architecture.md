@@ -38,7 +38,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   in hand, with no outline, over its shadow. Its floor picture (`FloorLook`) is seen from the side, so
   a pistol shows its grip.
 - **Ability icons** for the HUD (and later the progression system): **`tools/icons/<name>.py`** (Python, no
-  packages) draws `art/icons/<name>.png`, a strip of 14 px frames; rebuild with `py tools/icons/dash.py`.
+  packages) draws `art/icons/<name>.png`, one 14 px picture, shown in a 16 px square (`Main.Tile`); rebuild with `py tools/icons/dash.py`.
 - **Props, walls and floors** are generated too: **`tools/props/build.py`** (Python with Pillow) draws
   every `props/<name>.png`, the wall tiles `levels/walls3.png` and the floor tiles `levels/floors3.png`;
   rebuild with `python tools/props/build.py` (or name some props: `... build.py sofa bed`).
@@ -162,6 +162,10 @@ Gameplay rules are in [mechanics/](mechanics/).
   slow motion's tint 7, bullets and afterimages 8 (a dash's at normal speed: 3), and you while slowed 9. Set with each scene's
   z index, or in code where the thing is made.
 - Tuning values live in the Inspector (scene and data files), not in code.
+- **Every ability with a recharge shows it the dash's way** (`Main.DrawDash`): a 16 px square (`Main.Tile`) in the
+  top-left corner, only while it recharges; its 14 px icon (drawn by `tools/icons/<name>.py`, white-ish figure, cyan and
+  pink accents) under a dark wedge sweeping away clockwise from 12 o'clock; the seconds left over it; under the square
+  its key as a keycap, never wider than the square. New abilities sit beside it in a row and reuse that drawing.
 - **Green belongs to the crosshair** (`ui/crosshair.png`, the mouse cursor in Project Settings): no green in
   levels (floors, walls, props, enemies, goo), so the pointer always stands out.
 - Every enemy's defaults are in `enemies/enemy.tscn`; set a single enemy's values in the level.

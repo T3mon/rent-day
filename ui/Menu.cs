@@ -857,7 +857,7 @@ public partial class Menu : Control
 		Text(key, cx, cy + 3, SmallFont, 8, Ink, HorizontalAlignment.Center);
 	}
 
-	private static string KeyName(string action, int index)
+	public static string KeyName(string action, int index)
 	{
 		List<InputEvent> keys = Settings.KeysOf(action);
 		return index < keys.Count ? KeyLabel(keys[index]) : "";
