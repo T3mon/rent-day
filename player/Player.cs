@@ -59,7 +59,7 @@ public partial class Player : Character
 
 	// Dash ("dash", Space): a burst the way you're moving, or toward the cursor standing still. Nothing can hurt
 	// you meanwhile: bullets fly on through you, swings miss. No attacking or grabbing until it ends.
-	[Export] public float DashSpeed = 450f;     // pixels per second
+	[Export] public float DashSpeed = 225f;     // pixels per second
 	[Export] public float DashTime = 0.3f;      // seconds it lasts, all of it safe
 	[Export] public float DashCooldown = 5f;    // seconds before the next one
 
