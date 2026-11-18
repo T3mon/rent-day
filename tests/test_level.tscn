@@ -4,6 +4,7 @@
 [ext_resource type="TileSet" path="res://levels/walls3.tres" id="walls"]
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="player"]
 [ext_resource type="PackedScene" path="res://enemies/enemy.tscn" id="enemy"]
+[ext_resource type="PackedScene" path="res://enemies/dog.tscn" id="dog"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://props/glass_partition.tscn" id="glass"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="pickup"]
@@ -252,3 +253,7 @@ position = Vector2(860, 100)
 FacingDegrees = 90.0
 Look = ExtResource("look_c")
 StartWeapon = ExtResource("uzi")
+
+[node name="Dog" parent="." instance=ExtResource("dog")]
+position = Vector2(1110, 240)
+StayInRoom = true

@@ -305,7 +305,7 @@ public partial class Player : Character
 	private void StartExecution()
 	{
 		var enemies = GetTree().GetNodesInGroup("enemies").OfType<Enemy>().Where(enemy => !enemy.IsDead).ToList();
-		_victim = enemies.FirstOrDefault(enemy => !enemy.IsDown && InSneakKillReach(enemy))
+		_victim = enemies.FirstOrDefault(enemy => !enemy.IsDown && !enemy.KnockProof && InSneakKillReach(enemy))
 			?? enemies.Where(enemy => enemy.IsDown && enemy.GlobalPosition.DistanceTo(GlobalPosition) <= ExecuteRange)
 				.MinBy(enemy => enemy.GlobalPosition.DistanceTo(GlobalPosition));
 		if (_victim == null)

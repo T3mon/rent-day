@@ -27,9 +27,10 @@
 [ext_resource type="PackedScene" path="res://props/washer_dryer.tscn" id="37_kglok"]
 [ext_resource type="PackedScene" path="res://props/window.tscn" id="38_thofl"]
 [ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/enemy_b.tres" id="b_look"]
+[ext_resource type="PackedScene" path="res://enemies/dog.tscn" id="dog"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
-[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="pickup"]
+[ext_resource type="PackedScene" uid="uid://colcq6x584kno" path="res://weapons/pickup.tscn" id="pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="pistol"]
 [ext_resource type="PackedScene" uid="uid://vxvxhq660cmp" path="res://player/player.tscn" id="player"]
 [ext_resource type="PackedScene" path="res://props/armchair.tscn" id="p_armchair"]
@@ -457,3 +458,11 @@ position = Vector2(73, 258)
 FacingDegrees = 180.0
 Pose = 5
 StartWeapon = null
+
+[node name="Dog2" parent="." unique_id=371353590 instance=ExtResource("dog")]
+position = Vector2(712, 215)
+Behaviour = 0
+FacingDegrees = 180.0
+
+[node name="Dog" parent="." unique_id=1471811419 instance=ExtResource("dog")]
+position = Vector2(412, 290)

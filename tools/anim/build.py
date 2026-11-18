@@ -24,7 +24,6 @@ def save_strip(path, frames, size):
 
 def build(name):
     ch = pp.Character(name)
-    os.makedirs(OUT + name, exist_ok=True)
     anims = {}
     for key, frames in an.animations().items():
         anims[key] = ([an.render(ch, p) for p, ms in frames], [ms for p, ms in frames], 72)
@@ -32,6 +31,13 @@ def build(name):
         anims['lie_' + key] = ([an.lying_frame(ch, spec) for spec, ms in frames], [ms for spec, ms in frames], 72)
     legs = pp.walk_legs(ch)
     anims['legs'] = (legs, [100] * len(legs), 28)
+    write(name, anims)
+    return anims
+
+
+def write(name, anims):
+    """anims: {animation: (frames, milliseconds per frame, frame size)}. Saves the strips and the SpriteFrames."""
+    os.makedirs(OUT + name, exist_ok=True)
     for key, (frames, ms, size) in anims.items():
         save_strip(f'{OUT}{name}/{key}.png', frames, size)
     # SpriteFrames: one animation per sheet, frame durations in seconds (speed 1)
@@ -51,7 +57,6 @@ def build(name):
     head = '[gd_resource type="SpriteFrames" format=3%s]' % (f' uid="{uid.group(1)}"' if uid else '')
     text = head + '\n\n' + '\n'.join(res) + '\n\n' + '\n'.join(subs) + '\n[resource]\nanimations = [' + ', '.join(entries) + ']\n'
     open(path, 'w', encoding='utf-8', newline='\n').write(text)
-    return anims
 
 
 LOOPS = {'idle', 'walk', 'gun_idle', 'gun_walk', 'bat_idle', 'bat_walk', 'knife_idle', 'knife_walk', 'choke',

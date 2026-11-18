@@ -8,7 +8,8 @@ Set per enemy in the level:
 - **Static:** stands guard facing one way. Reacts only to what it sees, never to gunshots. Returns to its post after a chase.
 - **Patrol:** walks straight. When blocked, stops and turns left a little at a time until the way is clear and it faces straight along the walls again. Hears gunshots.
 - **Wander:** walks short stretches in random open directions, stops to look around, repeats. Hears gunshots.
-- **Stay in room** (option, patrol and wander): treats doorways as walls when on its own. A chase can still take it through doors, but it walks back to its room afterwards.
+- **Follow wall:** keeps a wall on its left, so it goes round whole rooms and out through doorways into the next. Round a pillar, or out in the open, it lets go after three quarters of a turn and walks straight on to the next wall. The dog's routine. Hears gunshots.
+- **Stay in room** (option, any walking routine): treats doorways as walls when on its own. A chase can still take it through doors, but it walks back to its room afterwards.
 - **Pose** (option, any behaviour): what he does while calm and standing still: smoke, phone, hide (crouched), sit, lean (back to a wall), talk. Only the look: he sees and reacts exactly as without it. Once alerted he drops it (a smoker flicks his cigarette away; a sitter stands up, a crouching enemy rises, a leaner pushes off the wall, each quick enough to finish inside his reaction time); it comes back when he gives up searching. A sitting enemy can be placed on furniture (a couch): he gets up off it when alerted, stepping out onto open floor before he goes anywhere. A wanderer strikes his pose whenever he stops.
 
 ## Seeing you
@@ -62,6 +63,18 @@ Set per enemy in the level:
 - An enemy holding a bat or knife, once he sees you and his reaction time has passed, runs at you (faster than an enemy running to a noise) and swings when you're close. His swing kills you.
 - He keeps coming as long as he sees you; if he loses you, he searches like any enemy.
 - Otherwise he behaves like his routine says (static, patrol, wander).
+
+## Dog
+
+`enemies/dog.tscn`: a dog that sees and hears like anyone. Its art is drawn by `tools/anim/dog.py`.
+
+- **Routine:** follows the wall, and every 7 seconds or so (**Sit Every**) sits down for about 3 (**Sit Time**). Set to Static, it sits at its post.
+- **The warning:** when it spots you, it stops and barks (**Bark Time**, 0.4 s) before it charges. It barks again each time it finds you after losing you for a moment. Walking enemies within **Bark Noise** (240 px, as far as a pistol shot, through walls) hear the bark and come to the dog. Enemies standing still don't, as with shots.
+- **The charge:** it speeds up straight at you (**Acceleration**) to faster than you can run or dash (**Run Speed**). It bounces off walls instead of going round them, so it can overshoot. If it loses you, it searches like anyone.
+- **The bite:** running into you kills you. A dash goes through it, like through a bullet.
+- **Killing it:** a bullet, a bat or a knife. Punches, door slams and thrown things do nothing, and it can't be grabbed or stealth-killed: it's the one enemy you can't take on bare-handed.
+- It carries nothing, so it drops nothing.
+- Sounds: a bark when it spots you (**Bark Sound**) and a snap of the jaws when it bites (**Bite Sound**). It dies silently.
 
 ## Going for guns
 

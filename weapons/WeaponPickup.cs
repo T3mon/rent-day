@@ -76,15 +76,18 @@ public partial class WeaponPickup : CharacterBody2D
 		{
 			if (hit.GetCollider() is Enemy enemy && _thrown && !enemy.IsDown)
 			{
-				// A thrown gun to the head: he goes down, the gun bounces off him.
-				if (Data.KillsWhenThrown)
-					enemy.Die(Velocity.Normalized());
-				else
-					enemy.KnockDown(Velocity.Normalized());
-				_hitSound.Stream = Data.ThrownHitSound ?? Data.HitSound;
-				if (_hitSound.Stream != null) // guns have none: the enemy's body fall is the sound
-					_hitSound.Play();
-				ShakeCamera.Shake(1.3f);
+				// A thrown gun to the head: he goes down, the gun bounces off him. Off a dog it just bounces.
+				if (!enemy.KnockProof)
+				{
+					if (Data.KillsWhenThrown)
+						enemy.Die(Velocity.Normalized());
+					else
+						enemy.KnockDown(Velocity.Normalized());
+					_hitSound.Stream = Data.ThrownHitSound ?? Data.HitSound;
+					if (_hitSound.Stream != null) // guns have none: the enemy's body fall is the sound
+						_hitSound.Play();
+					ShakeCamera.Shake(1.3f);
+				}
 				_thrown = false;
 				Velocity = -Velocity * 0.2f;
 			}

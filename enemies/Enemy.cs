@@ -9,7 +9,8 @@ namespace RentDay;
 //   Patrol - walks straight ahead; when something blocks his way he turns left, bit by bit, until
 //            the way is clear and he faces straight along the walls again.
 //   Wander - walks a few steps in a random direction, stops, looks around, repeats.
-// Patrolling and wandering enemies hear your gunshots and run to where the shot came from.
+//   FollowWall - keeps a wall on his left, so he goes round whole rooms (the dog's routine).
+// Patrolling, wandering and wall-following enemies hear your gunshots and run to where the shot came from.
 // When an enemy sees you he stops, turns to aim, and fires after a short reaction time: longer
 // when you're far away or behind him, with a little randomness. That delay is your window.
 // After that he keeps firing at his gun's enemy pace for as long as he sees you, walking at you
@@ -28,13 +29,13 @@ namespace RentDay;
 // Change the defaults for every enemy in enemies/enemy.tscn; change one enemy in the level.
 public partial class Enemy : Character
 {
-	public enum Routine { Static, Patrol, Wander }
+	public enum Routine { Static, Patrol, Wander, FollowWall }
 	public enum Idle { None, Smoke, Phone, Hide, Sit, Lean, Talk }
 
 	[ExportGroup("Routine")]
 	[Export] public Routine Behaviour = Routine.Static;
 	[Export] public float FacingDegrees = 0f;   // where he looks at the start (0 = right, 90 = down); a patroller sets off this way
-	[Export] public bool StayInRoom;            // patrol and wander only: never walks out through a doorway on his own
+	[Export] public bool StayInRoom;            // walking routines only: never walks out through a doorway on his own
 	[Export] public float WalkSpeed = 55f;      // patrolling and wandering, pixels per second
 	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking
 
@@ -92,6 +93,21 @@ public partial class Enemy : Character
 	private Vector2 _goal;
 	private Vector2? _stepOut;      // walking straight onto open floor first (through furniture if need be)
 	private bool _turning;          // patrol: turning left until the way is clear
+	private bool _turningLeft;      // following a wall: turning left round its end until square with the walls
+	private int _leftTurned;        // following a wall: degrees turned left since the last right turn
+	private bool _crossing;         // following a wall: let go of it, walking straight on to the next one
+
+	// Who he's after.
+	protected Player Target => _player;
+
+	// Can't be knocked down or grabbed: punches, door slams and thrown things do nothing (the dog).
+	public virtual bool KnockProof => false;
+
+	// Picks a weapon up when he has none (a dog never does).
+	protected virtual bool CarriesWeapons => true;
+
+	// Calm and standing still: the animation he plays (smoking, on the phone...); null = just standing.
+	protected virtual StringName CalmPose => _poseName;
 
 	public override void _EnterTree() => All.Add(this);
 	public override void _ExitTree() => All.Remove(this);
@@ -174,16 +190,19 @@ public partial class Enemy : Character
 
 		if (_player == null || _player.IsDead)
 			Velocity = Vector2.Zero;
-		else if (!HasWeapon)
+		else if (CarriesWeapons && !HasWeapon)
 			GoForAGun(dt);
 		else if (Notices(dt))
-			Fire(dt);
+		{
+			Spotted();
+			Attack(dt);
+		}
 		else if (_checkSpot is Vector2 spot)
 			Search(spot, dt);
 		else
 			FollowRoutine(dt);
 
-		StringName pose = _alerted || Velocity != Vector2.Zero ? null : _poseName;
+		StringName pose = _alerted || Velocity != Vector2.Zero ? null : CalmPose;
 		// Furniture doesn't stop him while he's in it (sitting in a couch); elsewhere it does.
 		// Stepping out onto open floor, nothing does.
 		bool throughFurniture = (Pose == Idle.Sit && !_alerted) || LevelGrid.Wedged(GlobalPosition, Layers.Furniture);
@@ -246,20 +265,25 @@ public partial class Enemy : Character
 		HitStop.Freeze(this, 0.05f);
 	}
 
-	// He sees you: stand still, turn to aim, and shoot once his reaction time has passed.
-	private void Fire(float dt)
+	// He sees you: he knows you're around, and if he loses you, he'll look where he saw you last.
+	private void Spotted()
 	{
 		_seesYou = true;
-		if (_reactionLeft < 0f)
-		{
-			_reactionLeft = ReactionFor(_player.GlobalPosition);
-			Startle(); // just the look: the reaction time stays the same
-		}
 		_alerted = true;
 		_checkSpot = _player.GlobalPosition;
 		_checkSpread = SearchSpread;
 		_searchLeft = SearchTime;
 		_goingBack = false;
+	}
+
+	// He sees you: stand still, turn to aim, and shoot once his reaction time has passed. (A dog charges instead.)
+	protected virtual void Attack(float dt)
+	{
+		if (_reactionLeft < 0f)
+		{
+			_reactionLeft = ReactionFor(_player.GlobalPosition);
+			Startle(); // just the look: the reaction time stays the same
+		}
 
 		Velocity = Vector2.Zero;
 		Vector2 toYou = _player.GlobalPosition - GlobalPosition;
@@ -325,7 +349,7 @@ public partial class Enemy : Character
 		}
 	}
 
-	private void FollowRoutine(float dt)
+	protected virtual void FollowRoutine(float dt)
 	{
 		if (_goingBack)
 		{
@@ -352,7 +376,52 @@ public partial class Enemy : Character
 			case Routine.Wander:
 				Wander(dt);
 				break;
+
+			case Routine.FollowWall:
+				FollowWall(dt);
+				break;
 		}
+	}
+
+	// Keeps a wall on his left: turns right on the spot while the way ahead is blocked, and left round
+	// the end of a wall (a corner, a doorway), then squares up with the walls again, 10 degrees a tick.
+	// Turning left three quarters of a circle with no right turn between (round a pillar, or out in the
+	// open) he lets go and walks straight on to the next wall. A doorway is half a circle, so he goes through.
+	private void FollowWall(float dt)
+	{
+		if (SteppingOut(WalkSpeed))
+			return;
+		int degrees = Mathf.RoundToInt(_heading.Angle() / Mathf.DegToRad(10f)) * 10;
+		bool square = degrees % 90 == 0;
+		if (_crossing)
+			_crossing = !(Blocked(_heading) || Stuck(dt));
+		else if (Blocked(_heading) || Stuck(dt))
+		{
+			degrees += 10;
+			_leftTurned = 0;
+			_turningLeft = false;
+		}
+		else if (!Blocked(Vector2.Right.Rotated(Mathf.DegToRad(degrees - 90))) || (_turningLeft && !square))
+		{
+			degrees -= 10;
+			_turningLeft = true;
+			_leftTurned += 10;
+			if (_leftTurned > 180 && degrees % 90 == 0)
+			{
+				_crossing = true;
+				_leftTurned = 0;
+			}
+		}
+		else if (!square)
+			degrees += 10; // squaring up after turning right
+		else
+			_turningLeft = false;
+
+		_heading = Vector2.Right.Rotated(Mathf.DegToRad(degrees));
+		if (Blocked(_heading))
+			Velocity = Vector2.Zero;
+		else
+			Walk(_heading);
 	}
 
 	// Straight ahead until something's in the way, then turn left 10 degrees a tick (standing

@@ -1,0 +1,52 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://enemies/Dog.cs" id="1_dog"]
+[ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="2_gun"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="3_pickup"]
+[ext_resource type="SpriteFrames" path="res://art/anim/dog.tres" id="anim"]
+[ext_resource type="AudioStream" uid="uid://cn5b5oe8rgjfp" path="res://audio/dog_bark.wav" id="bark"]
+[ext_resource type="AudioStream" uid="uid://ptra3ww36pte" path="res://audio/dog_bite.wav" id="bite"]
+
+[sub_resource type="CircleShape2D" id="body"]
+radius = 7.0
+
+[node name="Dog" type="CharacterBody2D" groups=["enemies"]]
+z_index = 4
+collision_layer = 4
+collision_mask = 17
+motion_mode = 1
+script = ExtResource("1_dog")
+Behaviour = 3
+ChaseSpeed = 200.0
+Look = ExtResource("anim")
+Stride = 36.0
+PickupScene = ExtResource("3_pickup")
+BarkSound = ExtResource("bark")
+BiteSound = ExtResource("bite")
+
+[node name="Legs" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("anim")
+animation = &"legs"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("body")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Alive" type="Node2D" parent="Visual"]
+
+[node name="Gun" parent="Visual/Alive" instance=ExtResource("2_gun")]
+
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual/Alive"]
+sprite_frames = ExtResource("anim")
+animation = &"idle"
+
+[node name="Corpse" type="Node2D" parent="Visual"]
+visible = false
+
+[node name="Body" type="AnimatedSprite2D" parent="Visual/Corpse"]
+sprite_frames = ExtResource("anim")
+animation = &"lie_dead"
+
+[node name="DeathSound" type="AudioStreamPlayer2D" parent="."]
+volume_db = -12.0

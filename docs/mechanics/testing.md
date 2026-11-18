@@ -51,6 +51,6 @@ Tools, in the admin panel only:
 - **Poses:** two talkers, a leaner, a hider, and a wanderer on the phone.
 - **Glass:** a guard watching through three glass panes, with an open way round them.
 - **Doors:** one enemy just behind the door, for door slams, and one facing it.
-- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others.
+- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others. Now: a dog, kept in the room.
 
 Nothing is saved while you're on it, R restarts it, and clearing it only shows FLOOR CLEAR. The automatic tests run it like a floor. Unarmed enemies aren't placed: an enemy without a weapon only looks for one, so punch someone to see that.

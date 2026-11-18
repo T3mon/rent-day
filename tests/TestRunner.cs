@@ -186,9 +186,11 @@ public partial class TestRunner : SceneTree
 		var enemy = new List<string> { "held" };
 		enemy.AddRange(kinds.Select(k => k + "look"));
 		enemy.AddRange(Enum.GetNames<Enemy.Idle>().Where(n => n != nameof(Enemy.Idle.None)).Select(n => n.ToLowerInvariant()));
+		string[] dog = { "legs", "idle", "walk", "look", "sit", "bark", "push_l", "push_r", "lie_fall", "lie_dead" };
 
 		foreach (SpriteFrames look in Looks())
-			foreach (string name in everyone.Concat(look.ResourcePath.EndsWith("player.tres") ? player : enemy))
+			foreach (string name in look.ResourcePath.EndsWith("dog.tres") ? dog
+				: everyone.Concat(look.ResourcePath.EndsWith("player.tres") ? player : enemy))
 				if (!look.HasAnimation(name))
 					yield return $"{look.ResourcePath} has no {name}";
 	}

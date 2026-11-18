@@ -30,7 +30,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   a run when chasing). Shorter strides look like scurrying. Goo footprints keep their own spacing (20 px).
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
   keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the enemy adds
-  the AI (behaviours, sight, hearing, chasing, route-finding).
+  the AI (behaviours, sight, hearing, chasing, route-finding). **`enemies/Dog.cs`** builds on `Enemy`:
+  it barks and charges instead of shooting, and nothing knocks it down.
 - **`weapons/`**: `WeaponData` is one weapon's settings, saved as a data file per weapon (`*.tres`);
   melee weapons (bat, knife, and the player's fists) tick `Melee`. `Gun` is the weapon in a hand and
   does the shooting. `Bullet` flies and hits. `WeaponPickup` is

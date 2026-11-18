@@ -104,7 +104,7 @@ public partial class Door : Node2D
 			if (Mathf.Abs(_spin) > SlamSpeed)
 			{
 				// Swinging hard: it passes through people, and floors an enemy if you pushed it.
-				if (who is Enemy && _swungByPlayer)
+				if (who is Enemy { KnockProof: false } && _swungByPlayer)
 				{
 					who.KnockDown(_panel.GlobalTransform.Y.Normalized() * Mathf.Sign(_spin));
 					_slamSound.Play();

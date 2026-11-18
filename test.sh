@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build, run tests/TestRunner.cs with a time limit, then fail on a bad exit code or an error in the log
 # (Godot often exits 0 after an error, and only warns about a stale uid).
-GODOT="${GODOT:-/c/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-stable_mono_win64_console.exe}"
+GODOT="${GODOT:-$(command -v godot-mono || echo /c/Godot_v4.7.2-stable_mono_win64/Godot_v4.7.2-stable_mono_win64_console.exe)}" # Linux, else Windows
 dotnet build --nologo -v q || exit 1
 [ -d .godot/imported ] || timeout -k 5 600 "$GODOT" --headless --import > /dev/null 2>&1 # a fresh copy
 timeout -k 5 300 "$GODOT" --headless --fixed-fps 60 --path . -s res://tests/TestRunner.cs > .godot/test.log 2>&1

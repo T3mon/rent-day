@@ -25,10 +25,11 @@
 [ext_resource type="PackedScene" path="res://props/pizza_boxes.tscn" id="41_hbhxm"]
 [ext_resource type="PackedScene" path="res://props/keytar.tscn" id="42_qwa13"]
 [ext_resource type="PackedScene" path="res://props/window.tscn" id="43_e8l6r"]
+[ext_resource type="PackedScene" path="res://enemies/dog.tscn" id="54_e0mxu"]
 [ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/enemy_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
-[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="pickup"]
+[ext_resource type="PackedScene" uid="uid://colcq6x584kno" path="res://weapons/pickup.tscn" id="pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="pistol"]
 [ext_resource type="PackedScene" uid="uid://vxvxhq660cmp" path="res://player/player.tscn" id="player"]
 [ext_resource type="PackedScene" path="res://props/armchair.tscn" id="p_armchair"]
@@ -427,3 +428,7 @@ position = Vector2(500, 440)
 Behaviour = 2
 StayInRoom = true
 Pose = 1
+
+[node name="Dog" parent="." unique_id=580841247 instance=ExtResource("54_e0mxu")]
+position = Vector2(261, 464)
+BarkNoise = 200.0
