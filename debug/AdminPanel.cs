@@ -74,6 +74,8 @@ public partial class AdminPanel : Control
 			int to = floor;
 			Button(go, to.ToString(), () => Close(() => Main.GoTo(GetTree(), to)));
 		}
+		if (ResourceLoader.Exists(Main.TestLevelPath)) // left out of exports
+			Button(go, "Test level", () => Close(() => Main.GoToTestLevel(GetTree())));
 		Choice(Row(rows, "New game starts on"), Enumerable.Range(1, FloorCount).Select(f => f.ToString()).ToArray(),
 			Math.Clamp(s.StartFloor, 1, FloorCount) - 1, i => s.StartFloor = i + 1);
 		HBoxContainer tools = Row(rows, "");

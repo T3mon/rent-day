@@ -46,7 +46,7 @@ public partial class TestRunner : SceneTree
 
 		await Run("the menu runs", Menu.ScenePath, null);
 		var floors = GD.Load<PackedScene>("res://main.tscn").Instantiate<Main>();
-		foreach (PackedScene floor in floors.Floors)
+		foreach (PackedScene floor in floors.Floors.Append(GD.Load<PackedScene>(Main.TestLevelPath)))
 			await Run(floor?.ResourcePath + " runs", "res://main.tscn", floor);
 		floors.Free();
 		await DashDodges();
@@ -209,7 +209,7 @@ public partial class TestRunner : SceneTree
 			main.Free();
 			yield break;
 		}
-		foreach (PackedScene scene in game.Floors)
+		foreach (PackedScene scene in game.Floors.Append(GD.Load<PackedScene>(Main.TestLevelPath)))
 		{
 			if (scene == null)
 			{

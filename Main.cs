@@ -13,11 +13,16 @@ public partial class Main : Node2D
 {
 	[Export] public PackedScene[] Floors = [];
 
+	// Testing only: rooms with every kind of enemy, weapon, door and glass, reached from the admin panel.
+	// It lives in tests/, so exports leave it out.
+	public const string TestLevelPath = "res://tests/test_level.tscn";
+
 	// These outlive the scene reload between floors and on restart.
 	private static int _floor = -1;
 	private static WeaponData _carried;  // the gun you came up the stairs with, and its rounds
 	private static int _carriedAmmo;
 	private static bool _arriving;
+	private static bool _testing; // on the test level instead of a floor: nothing is saved, and R restarts it
 	private static string _save, _name; // the playthrough: its save's file (null in a test run of main.tscn) and name
 	private static readonly PackedScene MenuScene = GD.Load<PackedScene>(Menu.ScenePath);
 
@@ -50,7 +55,7 @@ public partial class Main : Node2D
 		if (_floor < 0)
 			_floor = DevSettings.Current.StartFloor - 1;
 		_floor = Mathf.Clamp(_floor, 0, Floors.Length - 1); // a save may name a floor that's gone
-		var level = Floors[_floor].Instantiate<Node2D>();
+		var level = (_testing ? GD.Load<PackedScene>(TestLevelPath) : Floors[_floor]).Instantiate<Node2D>();
 		AddChild(level);
 		MoveChild(level, 0);
 
@@ -111,7 +116,7 @@ public partial class Main : Node2D
 		AddChild(_slowLook);
 
 		FloorStarted = Time.GetTicksMsec();
-		if (_save != null)
+		if (_save != null && !_testing)
 			SaveGame.Write(_save, Checkpoint());
 		_songShown = Music.Started;
 		Music.Floor(this, _floor); // keeps playing through a death or a restart
@@ -151,8 +156,12 @@ public partial class Main : Node2D
 	// Testing (the admin panel): another floor of this playthrough, empty-handed.
 	public static void GoTo(SceneTree tree, int floor) => Begin(tree, new SaveGame.Data(SaveGame.Version, floor, null, 0, DateTime.Now, _name));
 
-	private static void Begin(SceneTree tree, SaveGame.Data save)
+	// Testing (the admin panel): the test level, empty-handed. Going to a floor leaves it.
+	public static void GoToTestLevel(SceneTree tree) => Begin(tree, new SaveGame.Data(SaveGame.Version, _floor + 1, null, 0, DateTime.Now, _name), testing: true);
+
+	private static void Begin(SceneTree tree, SaveGame.Data save, bool testing = false)
 	{
+		_testing = testing;
 		_floor = save != null ? save.Floor - 1 : -1;
 		_carried = save != null ? SaveGame.WeaponOf(save) : null;
 		_carriedAmmo = _carried != null ? save.Ammo : 0;
@@ -396,7 +405,7 @@ public partial class Main : Node2D
 			return;
 		Cleared = true;
 		Music.Clear();
-		if (_floor == Floors.Length - 1)
+		if (_floor == Floors.Length - 1 && !_testing)
 		{
 			_won = true;
 			ShowMessage("RENT COLLECTED\npress R");

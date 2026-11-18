@@ -38,6 +38,19 @@ Available switches:
 
 Tools, in the admin panel only:
 - **Give:** any weapon in your hands, a gun with a full load.
-- **Go to:** any floor, empty-handed.
+- **Go to:** any floor, empty-handed, or the **Test level**.
 - **Restart floor**, and **Kill all enemies** (to see a cleared floor).
 - **Reset all to normal:** every switch back to its normal value, saved to the file too.
+
+# Test level
+
+`tests/test_level.tscn`, reached from the admin panel (Go to, Test level). It's not one of the floors, and exports leave it out with the rest of `tests/`. You start in a hall with every weapon at your feet. Five rooms open off it, each named on the floor by its door:
+
+- **Guns:** a guard, a smoker with a shotgun, a patroller with an uzi.
+- **Melee:** a patroller with a bat, a guard with a knife.
+- **Poses:** two talkers, a leaner, a hider, and a wanderer on the phone.
+- **Glass:** a guard watching through three glass panes, with an open way round them.
+- **Doors:** one enemy just behind the door, for door slams, and one facing it.
+- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others.
+
+Nothing is saved while you're on it, R restarts it, and clearing it only shows FLOOR CLEAR. The automatic tests run it like a floor. Unarmed enemies aren't placed: an enemy without a weapon only looks for one, so punch someone to see that.
