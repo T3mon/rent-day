@@ -51,7 +51,7 @@ public partial class Character
 	private float _throwFollow;
 	private Vector2 _pushDirection;
 
-	private static readonly StringName Sit = "sit";
+	private static readonly StringName Sit = "sit", Toilet = "toilet"; // sitting: the legs are in the pose
 
 	// Which set of animations fits what's in hand: "" bare fists, "gun_", "bat_", "knife_", and its
 	// standing, walking and looking-around animations. Set on every Equip, so the names aren't built anew every frame.
@@ -97,7 +97,7 @@ public partial class Character
 		StringName pose = moving ? null : IdlePose;
 		StringName stand = pose ?? (LookAround ? _look : _idle);
 		Gun.Visible = Kind == "gun_" && pose == null; // bats and knives are part of the animation
-		_legs.Visible = pose != Sit;
+		_legs.Visible = pose != Sit && pose != Toilet;
 		if (moving)
 		{
 			_bodySprite.Animation = _walk;

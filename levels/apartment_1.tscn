@@ -44,12 +44,13 @@
 [ext_resource type="PackedScene" path="res://props/copier.tscn" id="46_uodmd"]
 [ext_resource type="PackedScene" path="res://props/duffel_bag.tscn" id="47_qbbli"]
 [ext_resource type="PackedScene" path="res://props/window.tscn" id="48_4wqm7"]
+[ext_resource type="PackedScene" path="res://enemies/heavy.tscn" id="61_vxeu5"]
 [ext_resource type="Resource" uid="uid://cpxggc76wa3it" path="res://weapons/bat.tres" id="bat"]
 [ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/enemy_b.tres" id="b_look"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
-[ext_resource type="Resource" path="res://weapons/knife.tres" id="knife"]
-[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="pickup"]
+[ext_resource type="Resource" uid="uid://cr4p31cyfkwgq" path="res://weapons/knife.tres" id="knife"]
+[ext_resource type="PackedScene" uid="uid://colcq6x584kno" path="res://weapons/pickup.tscn" id="pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="pistol"]
 [ext_resource type="PackedScene" path="res://props/box.tscn" id="p_box"]
 [ext_resource type="PackedScene" path="res://props/cabinet.tscn" id="p_cabinet"]
@@ -522,3 +523,9 @@ position = Vector2(424, 431)
 Pose = 1
 Look = ExtResource("b_look")
 StartWeapon = ExtResource("bat")
+
+[node name="Heavy" parent="." unique_id=643117889 instance=ExtResource("61_vxeu5")]
+position = Vector2(400, 190)
+Behaviour = 0
+FacingDegrees = 270.0
+Pose = 7

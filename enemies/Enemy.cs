@@ -30,14 +30,17 @@ namespace RentDay;
 public partial class Enemy : Character
 {
 	public enum Routine { Static, Patrol, Wander, FollowWall }
-	public enum Idle { None, Smoke, Phone, Hide, Sit, Lean, Talk }
+	public enum Idle { None, Smoke, Phone, Hide, Sit, Lean, Talk, Eat, Toilet }
 
 	[ExportGroup("Routine")]
 	[Export] public Routine Behaviour = Routine.Static;
-	[Export] public float FacingDegrees = 0f;   // where he looks at the start (0 = right, 90 = down); a patroller sets off this way
+	// Where he looks at the start, in degrees, clockwise (0 = right, 90 = down); a patroller sets off this way.
+	// The tip beside the number in the Inspector says which way each quarter is.
+	[Export(PropertyHint.Range, "0,360,0.1,or_greater,or_less,suffix:°  0→  90↓  180←  270↑")]
+	public float FacingDegrees = 0f;
 	[Export] public bool StayInRoom;            // walking routines only: never walks out through a doorway on his own
 	[Export] public float WalkSpeed = 55f;      // patrolling and wandering, pixels per second
-	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking
+	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking; the heavy: eat, phone, toilet
 
 	[ExportGroup("Senses")]
 	[Export] public float SightRange = 183f;    // pixels, all around him; the screen reaches 200 to your side, 112 up and down
@@ -145,6 +148,8 @@ public partial class Enemy : Character
 		_heading = Vector2.Right.Rotated(_postAngle);
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
 		_poseName = Pose == Idle.None ? null : (StringName)Pose.ToString().ToLowerInvariant(); // a null string would become an empty name: a "pose"
+		if (_poseName != null && !Look.HasAnimation(_poseName))
+			_poseName = null; // a pose his look doesn't have (a heavy smoking): he just stands
 		_wallSound = new AudioStreamPlayer2D { Stream = WallHit };
 		AddChild(_wallSound);
 	}
@@ -231,7 +236,7 @@ public partial class Enemy : Character
 		StringName pose = _alerted || Velocity != Vector2.Zero ? null : CalmPose;
 		// Furniture doesn't stop him while he's in it (sitting in a couch); elsewhere it does.
 		// Stepping out onto open floor, nothing does.
-		bool throughFurniture = (Pose == Idle.Sit && !_alerted) || LevelGrid.Wedged(GlobalPosition, Layers.Furniture);
+		bool throughFurniture = (Pose is (Idle.Sit or Idle.Toilet) && !_alerted) || LevelGrid.Wedged(GlobalPosition, Layers.Furniture);
 		CollisionMask = _stepOut != null ? 0 : Layers.World | (throughFurniture ? 0 : Layers.Furniture);
 		if (Pose == Idle.Smoke && IdlePose != null && pose == null && _alerted) // flicks the cigarette away
 			Shell.Eject(this, GlobalPosition + Vector2.Down.Rotated(Visual.GlobalRotation) * 12f, Visual.GlobalRotation, Colors.White);
@@ -251,6 +256,7 @@ public partial class Enemy : Character
 		Idle.Sit => "sit_up",
 		Idle.Hide => "hide_up",
 		Idle.Lean => "lean_off",
+		Idle.Toilet => "toilet_up",
 		_ => null,
 	};
 

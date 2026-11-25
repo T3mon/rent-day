@@ -3,7 +3,8 @@
     python tools/anim/heavy.py
 
 Its animations: idle, walk (in step with its legs), look, punch (a big right swing), push_l/push_r (a hand on a
-door), lie_fall, lie_dead and legs. Far wider than anyone else, with a round belly, a bald head and a
+door), lie_fall, lie_dead and legs; and his calm poses (Enemy.Pose): eat (a burger), phone, toilet (sitting with a
+newspaper; toilet_up gets him up). Far wider than anyone else, with a round belly, a bald head and a
 black bulletproof vest over a t-shirt, so his outline alone says which enemy he is.
 """
 import math, os, sys
@@ -34,8 +35,9 @@ def at(p, twist=0.0):
     return (C + q[0], C + q[1])
 
 
-def upper(rh=REST_R, lh=REST_L, twist=0.0, sway=0.0, turn=0.0):
-    """Standing: arms, body and head, each outlined. twist turns the shoulders (a swing), sway leans them sideways."""
+def upper(rh=REST_R, lh=REST_L, twist=0.0, sway=0.0, turn=0.0, nod=(0.0, 0.0), under=None, top=None):
+    """Standing: arms, body and head, each outlined. twist turns the shoulders (a swing), sway leans them sideways,
+    nod moves the head. under and top: extra layers below everything (his legs, sitting) and over it (what he holds)."""
     arms, body, head = Layer(), Layer(), Layer()
     capsule(body, at((-2, -6 + sway), twist), at((-2, 6 + sway), twist), 7.0, VEST, VEST_DARK)  # shoulders and back
     capsule(body, at((1, -3 + sway), twist), at((1, 3 + sway), twist), 6.5, VEST, VEST_DARK)    # belly
@@ -52,7 +54,7 @@ def upper(rh=REST_R, lh=REST_L, twist=0.0, sway=0.0, turn=0.0):
         elbow = ((-1 + hand[0]) / 2, (side * SHOULDER + sway + hand[1]) / 2)
         capsule(arms, shoulder, at(((-1 + elbow[0]) / 2, (side * SHOULDER + sway + elbow[1]) / 2), twist), 3.0, SHIRT, SHIRT_DARK)  # sleeve
         capsule(arms, at(hand, twist), at(hand, twist), 3.0, SKIN, SKIN_DARK)  # fist
-    neck = (0, sway)
+    neck = (nod[0], sway + nod[1])
     capsule(head, at(neck, twist), at((neck[0] + 0.5, neck[1]), twist), 4.0, SKIN, SKIN_DARK)  # the bald head
     capsule(head, at((neck[0] - 1.5, neck[1]), twist), at((neck[0] - 1.5, neck[1]), twist), 2.0, SCALP)
     nose = rot((4.5, 0), turn)
@@ -60,7 +62,67 @@ def upper(rh=REST_R, lh=REST_L, twist=0.0, sway=0.0, turn=0.0):
     for y in (-1, 1):  # ears
         ear = rot((0, y * 4.6), turn)
         head.put(*at((neck[0] + ear[0], neck[1] + ear[1]), twist), SKIN_DARK)
-    return compose([arms, body, head])
+    return compose([l for l in (under, arms, body, head, top) if l is not None])
+
+
+BUN, BUN_DARK, MEAT = (214, 160, 84, 255), (150, 100, 50, 255), (96, 52, 36, 255)
+PAPER, PAPER_DARK, PRINT = (226, 222, 210, 255), (170, 166, 156, 255), (110, 108, 104, 255)
+PHONE, PHONE_LIT = (150, 150, 160, 255), (200, 220, 235, 255)  # light, or it's lost on the black vest
+
+
+def fist(l, spot):
+    """A hand over everything: one held up in front of him (at his mouth, at his ear) would hide under the vest."""
+    capsule(l, at(spot), at(spot), 3.0, SKIN, SKIN_DARK)
+
+
+def burger(spot, bitten=False, hand=None):
+    """A burger held at `spot` (by a fist at `hand`, drawn over the vest); bitten, a bite gone out of its far side."""
+    l = Layer()
+    if hand:
+        fist(l, hand)
+    capsule(l, at(spot), at(spot), 2.6, BUN, BUN_DARK)
+    l.put(*at((spot[0], spot[1] - 1)), MEAT)
+    l.put(*at((spot[0] + 1, spot[1])), MEAT)
+    if bitten:
+        for d in ((-2, 0), (-2, -1), (-1, -1), (-2, 1)):
+            x, y = at((spot[0] + d[0], spot[1] + d[1]))
+            l.px.pop((math.floor(x + 0.5), math.floor(y + 0.5)), None)
+    return l
+
+
+def phone(spot, hand):
+    """A phone at `spot`, held to his ear by a fist at `hand`."""
+    l = Layer()
+    fist(l, hand)
+    for dx in (-2, -1, 0, 1, 2):
+        for dy in (-1, 0):
+            l.put(*at((spot[0] + dx, spot[1] + dy)), PHONE_LIT if dx == 2 and dy == 0 else PHONE)
+    return l
+
+
+def newspaper(spot, fold=0.0):
+    """An open newspaper held out in front, `spot` its middle; fold (0..1) turns a page over from his right."""
+    l = Layer()
+    x0, y0 = spot
+    for y in range(-8, 9):
+        if fold and y > 8 - fold * 16:
+            continue
+        for x in range(-3, 3):
+            c = PAPER_DARK if x in (-3, 2) or y in (-8, 8) or y == 0 else (PRINT if (x + 2) % 2 == 0 and y % 3 else PAPER)
+            l.put(*at((x0 + x, y0 + y)), c)
+    if fold:  # the page mid-turn, standing up off the paper
+        for y in range(int(8 - fold * 16), 9):
+            l.put(*at((x0 - 4, y0 + y)), PAPER)
+    return l
+
+
+def seated(knees=11.0):
+    """His legs sitting, thighs out in front to the knees (the shins go straight down, so only the shoes show)."""
+    l = Layer()
+    for y in (-1, 1):
+        capsule(l, at((0, y * 6)), at((knees, y * 7)), 3.6, PANTS, PANTS_DARK)
+        capsule(l, at((knees + 2, y * 7)), at((knees + 3, y * 7)), 2.6, SHOE, SHOE_LIT)
+    return l
 
 
 def legs(phase):
@@ -132,8 +194,51 @@ def build():
         'lie_dead': ([lying(spread=1.0), lying(face_down=True), lying(side=True)], [100] * 3, 72),
         'legs': ([legs(i / WALK) for i in range(WALK)], [100] * WALK, 28),
     }
+    anims.update(poses())
     write('heavy', anims)
     return anims
+
+
+def poses():
+    """His calm poses: eat, phone, toilet (and toilet_up, getting up off it)."""
+    held = (7, 12)  # the burger hand at rest, a little in front
+    eat = [
+        (upper(rh=held, top=burger((8, 12))), 600),
+        (upper(rh=(8, 8), top=burger((9, 7.5), hand=(8, 8))), 110),                                         # up it comes
+        (upper(rh=(7, 4), nod=(0.5, 0.5), top=burger((8, 3), hand=(7, 4.5))), 130),                           # to his mouth
+        (upper(rh=(7, 3.5), nod=(1.5, 0.5), top=burger((7.5, 2.5), hand=(7, 4))), 160),                          # the bite
+        (upper(rh=(8, 6), nod=(0.5, 0), top=burger((9, 5.5), bitten=True, hand=(8, 6.5))), 110),
+        (upper(rh=held, top=burger((8, 12), bitten=True)), 220),                               # chewing
+        (upper(rh=held, nod=(0.4, 0.4), top=burger((8, 12), bitten=True)), 220),
+        (upper(rh=held, nod=(0.4, -0.4), top=burger((8, 12), bitten=True)), 220),
+        (upper(rh=held, nod=(0.4, 0.4), top=burger((8, 12), bitten=True)), 220),
+        (upper(rh=held, top=burger((8, 12), bitten=True)), 500),
+        (upper(rh=held, lh=(3, -15), top=burger((8, 12), bitten=True)), 300),                  # wipes his hand
+    ]
+    ear = (1, -7)  # the phone hand, up at his left ear
+    call = lambda rh=REST_R, nod=(0.0, 0.0), turn=0.0, sway=0.0: upper(rh=rh, lh=ear, nod=nod, turn=turn, sway=sway, top=phone((3, -6), ear))
+    on_phone = [
+        (call(), 700), (call(nod=(0.3, 0)), 300), (call(), 400),
+        (call(rh=(8, 14), sway=0.5), 200), (call(rh=(12, 11), sway=0.8, turn=0.3), 300),       # waving a hand about
+        (call(rh=(10, 13), sway=0.5, turn=0.3), 250), (call(rh=(12, 11), sway=0.8, turn=0.3), 250),
+        (call(rh=(7, 15)), 300), (call(), 600), (call(turn=-0.4), 500), (call(nod=(0.3, 0)), 300),
+    ]
+    sit = lambda fold=0.0, nod=(0.8, 0.0), rh=(9, 7): upper(rh=rh, lh=(9, -7), nod=nod, under=seated(),
+                                                             top=newspaper((11, 0), fold))
+    toilet = [
+        (sit(), 900), (sit(nod=(1.0, 0.4)), 600), (sit(nod=(1.0, -0.4)), 600), (sit(), 500),
+        (sit(rh=(10, 9), fold=0.3), 100), (sit(rh=(10, 2), fold=0.7), 100), (sit(rh=(9, -3), fold=1.0), 100),  # turns a page
+        (sit(), 700), (sit(nod=(1.2, 0)), 500),
+    ]
+    toilet_up = [  # paper dropped, up onto his feet: inside his reaction time
+        (upper(rh=(8, 13), lh=(8, -13), nod=(1.5, 0), under=seated(9)), 60),
+        (upper(rh=(5, 15), lh=(5, -15), nod=(1, 0), under=seated(5)), 60),
+        (upper(), 40),
+    ]
+    out = {}
+    for key, frames in (('eat', eat), ('phone', on_phone), ('toilet', toilet), ('toilet_up', toilet_up)):
+        out[key] = ([f for f, ms in frames], [ms for f, ms in frames], 72)
+    return out
 
 
 if __name__ == '__main__':

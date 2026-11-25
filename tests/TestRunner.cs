@@ -274,9 +274,10 @@ public partial class TestRunner : SceneTree
 		player.AddRange(kinds.SelectMany(k => "fblr".Select(way => k + "dash_" + way)));
 		var enemy = new List<string> { "held" };
 		enemy.AddRange(kinds.Select(k => k + "look"));
-		enemy.AddRange(Enum.GetNames<Enemy.Idle>().Where(n => n != nameof(Enemy.Idle.None)).Select(n => n.ToLowerInvariant()));
+		string[] heavyOnly = { nameof(Enemy.Idle.None), nameof(Enemy.Idle.Eat), nameof(Enemy.Idle.Toilet) };
+		enemy.AddRange(Enum.GetNames<Enemy.Idle>().Except(heavyOnly).Select(n => n.ToLowerInvariant()));
 		string[] dog = { "legs", "idle", "walk", "look", "sit", "bark", "push_l", "push_r", "lie_fall", "lie_dead" };
-		string[] heavy = { "legs", "idle", "walk", "look", "punch", "push_l", "push_r", "lie_fall", "lie_dead" };
+		string[] heavy = { "legs", "idle", "walk", "look", "punch", "push_l", "push_r", "lie_fall", "lie_dead", "eat", "phone", "toilet", "toilet_up" };
 		string[] dodger = kinds.SelectMany(k => "lr".Select(way => k + "dash_spin_" + way)).ToArray();
 
 		foreach (SpriteFrames look in Looks())

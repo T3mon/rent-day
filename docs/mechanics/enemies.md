@@ -5,12 +5,12 @@ How enemies notice you, shoot and react. Timing values are in the enemy scene an
 ## Behaviours
 
 Set per enemy in the level:
-- **Static:** stands guard facing one way. Reacts only to what it sees, never to gunshots. Returns to its post after a chase.
+- **Static:** stands guard facing one way (**Facing**, in degrees clockwise: 0 right, 90 down, 180 left, 270 up, any angle between; the Inspector shows this beside the number; every enemy sets off facing this way). Reacts only to what it sees, never to gunshots. Returns to its post after a chase.
 - **Patrol:** walks straight. When blocked, stops and turns left a little at a time until the way is clear and it faces straight along the walls again. Hears gunshots.
 - **Wander:** walks short stretches in random open directions, stops to look around, repeats. Hears gunshots.
 - **Follow wall:** keeps a wall on its left, so it goes round whole rooms and out through doorways into the next. Round a pillar, or out in the open, it lets go after three quarters of a turn and walks straight on to the next wall. The dog's routine. Hears gunshots.
 - **Stay in room** (option, any walking routine): treats doorways as walls when on its own. A chase can still take it through doors, but it walks back to its room afterwards.
-- **Pose** (option, any behaviour): what he does while calm and standing still: smoke, phone, hide (crouched), sit, lean (back to a wall), talk. Only the look: he sees and reacts exactly as without it. Once alerted he drops it (a smoker flicks his cigarette away; a sitter stands up, a crouching enemy rises, a leaner pushes off the wall, each quick enough to finish inside his reaction time); it comes back when he gives up searching. A sitting enemy can be placed on furniture (a couch): he gets up off it when alerted, stepping out onto open floor before he goes anywhere. A wanderer strikes his pose whenever he stops.
+- **Pose** (option, any behaviour): what he does while calm and standing still: smoke, phone, hide (crouched), sit, lean (back to a wall), talk. The heavy enemy has his own: eat, phone, toilet (see [Heavy enemy](#heavy-enemy)); a pose an enemy has no animation for does nothing. Only the look: he sees and reacts exactly as without it. Once alerted he drops it (a smoker flicks his cigarette away; a sitter stands up, a crouching enemy rises, a leaner pushes off the wall, each quick enough to finish inside his reaction time); it comes back when he gives up searching. A sitting enemy can be placed on furniture (a couch): he gets up off it when alerted, stepping out onto open floor before he goes anywhere. A wanderer strikes his pose whenever he stops.
 
 ## Seeing you
 
@@ -90,6 +90,7 @@ Set per enemy in the level:
 `enemies/heavy.tscn`: a big man with bare fists, far wider than anyone else, who sees and hears like anyone. His art is drawn by `tools/anim/heavy.py`.
 
 - **Routine:** patrols (**Walk Speed** 45, slower than anyone).
+- **Poses** (set him to Static to see one): **Eat** (a burger: up to his mouth, a bite, chewing), **Phone** (a hand at his ear, the other waving about), **Toilet** (sitting with a newspaper, turning a page now and then; drawn with his legs). Toilet works like Sit: put him on `props/toilet.tscn` facing away from the tank (Facing 90 with the tank above him), and when alerted he drops the paper and gets up (`toilet_up`) inside his reaction time. Drawn in `tools/anim/heavy.py` (`poses()`).
 - **Seeing you:** he walks straight at you (**Chase Speed** 200, as fast as you), around walls. Once you're within **Swing Range** (24 px) he swings his fist (`weapons/heavy_fists.tres`, reach 16 px), and it kills you. A dash goes through the swing, like through a bullet.
 - **Only bullets hurt him.** He wears a bulletproof vest. A bat, a knife, punches, door slams and thrown things do nothing; blows and thrown things clang off the vest (**Clang Sound**, `audio/melee/heavy_clang.wav`). He can't be grabbed or stealth-killed.
 - **Bleeding out:** every bullet is a hit. At **Max Hits** (5) he dies at once. Before that he bleeds out, sooner the more hits he has, and keeps coming meanwhile: 1 hit about 6.4 s, 2 hits 4 s, 3 hits 2.3 s, 4 hits 1 s. Goo drips behind him while he bleeds, faster the more hits he has.
