@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="WeaponData" format=3]
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://dfxunk6dohbmc"]
 
-[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
-[ext_resource type="AudioStream" path="res://audio/melee/swoosh.tres" id="swing"]
-[ext_resource type="AudioStream" path="res://audio/melee/punch_hit.wav" id="hit"]
+[ext_resource type="Script" uid="uid://bsqyeexacgudx" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="AudioStream" uid="uid://dex7moqswggxo" path="res://audio/melee/punch_hit.wav" id="hit"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_grunt.tres" id="swing"]
 
 [resource]
 script = ExtResource("1_script")
@@ -12,5 +12,5 @@ EnemyCooldown = 0.7
 Melee = true
 SwingTime = 0.15
 Reach = 16.0
-ShotSound = ExtResource("swing")
 HitSound = ExtResource("hit")
+ShotSound = ExtResource("swing")

@@ -88,6 +88,8 @@ public partial class WeaponPickup : CharacterBody2D
 						_hitSound.Play();
 					ShakeCamera.Shake(1.3f);
 				}
+				else
+					enemy.Shrug();
 				_thrown = false;
 				Velocity = -Velocity * 0.2f;
 			}

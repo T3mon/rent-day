@@ -78,13 +78,16 @@ public partial class Character
 			if (space.IntersectRay(between).Count > 0)
 				continue;
 
+			if (target is Enemy { MeleeProof: true } || (!_swung.Lethal && target is Enemy { KnockProof: true }))
+			{
+				((Enemy)target).Shrug(); // it does nothing to him: the dog stays silent, the heavy enemy's vest clangs
+				continue;
+			}
 			Vector2 direction = (target.GlobalPosition - GlobalPosition).Normalized();
 			_strikeSound.Stream = _swung.HitSound;
 			_strikeSound.Play();
 			if (!Gun.HeldByEnemy)
 				ShakeCamera.Shake(_swung.Shake);
-			if (target is Enemy { MeleeProof: true })
-				continue; // it lands, and he shrugs it off
 			if (_swung.Lethal)
 				target.Die(direction);
 			else

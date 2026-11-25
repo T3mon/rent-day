@@ -1,0 +1,16 @@
+[gd_resource type="AudioStreamRandomizer" format=3]
+
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_grunt_1.wav" id="1"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_grunt_2.wav" id="2"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_grunt_3.wav" id="3"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_grunt_4.wav" id="4"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_grunt_5.wav" id="5"]
+
+[resource]
+playback_mode = 1
+streams_count = 5
+stream_0/stream = ExtResource("1")
+stream_1/stream = ExtResource("2")
+stream_2/stream = ExtResource("3")
+stream_3/stream = ExtResource("4")
+stream_4/stream = ExtResource("5")

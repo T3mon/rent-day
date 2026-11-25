@@ -33,6 +33,7 @@ Set per enemy in the level:
 
 ## Chasing and searching
 
+- **Speeds** (you run at 200 px/s): while he sees you, an enemy comes at you as fast as you (**Chase Speed** 200; with a bat or knife **Charge Speed** 200). Once he loses sight of you he is slower (**Search Speed** 133), so breaking his line of sight is how you get away. On patrol he walks (**Walk Speed** 55).
 - An enemy that loses sight of you runs to the last place he saw or heard you. Each enemy picks his own spot around it (within **Search Spread**), so they don't pile up.
 - If you are not there, he searches briefly, then returns to his routine.
 - Enemies route around walls and furniture with a little room to spare, so they never scrape corners. They go through doorways, pushing doors open.
@@ -70,7 +71,7 @@ Set per enemy in the level:
 
 - **Routine:** follows the wall, and every 7 seconds or so (**Sit Every**) sits down for about 3 (**Sit Time**). Set to Static, it sits at its post.
 - **The warning:** when it spots you, it stops and barks (**Bark Time**, 0.4 s) before it charges. It barks again each time it finds you after losing you for a moment. Walking enemies within **Bark Noise** (240 px, as far as a pistol shot, through walls) hear the bark and come to the dog. Enemies standing still don't, as with shots.
-- **The charge:** it speeds up straight at you (**Acceleration**) to faster than you can run or dash (**Run Speed**). It bounces off walls instead of going round them, so it can overshoot. If it loses you, it searches like anyone.
+- **The charge:** it speeds up straight at you (**Acceleration**) to far faster than you can run (**Run Speed** 333). It bounces off walls instead of going round them, so it can overshoot. If it loses you, it searches like anyone.
 - **The bite:** running into you kills you. A dash goes through it, like through a bullet.
 - **Killing it:** a bullet, a bat or a knife. Punches, door slams and thrown things do nothing, and it can't be grabbed or stealth-killed: it's the one enemy you can't take on bare-handed.
 - It carries nothing, so it drops nothing.
@@ -81,13 +82,13 @@ Set per enemy in the level:
 `enemies/heavy.tscn`: a big man with bare fists, far wider than anyone else, who sees and hears like anyone. His art is drawn by `tools/anim/heavy.py`.
 
 - **Routine:** patrols (**Walk Speed** 45, slower than anyone).
-- **Seeing you:** he grunts and walks straight at you (**Chase Speed** 100, slower than you), around walls. Once you're within **Swing Range** (24 px) he swings his fist (`weapons/heavy_fists.tres`, reach 16 px), and it kills you. A dash goes through the swing, like through a bullet.
-- **Only bullets hurt him.** A bat, a knife, punches, door slams and thrown things do nothing, and he can't be grabbed or stealth-killed.
+- **Seeing you:** he walks straight at you (**Chase Speed** 200, as fast as you), around walls. Once you're within **Swing Range** (24 px) he swings his fist (`weapons/heavy_fists.tres`, reach 16 px), and it kills you. A dash goes through the swing, like through a bullet.
+- **Only bullets hurt him.** He wears a bulletproof vest. A bat, a knife, punches, door slams and thrown things do nothing; blows and thrown things clang off the vest (**Clang Sound**, `audio/melee/heavy_clang.wav`). He can't be grabbed or stealth-killed.
 - **Bleeding out:** every bullet is a hit. At **Max Hits** (5) he dies at once. Before that he bleeds out, sooner the more hits he has, and keeps coming meanwhile: 1 hit about 6.4 s, 2 hits 4 s, 3 hits 2.3 s, 4 hits 1 s. Goo drips behind him while he bleeds, faster the more hits he has.
 - A shotgun blast kills him at once (5 of its 7 pellets hit him even from 100 px away): the shotgun is the answer to him.
 - Each bullet takes **Slow Per Hit** (12 px/s) off his chasing speed.
 - He carries nothing, so he drops nothing.
-- Sounds: none yet for his grunt (**Grunt Sound**); his swing uses the punch's whoosh and hit for now.
+- Sounds: no alert sound. Each swing is a grunt (`audio/melee/heavy_grunt.tres`, five takes picked at random); the hit is the punch's. A bullet that doesn't kill him plays his hurt sound (**Hurt Sound**, `audio/heavy_hurt.wav`).
 
 ## Going for guns
 

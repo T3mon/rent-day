@@ -17,7 +17,7 @@ public partial class Dog : Enemy
 	[Export] public float SitTime = 3f;         // for about this long
 	[Export] public float BarkTime = 0.4f;      // seconds from its bark to its charge
 	[Export] public float ForgetTime = 0.5f;    // out of sight this long, it barks again when it sees you
-	[Export] public float RunSpeed = 240f;      // charging, top speed (pixels per second): faster than you, and than a dash
+	[Export] public float RunSpeed = 333f;      // charging, top speed (pixels per second): far faster than you
 	[Export] public float Acceleration = 1500f; // charging, speed gained per second
 	[Export] public float BiteRange = 12f;      // it bites you this close, while running
 	[Export] public float BarkNoise = 240f;     // walking enemies this close hear the bark, through walls, and come to the dog (as loud as a pistol)

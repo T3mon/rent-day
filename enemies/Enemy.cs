@@ -56,8 +56,9 @@ public partial class Enemy : Character
 	[Export] public float BowlSpeed = 150f;     // thrown and still this fast: the enemy he slides into goes down too
 
 	[ExportGroup("Chase")]
-	[Export] public float ChaseSpeed = 130f;    // running after you
-	[Export] public float ChargeSpeed = 180f;   // with a bat or knife, running at you once he's seen you
+	[Export] public float ChaseSpeed = 200f;    // coming at you while he sees you: as fast as you, so you can't just run away
+	[Export] public float SearchSpeed = 133f;   // following where he last saw or heard you: slower, so breaking his sight lets you get away
+	[Export] public float ChargeSpeed = 200f;   // with a bat or knife, running at you once he's seen you
 	[Export] public float SwingRange = 26f;     // he swings once you're this close
 	[Export] public float StandOff = 67f;       // with a gun, he walks at you while shooting until this close
 	[Export] public float SearchTime = 1.5f;    // seconds he looks around an empty spot before giving up
@@ -105,6 +106,9 @@ public partial class Enemy : Character
 
 	// A bat, a knife or a fist lands on him and does nothing (the heavy enemy).
 	public virtual bool MeleeProof => false;
+
+	// A blow or a thrown thing lands and does nothing (see KnockProof, MeleeProof).
+	public virtual void Shrug() { }
 
 	// Picks a weapon up when he has none (a dog never does).
 	protected virtual bool CarriesWeapons => true;
@@ -333,7 +337,7 @@ public partial class Enemy : Character
 	private void Search(Vector2 spot, float dt)
 	{
 		_reactionLeft = -1f; // when he sees you again, he needs a moment again
-		if (RunTo(spot, ChaseSpeed, dt, _checkSpread))
+		if (RunTo(spot, SearchSpeed, dt, _checkSpread))
 			return;
 
 		Velocity = Vector2.Zero;

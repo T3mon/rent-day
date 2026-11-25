@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="3_pickup"]
 [ext_resource type="Resource" path="res://weapons/heavy_fists.tres" id="4_fists"]
 [ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="5_death"]
+[ext_resource type="AudioStream" path="res://audio/heavy_hurt.wav" id="6_hurt"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_clang.wav" id="7_clang"]
 [ext_resource type="SpriteFrames" path="res://art/anim/heavy.tres" id="anim"]
 
 [sub_resource type="CircleShape2D" id="body"]
@@ -18,12 +20,14 @@ motion_mode = 1
 script = ExtResource("1_heavy")
 Behaviour = 1
 WalkSpeed = 45.0
-ChaseSpeed = 100.0
+ChaseSpeed = 200.0
 SwingRange = 24.0
 Look = ExtResource("anim")
 Stride = 110.0
 PickupScene = ExtResource("3_pickup")
 Fists = ExtResource("4_fists")
+HurtSound = ExtResource("6_hurt")
+ClangSound = ExtResource("7_clang")
 
 [node name="Legs" type="AnimatedSprite2D" parent="."]
 sprite_frames = ExtResource("anim")

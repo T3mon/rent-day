@@ -3,16 +3,19 @@
     python tools/anim/heavy.py
 
 Its animations: idle, walk (in step with its legs), look, punch (a big right swing), push_l/push_r (a hand on a
-door), lie_fall, lie_dead and legs. Far wider than anyone else, with a round belly, bare arms, a bald head and a
-dirty white vest, so his outline alone says which enemy he is.
+door), lie_fall, lie_dead and legs. Far wider than anyone else, with a round belly, a bald head and a
+black bulletproof vest over a t-shirt, so his outline alone says which enemy he is.
 """
 import math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from puppet import Layer, C, capsule, compose, rot
 from build import write
 
-VEST = (214, 206, 190, 255)
-VEST_DARK = (150, 140, 126, 255)
+SHIRT = (214, 206, 190, 255)       # the t-shirt under it, seen at the sleeves
+SHIRT_DARK = (150, 140, 126, 255)
+VEST = (58, 58, 62, 255)           # a black bulletproof vest
+VEST_DARK = (34, 34, 38, 255)
+PLATE = (112, 112, 120, 255)          # its plates, straps and pouches
 SKIN = (198, 140, 102, 255)
 SKIN_DARK = (150, 98, 70, 255)
 SCALP = (176, 120, 88, 255)
@@ -20,6 +23,7 @@ PANTS = (44, 48, 66, 255)
 PANTS_DARK = (28, 30, 44, 255)
 SHOE = (26, 22, 26, 255)
 SHOE_LIT = (70, 60, 62, 255)
+EYE = (236, 232, 222, 255)
 WALK = 12  # walk frames, as many as its legs
 REST_R, REST_L = (2, 16), (2, -16)  # where his fists hang
 SHOULDER = 11
@@ -35,10 +39,18 @@ def upper(rh=REST_R, lh=REST_L, twist=0.0, sway=0.0, turn=0.0):
     arms, body, head = Layer(), Layer(), Layer()
     capsule(body, at((-2, -6 + sway), twist), at((-2, 6 + sway), twist), 7.0, VEST, VEST_DARK)  # shoulders and back
     capsule(body, at((1, -3 + sway), twist), at((1, 3 + sway), twist), 6.5, VEST, VEST_DARK)    # belly
-    capsule(body, at((-6, -5 + sway), twist), at((-6, 5 + sway), twist), 0.8, VEST_DARK)       # the vest's back seam
+    capsule(body, at((-5, -4 + sway), twist), at((-5, 4 + sway), twist), 2.2, PLATE)            # the back plate
+    for side in (-1, 1):
+        capsule(body, at((-1, side * 5 + sway), twist), at((3, side * 5 + sway), twist), 0.8, PLATE)  # shoulder straps
+    for side in (-1, 1):  # t-shirt sleeves sticking out of the armholes
+        capsule(body, at((-1, side * 12.5 + sway), twist), at((-1, side * 12.5 + sway), twist), 2.2, SHIRT, SHIRT_DARK)
+    for y in (-4, 0, 4):  # pouches across the front
+        capsule(body, at((6, y + sway), twist), at((6, y + sway), twist), 1.2, PLATE, VEST_DARK)
     for hand, side in ((rh, 1), (lh, -1)):
         shoulder = at((-1, side * SHOULDER + sway), twist)
         capsule(arms, shoulder, at(hand, twist), 2.6, SKIN, SKIN_DARK)
+        elbow = ((-1 + hand[0]) / 2, (side * SHOULDER + sway + hand[1]) / 2)
+        capsule(arms, shoulder, at(((-1 + elbow[0]) / 2, (side * SHOULDER + sway + elbow[1]) / 2), twist), 3.0, SHIRT, SHIRT_DARK)  # sleeve
         capsule(arms, at(hand, twist), at(hand, twist), 3.0, SKIN, SKIN_DARK)  # fist
     neck = (0, sway)
     capsule(head, at(neck, twist), at((neck[0] + 0.5, neck[1]), twist), 4.0, SKIN, SKIN_DARK)  # the bald head
@@ -66,19 +78,28 @@ def legs(phase):
 def lying(spread=0.0, face_down=False, side=False):
     """Flat on his back, head to +x: legs out to -x, arms flung wide by `spread`."""
     limbs, body = Layer(), Layer()
+    depth = 6.5 if side else 9.5
     for y in (-1, 1):
         capsule(limbs, at((-6, y * 6)), at((-22, y * (7 + spread * 3))), 3.4, PANTS, PANTS_DARK)
         capsule(limbs, at((-23, y * (7 + spread * 3))), at((-25, y * (7 + spread * 3))), 2.6, SHOE)
-        arm_y = 17 + spread * 3 if not side or y > 0 else 8
-        capsule(limbs, at((6, y * 13)), at((10 - spread * 6, y * arm_y)), 2.8, SKIN, SKIN_DARK)
-        capsule(limbs, at((10 - spread * 6, y * arm_y)), at((10 - spread * 6, y * arm_y)), 3.2, SKIN, SKIN_DARK)
-    depth = 6.5 if side else 9.5
+        shoulder = (6, y * (depth - 1))  # the arm grows out of the body's edge
+        hand = (10 - spread * 6, y * (17 + spread * 3)) if not side else (11, y * (depth + 6))  # on his side: both reach forward
+        capsule(limbs, at(shoulder), at(hand), 2.8, SKIN, SKIN_DARK)
+        capsule(limbs, at(hand), at(hand), 3.2, SKIN, SKIN_DARK)
+        capsule(limbs, at(shoulder), at((shoulder[0] + (hand[0] - shoulder[0]) / 3, shoulder[1] + (hand[1] - shoulder[1]) / 3)), 3.0, SHIRT, SHIRT_DARK)  # sleeve
     capsule(body, at((-4, 0)), at((6, 0)), depth, VEST, VEST_DARK)
-    if not face_down and not side:
-        capsule(body, at((-1, 0)), at((2, 0)), 5.5, VEST)  # the belly up
+    capsule(body, at((-2, -depth / 2)), at((-2, depth / 2)), 2.5, PLATE)  # the plate, front or back
+    if not face_down:
+        for y in (-4, 0, 4) if not side else (-2, 2):  # pouches
+            capsule(body, at((5, y)), at((5, y)), 1.2, PLATE, VEST_DARK)
     head = Layer()
     capsule(head, at((13, 0)), at((13.5, 0)), 4.0, SCALP if face_down else SKIN, SKIN_DARK)
-    if not face_down:
+    if not face_down:  # staring eyes and a slack mouth, like everyone's dead face
+        for y in (-2, -1, 1, 2):
+            head.put(*at((13, y)), EYE)
+            head.put(*at((14, y)), EYE if abs(y) == 1 else PANTS_DARK)
+        for x in (11, 12):
+            head.put(*at((x, 0)), PANTS_DARK)
         head.put(*at((17, 0)), SKIN_DARK)
     return compose([limbs, body, head])
 

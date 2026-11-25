@@ -3,10 +3,10 @@ using Godot;
 namespace RentDay;
 
 // A heavy enemy: a big man with bare fists. He patrols like anyone (Behaviour Patrol) and sees and hears
-// like anyone (see Enemy). Spotting you, he grunts and walks straight at you; once you're within Swing
+// like anyone (see Enemy). Spotting you, he walks straight at you; once you're within Swing
 // Range he swings (his Fists): it kills you.
 // Only bullets hurt him. A bat, a knife, punches, door slams and thrown things do nothing, and he can't be
-// grabbed or stealth-killed (KnockProof, MeleeProof). Each bullet is a hit and slows him a little. At Max
+// grabbed or stealth-killed (KnockProof, MeleeProof); blows and thrown things clang off his vest (Shrug). Each bullet is a hit and slows him a little. At Max
 // Hits he dies at once; before that he bleeds out, sooner the more hits he has, and keeps coming meanwhile:
 // 1 hit about 6.4 s, 2 hits 4 s, 3 hits 2.3 s, 4 hits 1 s. So a close shotgun blast kills him at once.
 public partial class Heavy : Enemy
@@ -14,14 +14,16 @@ public partial class Heavy : Enemy
 	[ExportGroup("Heavy")]
 	[Export] public int MaxHits = 5;          // this many bullets kill him at once
 	[Export] public float Blood = 120f;       // what he has to bleed out (the bleeding rate is in _PhysicsProcess)
-	[Export] public float SlowPerHit = 12f;   // each bullet takes this much off his chasing speed (pixels per second)
-	[Export] public AudioStream GruntSound;   // when he first spots you
+	[Export] public float SlowPerHit = 12f;   // each bullet takes this much off his chasing and searching speeds (pixels per second)
+	[Export] public AudioStream HurtSound;    // a bullet hits him and he lives
+	[Export] public AudioStream ClangSound;   // a blow or a thrown thing hits his vest
 
-	private AudioStreamPlayer2D _grunt;
 	private int _hits;
 	private float _blood;
 	private float _dripWait;
-	private bool _grunted;
+	private bool _startled;
+	private AudioStreamPlayer2D _hurt;
+	private AudioStreamPlayer2D _clang;
 	private Vector2 _lastShot = Vector2.Right;
 
 	public override bool KnockProof => true;
@@ -32,8 +34,17 @@ public partial class Heavy : Enemy
 	{
 		base._Ready();
 		_blood = Blood;
-		_grunt = new AudioStreamPlayer2D { Stream = GruntSound };
-		AddChild(_grunt);
+		_hurt = new AudioStreamPlayer2D { Stream = HurtSound, VolumeDb = -6f }; // as loud as his swing grunts
+		AddChild(_hurt);
+		_clang = new AudioStreamPlayer2D { Stream = ClangSound };
+		AddChild(_clang);
+	}
+
+	public override void Shrug()
+	{
+		_clang.PitchScale = (float)GD.RandRange(0.9, 1.1);
+		_clang.Play();
+		ShakeCamera.Shake(1f);
 	}
 
 	public override void Shot(Vector2 direction)
@@ -48,7 +59,10 @@ public partial class Heavy : Enemy
 			return;
 		}
 		ChaseSpeed = Mathf.Max(ChaseSpeed - SlowPerHit, 0f);
+		SearchSpeed = Mathf.Max(SearchSpeed - SlowPerHit, 0f);
 		Flinch(direction, 2f, bleed: true);
+		_hurt.PitchScale = (float)GD.RandRange(0.9, 1.1);
+		_hurt.Play();
 		ShakeCamera.Shake(1.5f);
 	}
 
@@ -76,11 +90,10 @@ public partial class Heavy : Enemy
 
 	protected override void Attack(float dt)
 	{
-		if (!_grunted)
+		if (!_startled)
 		{
-			_grunted = true;
+			_startled = true;
 			Startle();
-			_grunt.Play();
 		}
 		Vector2 toYou = Target.GlobalPosition - GlobalPosition;
 		if (toYou.Length() > SwingRange)
