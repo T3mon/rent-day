@@ -51,6 +51,7 @@ public partial class TestRunner : SceneTree
 		floors.Free();
 		await DashDodges();
 		await DodgerDodges();
+		await DrinkerThrows();
 	}
 
 	private async Task Frames(int n)
@@ -181,6 +182,40 @@ public partial class TestRunner : SceneTree
 			problems.Add("a bullet didn't kill him lying down");
 		Check("a dodger spins out of what he hears or sees coming, not what catches him unaware, and dies to a bullet knocked down", problems);
 		DevSettings.Current.EnemiesSeeYou = true;
+		DevSettings.Current.EnemiesShoot = true;
+		world.Free();
+	}
+
+	private async Task DrinkerThrows()
+	{
+		var world = new Node2D(); // the bottle and its shards go into the current scene
+		Root.AddChild(world);
+		CurrentScene = world;
+		LevelGrid.Build(world, new Rect2(-400f, -400f, 1200f, 800f));
+		DevSettings.Current.EnemiesShoot = false;
+		var player = GD.Load<PackedScene>("res://player/player.tscn").Instantiate<Player>();
+		world.AddChild(player);
+		player.GlobalPosition = new Vector2(120f, 0f);
+		var drinker = GD.Load<PackedScene>("res://enemies/enemy.tscn").Instantiate<Enemy>();
+		drinker.Pose = Enemy.Idle.Drink; // facing right, at you
+		world.AddChild(drinker);
+		var problems = new List<string>();
+		bool thrown = false;
+		for (int i = 0; i < 90 && !thrown; i++)
+		{
+			await Frames(1);
+			thrown = world.GetChildren().OfType<Bottle>().Any();
+		}
+		if (!thrown)
+			problems.Add("no bottle flew when he spotted you");
+		await Frames(30);
+		if (world.GetChildren().OfType<Bottle>().Any())
+			problems.Add("the bottle never smashed");
+		if (world.GetChildren().OfType<Shell>().Count() < 5)
+			problems.Add("the bottle left no shards");
+		if (player.IsDead)
+			problems.Add("the bottle hurt you");
+		Check("a drinker throws his bottle at you when he spots you, and it smashes harmlessly", problems);
 		DevSettings.Current.EnemiesShoot = true;
 		world.Free();
 	}

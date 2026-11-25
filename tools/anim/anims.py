@@ -96,14 +96,34 @@ def draw_item(canvas, item):
             for dx in range(-r, r + 1):
                 if dx * dx + dy * dy <= r * r and (dx + dy) % 2 == 0:
                     put(dx, dy, (205, 205, 215, 255))
-    elif kind == 'bottle':  # a beer bottle, from its bottom along `ang`: brown body, a lighter neck, a cap
+    elif kind == 'bottle':  # an amber glass beer bottle, from its bottom along `ang`: body, label, shoulder, neck, cap
         ang = item[2]
-        for i in range(6):
-            c = (92, 52, 24, 255) if i < 4 else (150, 96, 50, 255)
-            put(math.cos(ang) * i, math.sin(ang) * i, c)
-            if i < 3:  # the body is two pixels wide
-                put(math.cos(ang) * i - math.sin(ang), math.sin(ang) * i + math.cos(ang), (70, 38, 18, 255))
-        put(math.cos(ang) * 6, math.sin(ang) * 6, (210, 200, 180, 255))
+        ax, ay = math.cos(ang), math.sin(ang)    # along it
+        sx, sy = -ay, ax                        # across it
+        AMBER, DARK, SHINE = (168, 88, 22, 255), (104, 52, 14, 255), (240, 182, 92, 255)
+        LABEL, CAP = (232, 214, 168, 255), (200, 200, 196, 255)
+        px = {}
+        for i in range(11):
+            for j in (-1, 0, 1):
+                if i <= 5:                       # the body, three wide
+                    c = LABEL if i in (2, 3) else (SHINE if j == -1 and i in (1, 4, 5) else (DARK if j == 1 else AMBER))
+                elif i == 6 and j != 1:          # the shoulder, narrowing
+                    c = SHINE if j == -1 else AMBER
+                elif 7 <= i <= 9 and j == 0:     # the neck
+                    c = AMBER if i < 9 else DARK
+                elif i == 10 and j == 0:
+                    c = CAP
+                else:
+                    continue
+                px[(math.floor(x + ax * i + sx * j), math.floor(y + ay * i + sy * j))] = c
+        for (X, Y) in list(px):                 # a dark outline, so it reads against his hand and the floor
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                q = (X + dx, Y + dy)
+                if q not in px and 0 <= q[0] < SIZE and 0 <= q[1] < SIZE:
+                    canvas[q[1]][q[0]] = INK
+        for (X, Y), c in px.items():
+            if 0 <= X < SIZE and 0 <= Y < SIZE:
+                canvas[Y][X] = c
     elif kind == 'stream':  # pee: a broken yellow line out ahead of him to `pos`, with a puddle where it lands
         for i in range(0, int(pos[0]) - 7, 2):
             put(-pos[0] + 7 + i, -pos[1] + pos[1] * (7 + i) / pos[0], (236, 206, 70, 255))
@@ -542,13 +562,18 @@ def animations():
     A['lean'] = breathe(lean)
     talk = {}
     # drinking a beer: the bottle down at his side, up to his mouth, head back for a swig, down again
-    low = ('bottle', (2, 12), 0.2)
-    A['drink'] = [({'rh': (2, 11), 'items': (low,)}, 900), ({'rh': (6, 9), 'items': (('bottle', (6, 9), -0.6),)}, 100),
-                  ({'rh': (8, 4), 'items': (('bottle', (8, 4), -1.6),), 'hands_top': True}, 100),
-                  ({'rh': (7, 3), 'head': (-0.8, 0), 'items': (('bottle', (7, 3), -2.6),), 'hands_top': True}, 250),  # the swig
-                  ({'rh': (7, 3), 'head': (-1.0, 0.3), 'items': (('bottle', (7, 3), -2.8),), 'hands_top': True}, 450),
-                  ({'rh': (8, 4), 'items': (('bottle', (8, 4), -1.6),), 'hands_top': True}, 100),
-                  ({'rh': (5, 9), 'items': (('bottle', (5, 9), -0.4),)}, 100), ({'rh': (2, 11), 'items': (low,)}, 700),
+    # drinking a beer: the bottle in his hand at his side, up with its neck to his mouth, head back for a swig, down
+    low = ('bottle', (-1, 11.5), 0.15)                 # gripped round the body, the neck pointing forward
+    up = lambda hand, bottom, head=(0, 0): {'rh': hand, 'head': head, 'hands_top': True,
+                                            'items': (('bottle', bottom, math.atan2(1 - bottom[1], 3 - bottom[0])),)}
+    A['drink'] = [({'rh': (2, 11), 'items': (low,)}, 900),
+                  ({'rh': (6, 10), 'items': (('bottle', (4, 13), -0.9),)}, 100),
+                  (up((9, 8), (12, 10)), 100),
+                  (up((10, 4), (14, 6), head=(-0.8, 0)), 250),                       # the swig, head back
+                  (up((10, 3.5), (14, 5), head=(-1.0, 0.3)), 450),
+                  (up((9, 8), (12, 10)), 100),
+                  ({'rh': (6, 10), 'items': (('bottle', (4, 13), -0.9),)}, 100),
+                  ({'rh': (2, 11), 'items': (low,)}, 700),
                   ({'rh': (2, 11), 'lh': (5, -8), 'items': (low,)}, 300)]  # wipes his mouth
     # peeing: hands at his fly, head down, swaying a little; a stream out ahead and a puddle where it lands
     pee = {'rh': (6, 2), 'lh': (6, -2), 'head': (0.8, 0), 'hands_top': True}

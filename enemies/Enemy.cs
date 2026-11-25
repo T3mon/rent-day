@@ -240,6 +240,8 @@ public partial class Enemy : Character
 		CollisionMask = _stepOut != null ? 0 : Layers.World | (throughFurniture ? 0 : Layers.Furniture);
 		if (Pose == Idle.Smoke && IdlePose != null && pose == null && _alerted) // flicks the cigarette away
 			Shell.Eject(this, GlobalPosition + Vector2.Down.Rotated(Visual.GlobalRotation) * 12f, Visual.GlobalRotation, Colors.White);
+		if (Pose == Idle.Drink && IdlePose != null && pose == null && _alerted) // throws his bottle at you
+			Bottle.Throw(this, GlobalPosition + new Vector2(2f, 11f).Rotated(Visual.GlobalRotation), _player?.GlobalPosition ?? GlobalPosition + Vector2.Right.Rotated(Visual.GlobalRotation));
 		if (IdlePose != null && pose == null && GetUpAnimation() is string getUp)
 			Act(getUp);
 		IdlePose = pose;

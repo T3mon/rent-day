@@ -87,7 +87,7 @@ Gameplay rules are in [mechanics/](mechanics/).
   and its look: `slow_motion.gdshader` on a rect `Main` lays over the level at z 7 (over walls 5 and stairs 7);
   bullets and afterimages (`Afterimage.Leave`) sit at 8 and the player is lifted to 9 while slowed, so they keep their colours
   (unslowed, a dash's afterimages sit at 3, just under the living),
-  `Effects.Spawn` for dropping an effect into the level, and spent casings (`Shell.Eject`, one per shot).
+  `Effects.Spawn` for dropping an effect into the level, spent casings (`Shell.Eject`, one per shot; also a flicked cigarette and bottle shards), and a drinker's thrown bottle (`Bottle.Throw`).
 - **`effects/GooCanvas.cs`**: all goo on a level's floor, painted once into one canvas that never
   clears (a hidden `SubViewport`, redrawn only on frames where a splat lands), so splats cost nothing once they've landed. Splats are clipped
   to the floor they can reach without crossing a wall or a glass pane. Anything that bleeds calls the static
