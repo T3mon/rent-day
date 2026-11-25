@@ -30,7 +30,7 @@ namespace RentDay;
 public partial class Enemy : Character
 {
 	public enum Routine { Static, Patrol, Wander, FollowWall }
-	public enum Idle { None, Smoke, Phone, Hide, Sit, Lean, Talk, Eat, Toilet }
+	public enum Idle { None, Smoke, Phone, Hide, Sit, Lean, Talk, Eat, Toilet, Drink, Pee } // new ones go last: levels save the number
 
 	[ExportGroup("Routine")]
 	[Export] public Routine Behaviour = Routine.Static;
@@ -40,7 +40,7 @@ public partial class Enemy : Character
 	public float FacingDegrees = 0f;
 	[Export] public bool StayInRoom;            // walking routines only: never walks out through a doorway on his own
 	[Export] public float WalkSpeed = 55f;      // patrolling and wandering, pixels per second
-	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking; the heavy: eat, phone, toilet
+	[Export] public Idle Pose = Idle.None;      // while calm and standing still: smoking, on the phone, hiding, sitting, leaning on a wall, talking, drinking, peeing; the heavy: eat, phone, toilet
 
 	[ExportGroup("Senses")]
 	[Export] public float SightRange = 183f;    // pixels, all around him; the screen reaches 200 to your side, 112 up and down

@@ -96,6 +96,22 @@ def draw_item(canvas, item):
             for dx in range(-r, r + 1):
                 if dx * dx + dy * dy <= r * r and (dx + dy) % 2 == 0:
                     put(dx, dy, (205, 205, 215, 255))
+    elif kind == 'bottle':  # a beer bottle, from its bottom along `ang`: brown body, a lighter neck, a cap
+        ang = item[2]
+        for i in range(6):
+            c = (92, 52, 24, 255) if i < 4 else (150, 96, 50, 255)
+            put(math.cos(ang) * i, math.sin(ang) * i, c)
+            if i < 3:  # the body is two pixels wide
+                put(math.cos(ang) * i - math.sin(ang), math.sin(ang) * i + math.cos(ang), (70, 38, 18, 255))
+        put(math.cos(ang) * 6, math.sin(ang) * 6, (210, 200, 180, 255))
+    elif kind == 'stream':  # pee: a broken yellow line out ahead of him to `pos`, with a puddle where it lands
+        for i in range(0, int(pos[0]) - 7, 2):
+            put(-pos[0] + 7 + i, -pos[1] + pos[1] * (7 + i) / pos[0], (236, 206, 70, 255))
+        r = item[2]
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if dx * dx + dy * dy <= r * r:
+                    put(dx, dy, (214, 180, 52, 255) if dx * dx + dy * dy < r * r - 1 else (180, 148, 40, 255))
     elif kind == 'phone':
         for dy in range(-2, 2):
             for dx in range(-1, 1):
@@ -525,6 +541,21 @@ def animations():
     lean = {'shear': 2.0, 'body': (-1, 0), 'rh': (4, -3), 'lh': (4, 3), 'turn': 0.2}
     A['lean'] = breathe(lean)
     talk = {}
+    # drinking a beer: the bottle down at his side, up to his mouth, head back for a swig, down again
+    low = ('bottle', (2, 12), 0.2)
+    A['drink'] = [({'rh': (2, 11), 'items': (low,)}, 900), ({'rh': (6, 9), 'items': (('bottle', (6, 9), -0.6),)}, 100),
+                  ({'rh': (8, 4), 'items': (('bottle', (8, 4), -1.6),), 'hands_top': True}, 100),
+                  ({'rh': (7, 3), 'head': (-0.8, 0), 'items': (('bottle', (7, 3), -2.6),), 'hands_top': True}, 250),  # the swig
+                  ({'rh': (7, 3), 'head': (-1.0, 0.3), 'items': (('bottle', (7, 3), -2.8),), 'hands_top': True}, 450),
+                  ({'rh': (8, 4), 'items': (('bottle', (8, 4), -1.6),), 'hands_top': True}, 100),
+                  ({'rh': (5, 9), 'items': (('bottle', (5, 9), -0.4),)}, 100), ({'rh': (2, 11), 'items': (low,)}, 700),
+                  ({'rh': (2, 11), 'lh': (5, -8), 'items': (low,)}, 300)]  # wipes his mouth
+    # peeing: hands at his fly, head down, swaying a little; a stream out ahead and a puddle where it lands
+    pee = {'rh': (6, 2), 'lh': (6, -2), 'head': (0.8, 0), 'hands_top': True}
+    A['pee'] = [({**pee, 'items': (('stream', (18, 0), 3),)}, 300), ({**pee, 'items': (('stream', (18, 1), 3),)}, 300),
+                ({**pee, 'shear': 0.6, 'items': (('stream', (19, 1), 3),)}, 300), ({**pee, 'items': (('stream', (18, 0), 3),)}, 300),
+                ({**pee, 'shear': -0.6, 'head': (0.8, -0.4), 'items': (('stream', (18, -1), 3),)}, 400),
+                ({**pee, 'items': (('stream', (18, 0), 3),)}, 300)]
     A['talk'] = [(talk, 500), ({'rh': (6, 11)}, 150), ({'rh': (10, 9)}, 300), ({'rh': (8, 10), 'head': (0.5, 0)}, 200),
                  ({'rh': (11, 8)}, 300), ({'rh': (5, 11)}, 200), (talk, 400), ({'head': (0.5, 0)}, 300)]
     # getting up out of those when something alerts him: short enough to finish inside his reaction time
