@@ -14,6 +14,7 @@ public partial class Bullet : Area2D
 	[Export] public float DoorShove = 190f; // degrees per second it adds to a door's swing; two quick shots slam
 	public bool Blast; // one pellet of a shotgun blast: a human shield can't stop it
 
+	private const float Warning = 80f;      // pixels ahead a dodger sees it coming
 	private const int Tracer = 24;          // slow motion: pixels of fading tail behind it
 	private static readonly Color TracerHot = new(1f, 0.62f, 0.11f), TracerCool = new(1f, 0.35f, 0.16f);
 	private float _flown;                   // pixels so far: the tail never reaches back past the muzzle
@@ -31,18 +32,19 @@ public partial class Bullet : Area2D
 		// Transform.X is the direction the bullet faces (rotation 0 = right).
 		Vector2 step = GlobalTransform.X * Speed * (float)delta;
 
-		// Check the whole stretch it flies this frame, or it could skip right over a thin door.
+		// Check the whole stretch it flies this frame, or it could skip right over a thin door; and Warning past
+		// it, so a dodger sees it coming and is already stepping aside when it gets there.
 		PhysicsDirectSpaceState2D space = GetWorld2D().DirectSpaceState;
-		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + step, CollisionMask);
+		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + step + GlobalTransform.X * Warning, CollisionMask);
 		if (_skip.IsValid)
 			query.Exclude = [_skip];
 		var hit = space.IntersectRay(query);
-		if (hit.Count > 0 && hit["collider"].As<GodotObject>() is Player { Dodging: true } dodger)
+		while (hit.Count > 0 && hit["collider"].As<GodotObject>() is Character dodger && dodger.Dodges(GlobalTransform.X))
 		{
-			query.Exclude = _skip.IsValid ? [_skip, dodger.GetRid()] : [dodger.GetRid()]; // a dashing player: it flies on through him
+			query.Exclude = [.. query.Exclude, dodger.GetRid()]; // dashing, or spinning aside: it flies on through him
 			hit = space.IntersectRay(query);
 		}
-		if (hit.Count > 0)
+		if (hit.Count > 0 && GlobalPosition.DistanceTo((Vector2)hit["position"]) <= step.Length())
 		{
 			GlobalPosition = (Vector2)hit["position"];
 			Hit((Node2D)hit["collider"]);
@@ -75,8 +77,8 @@ public partial class Bullet : Area2D
 
 	public void Hit(Node2D body)
 	{
-		if (IsQueuedForDeletion() || body is Player { Dodging: true } || (body is CollisionObject2D solid && solid.GetRid() == _skip))
-			return; // already hit something this frame, flies on through a dashing player, or just bounced off him
+		if (IsQueuedForDeletion() || (body is Character dodger && dodger.Dodges(Transform.X)) || (body is CollisionObject2D solid && solid.GetRid() == _skip))
+			return; // already hit something this frame, flies on through a dashing player or a dodger, or just bounced off him
 
 		// A shield from the front: it bounces off with sparks, and a shotgun blast knocks him down.
 		if (body is Enemy guard && guard.Blocks(Transform.X))

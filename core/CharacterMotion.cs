@@ -28,6 +28,18 @@ public partial class Character
 	// Squash and stretch on top: x along where he faces, y across (the dash: Player.DashSmush).
 	protected Vector2 Smush = Vector2.One;
 
+	// The smush `through` a move (0 to 1), eased between its keys (when, size).
+	protected static Vector2 SmushAt((float At, Vector2 Size)[] keys, float through)
+	{
+		for (int i = 1; i < keys.Length; i++)
+			if (through <= keys[i].At)
+			{
+				var (from, to) = (keys[i - 1], keys[i]);
+				return from.Size.Lerp(to.Size, Mathf.SmoothStep(0f, 1f, (through - from.At) / (to.At - from.At)));
+			}
+		return Vector2.One;
+	}
+
 	private string _action;               // the one-off animation playing, if any
 	private Vector2 _lean;                // where the upper body sits over the legs, in the level's frame
 	private Vector2 _leanSpeed;

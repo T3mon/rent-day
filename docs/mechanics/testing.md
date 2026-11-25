@@ -47,11 +47,11 @@ Tools, in the admin panel only:
 
 `tests/test_level.tscn`, reached from the admin panel (Go to, Test level), or from the main menu's **TEST ROOM** (debug runs only). TEST ROOM puts you straight into the NEW room, at the `NewRoomStart` marker (move it in the editor), with the admin panel open; R keeps you there. It's not one of the floors, and exports leave it out with the rest of `tests/`. You start in a hall with every weapon at your feet. Five rooms open off it, each named on the floor by its door:
 
-- **Guns:** a guard, a smoker with a shotgun, a patroller with an uzi.
+- **Guns:** a guard, a smoker with a shotgun, a patroller with an uzi, and a shield enemy facing the door.
 - **Melee:** a patroller with a bat, a guard with a knife.
 - **Poses:** two talkers, a leaner, a hider, and a wanderer on the phone.
 - **Glass:** a guard watching through three glass panes, with an open way round them.
 - **Doors:** one enemy just behind the door, for door slams, and one facing it.
-- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others. Now: a shield enemy, standing guard.
+- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others. Now: a dodger with a knife, standing guard, and a bat on the floor (melee kills him once he's onto you; a silenced shot gets him while he's unaware).
 
 Nothing is saved while you're on it, R restarts it, and clearing it only shows FLOOR CLEAR. The automatic tests run it like a floor. Unarmed enemies aren't placed: an enemy without a weapon only looks for one, so punch someone to see that.

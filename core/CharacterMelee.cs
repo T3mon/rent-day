@@ -30,7 +30,7 @@ public partial class Character
 	}
 
 	// Something else in hand: a swing that's out ends.
-	private void ResetSwing() => _swingLeft = 0f;
+	protected void ResetSwing() => _swingLeft = 0f;
 
 	// Swings what's in hand for hitting (or bare fists) if ready. Returns true if a swing started.
 	public bool TrySwing()

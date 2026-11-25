@@ -64,7 +64,7 @@ public partial class Player : Character
 	[Export] public float DashCooldown = 5f;    // seconds before the next one
 
 	public float DashWait { get; private set; } // seconds until you can dash again; 0 = ready
-	public bool Dodging => _dashLeft > 0f;
+	public override bool Dodging => _dashLeft > 0f;
 
 	private const float ShieldAhead = 12f;     // how far in front of you he's held
 	private static readonly Vector2 ShieldGunHand = new(15f, 11f); // the gun out past his right shoulder, not over his head
@@ -129,17 +129,6 @@ public partial class Player : Character
 			Visual.ZIndex = _legsPicture.ZIndex = lift;
 	}
 
-	private static Vector2 SmushAt(float dashed)
-	{
-		for (int i = 1; i < DashSmush.Length; i++)
-			if (dashed <= DashSmush[i].At)
-			{
-				var (from, to) = (DashSmush[i - 1], DashSmush[i]);
-				return from.Size.Lerp(to.Size, Mathf.SmoothStep(0f, 1f, (dashed - from.At) / (to.At - from.At)));
-			}
-		return Vector2.One;
-	}
-
 	// A restart, the stairs or a load: the next floor starts at normal speed.
 	public override void _ExitTree() => EndSlowMotion();
 
@@ -169,7 +158,7 @@ public partial class Player : Character
 		UpdateSwing(dt);
 		DashWait = Mathf.Max(DashWait - dt, 0f);
 		_dashLeft -= dt;
-		Vector2 smush = Dodging ? SmushAt(1f - _dashLeft / DashTime) : Vector2.One;
+		Vector2 smush = Dodging ? SmushAt(DashSmush, 1f - _dashLeft / DashTime) : Vector2.One;
 		Smush = _dashSideways ? Vector2.One + (new Vector2(smush.Y, smush.X) - Vector2.One) * 0.6f : smush; // wide shoulders read worse than a long body
 		if (_victim != null)
 		{

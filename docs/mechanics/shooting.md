@@ -35,6 +35,7 @@ The silenced pistol (`weapons/silenced_pistol.tres`) has Noise 0: nobody hears i
   can't shoot through it: the shot hits the wall (or whoever stands in between) right there.
 - Bullets damage characters on the enemy side only: the player's bullets hit enemies, enemy bullets hit the player. Enemies never hit each other, except with a ricochet.
 - **Ricochets:** a bullet that hits a shield enemy's shield from the front bounces off it, a little off true, with a spark. From then on it hits anyone, you and enemies alike, but never the same shield enemy again (see [enemies.md](enemies.md)).
+- **Dodgers:** each frame a bullet also looks about 80 px past where it flies. A dodger on his feet in that stretch who sees or hears it coming slides aside, and the bullet flies on through him while he slides, as through you mid-dash (see [enemies.md](enemies.md)).
 - Any hit on a character kills it in one shot.
 
 ## Feedback

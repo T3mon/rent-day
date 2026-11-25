@@ -50,6 +50,7 @@ public partial class TestRunner : SceneTree
 			await Run(floor?.ResourcePath + " runs", "res://main.tscn", floor);
 		floors.Free();
 		await DashDodges();
+		await DodgerDodges();
 	}
 
 	private async Task Frames(int n)
@@ -96,11 +97,99 @@ public partial class TestRunner : SceneTree
 		Input.ActionRelease(action);
 	}
 
+	// Dodgers in an empty world, blind to you at first. One who heard the bang spins out of a bullet, a shotgun blast and
+	// a thrown knife; one onto you with you in sight, out of a silent shot; one caught unaware dies to it. A blow
+	// mid-spin knocks him down all the same, and down, a bullet kills him.
+	private async Task DodgerDodges()
+	{
+		var world = new Node2D(); // afterimages go into the current scene
+		Root.AddChild(world);
+		CurrentScene = world;
+		LevelGrid.Build(world, new Rect2(-400f, -400f, 1200f, 800f)); // enemies find their way on it (the last floor is gone)
+		DevSettings.Current.EnemiesSeeYou = false;
+		DevSettings.Current.EnemiesShoot = false; // no knife swings at you
+		var player = GD.Load<PackedScene>("res://player/player.tscn").Instantiate<Player>();
+		world.AddChild(player);
+		Dodger Add(Vector2 at)
+		{
+			var one = GD.Load<PackedScene>("res://enemies/dodger.tscn").Instantiate<Dodger>();
+			world.AddChild(one);
+			one.GlobalPosition = at;
+			return one;
+		}
+		Dodger dodger = Add(new Vector2(400f, 0f)), unaware = Add(new Vector2(400f, 300f));
+		await Frames(2);
+		var problems = new List<string>();
+
+		Shoot(unaware, Vector2.Up);
+		await Frames(6);
+		if (!unaware.IsDead)
+			problems.Add("a shot he neither heard nor saw coming didn't kill him");
+
+		Vector2 start = dodger.GlobalPosition;
+		dodger.HearBang(); // as from a gunshot within earshot
+		Bullet bullet = Shoot(dodger, Vector2.Up);
+		await Frames(18); // a whole spin
+		if (dodger.IsDead || !IsInstanceValid(bullet) || (bullet.GlobalPosition - dodger.GlobalPosition).Dot(Vector2.Down) <= 0f)
+			problems.Add("a bullet he heard stopped at him");
+		if (dodger.GlobalPosition.DistanceTo(start) < 20f)
+			problems.Add($"he didn't spin aside (moved {dodger.GlobalPosition.DistanceTo(start):0} px)");
+
+		await Frames(10);
+		dodger.HearBang();
+		foreach (float off in new[] { -0.15f, -0.1f, -0.05f, 0f, 0.05f, 0.1f, 0.15f })
+		{
+			Bullet pellet = Shoot(dodger, Vector2.Left);
+			pellet.Blast = true;
+			pellet.Rotation += off;
+		}
+		await Frames(2);
+		if (!dodger.Dodging)
+			problems.Add("a shotgun blast he heard didn't start a spin");
+		await Frames(18);
+		if (dodger.IsDead)
+			problems.Add("a shotgun blast he heard hit him");
+
+		dodger.HearBang();
+		var knife = GD.Load<PackedScene>("res://weapons/pickup.tscn").Instantiate<WeaponPickup>();
+		knife.Data = GD.Load<WeaponData>("res://weapons/knife.tres");
+		world.AddChild(knife);
+		knife.GlobalPosition = dodger.GlobalPosition + Vector2.Down * 60f;
+		knife.Launch(Vector2.Up * 600f, thrown: true);
+		await Frames(2);
+		if (!dodger.Dodging)
+			problems.Add("a thrown knife didn't start a spin");
+		await Frames(18);
+		if (dodger.IsDead || dodger.IsDown)
+			problems.Add("a thrown knife hit him");
+
+		await Frames(70); // the bang is long gone; he's still onto you from his first spin
+		DevSettings.Current.EnemiesSeeYou = true;
+		player.GlobalPosition = dodger.GlobalPosition + Vector2.Left * 100f;
+		await Frames(2);
+		Shoot(dodger, Vector2.Right);
+		await Frames(2);
+		if (!dodger.Dodging)
+			problems.Add("a silent shot from you in his sight didn't start a spin");
+		dodger.KnockDown(Vector2.Right);
+		if (!dodger.IsDown)
+			problems.Add("a blow mid-spin didn't knock him down");
+		await Frames(20);
+		Shoot(dodger, Vector2.Up);
+		await Frames(6);
+		if (!dodger.IsDead)
+			problems.Add("a bullet didn't kill him lying down");
+		Check("a dodger spins out of what he hears or sees coming, not what catches him unaware, and dies to a bullet knocked down", problems);
+		DevSettings.Current.EnemiesSeeYou = true;
+		DevSettings.Current.EnemiesShoot = true;
+		world.Free();
+	}
+
 	// From 30 px off to one side of him, straight at him.
-	private Bullet Shoot(Player at, Vector2 side)
+	private Bullet Shoot(Character at, Vector2 side)
 	{
 		var bullet = GD.Load<PackedScene>("res://weapons/bullet.tscn").Instantiate<Bullet>();
-		bullet.CollisionMask = Layers.Player;
+		bullet.CollisionMask = at is Player ? Layers.Player : Layers.Enemies;
 		Root.AddChild(bullet);
 		bullet.GlobalPosition = at.GlobalPosition + side * 30f;
 		bullet.Rotation = (-side).Angle();
@@ -188,11 +277,13 @@ public partial class TestRunner : SceneTree
 		enemy.AddRange(Enum.GetNames<Enemy.Idle>().Where(n => n != nameof(Enemy.Idle.None)).Select(n => n.ToLowerInvariant()));
 		string[] dog = { "legs", "idle", "walk", "look", "sit", "bark", "push_l", "push_r", "lie_fall", "lie_dead" };
 		string[] heavy = { "legs", "idle", "walk", "look", "punch", "push_l", "push_r", "lie_fall", "lie_dead" };
+		string[] dodger = kinds.SelectMany(k => "lr".Select(way => k + "dash_spin_" + way)).ToArray();
 
 		foreach (SpriteFrames look in Looks())
 			foreach (string name in look.ResourcePath.EndsWith("dog.tres") ? dog
 				: look.ResourcePath.EndsWith("heavy.tres") ? heavy
-				: everyone.Concat(look.ResourcePath.EndsWith("player.tres") ? player : enemy))
+				: everyone.Concat(look.ResourcePath.EndsWith("player.tres") ? player : enemy)
+					.Concat(look.ResourcePath.EndsWith("dodger.tres") ? dodger : []))
 				if (!look.HasAnimation(name))
 					yield return $"{look.ResourcePath} has no {name}";
 	}

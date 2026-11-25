@@ -21,7 +21,10 @@ public static class Noise
 		var heard = new List<Enemy>();
 		foreach (Node node in from.GetTree().GetNodesInGroup("enemies"))
 		{
-			if (node is Enemy enemy && enemy.CanHear && enemy.GlobalPosition.DistanceTo(where) <= radius)
+			if (node is not Enemy enemy || enemy.GlobalPosition.DistanceTo(where) > radius)
+				continue;
+			enemy.HearBang();
+			if (enemy.CanHear)
 				heard.Add(enemy);
 		}
 		IEnumerable<Enemy> coming = heard.Count <= Comers ? heard

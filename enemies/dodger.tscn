@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://enemies/Dodger.cs" id="1_dodger"]
+[ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="2_gun"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="3_pickup"]
+[ext_resource type="Resource" uid="uid://cr4p31cyfkwgq" path="res://weapons/knife.tres" id="4_knife"]
+[ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="5_death"]
+[ext_resource type="AudioStream" path="res://audio/dash.tres" id="6_dodge"]
+[ext_resource type="SpriteFrames" path="res://art/anim/dodger.tres" id="anim"]
+
+[sub_resource type="CircleShape2D" id="body"]
+radius = 8.0
+
+[node name="Dodger" type="CharacterBody2D" groups=["enemies"]]
+z_index = 4
+collision_layer = 4
+collision_mask = 17
+motion_mode = 1
+script = ExtResource("1_dodger")
+Look = ExtResource("anim")
+StartWeapon = ExtResource("4_knife")
+PickupScene = ExtResource("3_pickup")
+DodgeSound = ExtResource("6_dodge")
+
+[node name="Legs" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("anim")
+animation = &"legs"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("body")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Alive" type="Node2D" parent="Visual"]
+
+[node name="Gun" parent="Visual/Alive" instance=ExtResource("2_gun")]
+position = Vector2(16, 1.5)
+
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual/Alive"]
+sprite_frames = ExtResource("anim")
+animation = &"knife_idle"
+
+[node name="Corpse" type="Node2D" parent="Visual"]
+visible = false
+
+[node name="Body" type="AnimatedSprite2D" parent="Visual/Corpse"]
+position = Vector2(3, 0)
+sprite_frames = ExtResource("anim")
+animation = &"lie_dead"
+
+[node name="DeathSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_death")
+volume_db = -12.0

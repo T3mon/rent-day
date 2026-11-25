@@ -9,6 +9,7 @@ import os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import puppet as pp
 import anims as an
+import headband as hb
 
 OUT = pp.PROJECT + 'art/anim/'
 
@@ -22,10 +23,18 @@ def save_strip(path, frames, size):
     pp.png(path, size * len(frames), size, rows)
 
 
+EXTRA = {'dodger': an.dodge_animations}  # a character's own animations, on top of everyone's
+
+
 def build(name):
     ch = pp.Character(name)
+    standing = an.animations()
+    if name in EXTRA:
+        standing.update(EXTRA[name]())
+    if hb.worn(ch):
+        hb.add_tails(ch, standing, an.motion_for, LOOPS)
     anims = {}
-    for key, frames in an.animations().items():
+    for key, frames in standing.items():
         anims[key] = ([an.render(ch, p) for p, ms in frames], [ms for p, ms in frames], 72)
     for key, frames in an.lying_animations().items():
         anims['lie_' + key] = ([an.lying_frame(ch, spec) for spec, ms in frames], [ms for spec, ms in frames], 72)
@@ -69,7 +78,7 @@ def _uid(path):
     """The uid at the top of a .tres or in a .import file, or None."""
     if not os.path.exists(path):
         return None
-    m = re.search(r'uid="(uid://\w+)"', open(path, encoding='utf-8').read(2000))
+    m = re.search(r'uid="(uid://\w+)"', open(path, encoding='utf-8').readline())  # the first line only: not a picture's
     return m and m.group(1)
 
 
@@ -78,6 +87,6 @@ LOOPS = {'idle', 'walk', 'gun_idle', 'gun_walk', 'bat_idle', 'bat_walk', 'knife_
          'smoke', 'phone', 'hide', 'sit', 'lean', 'talk', 'lie_slump', 'look', 'gun_look', 'bat_look', 'knife_look'}
 
 if __name__ == '__main__':
-    for name in ('player', 'enemy_a', 'enemy_b', 'enemy_c', 'enemy_d', 'riot'):
+    for name in sys.argv[1:] or ('player', 'enemy_a', 'enemy_b', 'enemy_c', 'enemy_d', 'riot', 'dodger'):
         anims = build(name)
         print(name, len(anims), 'animations', sum(len(f) for f, m, s in anims.values()), 'frames')

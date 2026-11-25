@@ -37,6 +37,11 @@ Gameplay rules are in [mechanics/](mechanics/).
   heavy enemy's art is drawn whole in code, by `tools/anim/dog.py` and `tools/anim/heavy.py`.
   **`enemies/ShieldEnemy.cs`** is an ordinary enemy behind a shield: `Enemy.Blocks` says whether a hit from some
   direction lands on it, and bullets, blows, doors, thrown things and grabs ask it first (`Enemy.Fend`).
+  **`enemies/Dodger.cs`** slides out of bullets and thrown things: `Character.Dodges` says whether something flying at
+  someone misses him (you mid-dash; a dodger who sees or hears it coming, which starts his slide), and bullets (looking a
+  little ahead), thrown weapons and thrown enemies ask it first. `Enemy.HearBang` tells every enemy within earshot of a
+  gunshot (`core/Noise.cs`), which puts a dodger on guard. `Enemy.Wants` is which weapons an unarmed enemy goes for. His
+  headband's tails are simulated per animation by `tools/anim/headband.py`.
 - **`weapons/`**: `WeaponData` is one weapon's settings, saved as a data file per weapon (`*.tres`);
   melee weapons (bat, knife, the player's fists and the heavy enemy's) tick `Melee`. `Gun` is the weapon in a hand and
   does the shooting. `Bullet` flies and hits. `WeaponPickup` is

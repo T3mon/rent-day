@@ -115,18 +115,25 @@ def torso(ch, shear=0.0, shift=(0.0, 0.0)):
     return layer
 
 
+def head_blob(ch):
+    """The head's own patch (hair, face, ears, nose: the pixels joined to its middle), the rest of its pixels, and
+    the patch's middle."""
+    if not hasattr(ch, '_blob'):
+        src = {k: c for k, c in ch.head.items() if c[:3] != INK[:3]}
+        blob, todo = set(), [min(src, key=lambda k: abs(k[0] - 1) + abs(k[1]))]
+        while todo:
+            k = todo.pop()
+            if k in src and k not in blob:
+                blob.add(k)
+                todo += [(k[0] + 1, k[1]), (k[0] - 1, k[1]), (k[0], k[1] + 1), (k[0], k[1] - 1)]
+        ch._blob = (src, blob, sum(x for x, y in blob) / len(blob), sum(y for x, y in blob) / len(blob))
+    return ch._blob
+
+
 def head(ch, shift=(0.0, 0.0), turn=0.0):
     """The head (hair, face, ears, nose: the patch joined to its middle) turned about its own middle. Each pixel
     of the result is looked up in the sprite, so a turned head stays whole; stray bits of the sprite stay put."""
-    src = {k: c for k, c in ch.head.items() if c[:3] != INK[:3]}
-    blob, todo = set(), [min(src, key=lambda k: abs(k[0] - 1) + abs(k[1]))]
-    while todo:
-        k = todo.pop()
-        if k in src and k not in blob:
-            blob.add(k)
-            todo += [(k[0] + 1, k[1]), (k[0] - 1, k[1]), (k[0], k[1] + 1), (k[0], k[1] - 1)]
-    cx = sum(x for x, y in blob) / len(blob)
-    cy = sum(y for x, y in blob) / len(blob)
+    src, blob, cx, cy = head_blob(ch)
     r = math.ceil(max(math.hypot(x - cx, y - cy) for x, y in blob)) + 1
     layer = Layer()
     for (x, y), c in src.items():

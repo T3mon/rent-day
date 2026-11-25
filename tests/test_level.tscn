@@ -1,12 +1,12 @@
 [gd_scene format=4 uid="uid://67o441dpm2b1"]
 
 [ext_resource type="Resource" uid="uid://cpxggc76wa3it" path="res://weapons/bat.tres" id="bat"]
+[ext_resource type="PackedScene" path="res://enemies/dodger.tscn" id="dodger"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" uid="uid://b7u5akb2lckk5" path="res://enemies/enemy.tscn" id="enemy"]
 [ext_resource type="TileSet" uid="uid://kekc68nbqdgk" path="res://levels/floors3.tres" id="floors"]
 [ext_resource type="FontFile" uid="uid://ocencif2bgh6" path="res://ui/fonts/Silkscreen-Regular.ttf" id="font"]
 [ext_resource type="PackedScene" uid="uid://bjyh0jmn83uuu" path="res://props/glass_partition.tscn" id="glass"]
-[ext_resource type="PackedScene" path="res://enemies/shield_enemy.tscn" id="shield_enemy"]
 [ext_resource type="Resource" uid="uid://cr4p31cyfkwgq" path="res://weapons/knife.tres" id="knife"]
 [ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/enemy_b.tres" id="look_b"]
 [ext_resource type="SpriteFrames" uid="uid://caxniidqnw0hv" path="res://art/anim/enemy_c.tres" id="look_c"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://colcq6x584kno" path="res://weapons/pickup.tscn" id="pickup"]
 [ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="pistol"]
 [ext_resource type="PackedScene" uid="uid://vxvxhq660cmp" path="res://player/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://enemies/shield_enemy.tscn" id="shield_enemy"]
 [ext_resource type="Resource" uid="uid://cppb6hmejk8wf" path="res://weapons/shotgun.tres" id="shotgun"]
 [ext_resource type="Resource" path="res://weapons/silenced_pistol.tres" id="silenced_pistol"]
 [ext_resource type="Resource" uid="uid://b03f2uueuetc8" path="res://weapons/uzi.tres" id="uzi"]
@@ -164,6 +165,10 @@ Data = ExtResource("bat")
 position = Vector2(560, 400)
 Data = ExtResource("knife")
 
+[node name="NewRoomBat" parent="Weapons" unique_id=854375911 instance=ExtResource("pickup")]
+position = Vector2(1130, 160)
+Data = ExtResource("bat")
+
 [node name="Player" parent="." unique_id=838105985 instance=ExtResource("player")]
 position = Vector2(480, 440)
 
@@ -245,7 +250,11 @@ Look = ExtResource("look_c")
 StartWeapon = ExtResource("uzi")
 
 [node name="ShieldEnemy" parent="." unique_id=188352673 instance=ExtResource("shield_enemy")]
-position = Vector2(1060, 380)
+position = Vector2(148, 196)
+FacingDegrees = 135.0
+
+[node name="Dodger" parent="." unique_id=1543051937 instance=ExtResource("dodger")]
+position = Vector2(1060, 372)
 FacingDegrees = 270.0
 
 [node name="NewRoomStart" type="Marker2D" parent="." unique_id=1847290361]

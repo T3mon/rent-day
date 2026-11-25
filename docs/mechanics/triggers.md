@@ -22,7 +22,7 @@ What you hold decides: a gun shoots, a bat or knife swings, empty hands punch.
 - **Knife:** kills. The fastest swing.
 - A bat or knife swing kills an enemy lying on the floor instantly.
 - Melee makes no noise: nobody hears it.
-- Bats and knives are picked up and thrown like guns. A thrown bat knocks an enemy down; a thrown knife kills him.
+- Bats and knives are picked up and thrown like guns. A thrown bat knocks an enemy down; a thrown knife kills him. A dodger who sees it coming slides out of the way (see [enemies.md](enemies.md)).
 
 ## Grab (`grab`, right mouse button)
 
@@ -120,6 +120,6 @@ Pick up the nearest enemy lying on the floor within reach and hold him in front 
 - **Holding him:** you move at 2/3 speed and turn slowly (at most a full turn a second), his legs walking in front of yours.
 - **Attacking:** any gun still fires, from out past his right shoulder. A bat, knife or fists can't: you just carry him. Picking up, throwing and Execute are off while you hold him.
 - **Bullets:** he takes enemy bullets coming from the front 120°, jolting and bleeding. After 5 he dies and drops, and you carry on. A shotgun blast kills him at once (and he takes the whole blast). Bullets from the side or behind still hit you, and he goes down with you.
-- **Throwing him (right-click):** you shove him the way you face and he flies like a hard knockdown (about 7 tiles). The first standing enemy he slides into goes down too, and he stops there: both are knocked down, alive. Thrown hard into a wall, he dies on it: flat against it with his arms flung out, a crash, goo splashing back off the wall, then he slides down it into a crumpled heap. Slowed down by then, he just slumps against it, alive, with a softer crash. Only the thrown body knocks enemies over, never the enemies he knocks down.
+- **Throwing him (right-click):** you shove him the way you face and he flies like a hard knockdown (about 7 tiles). The first standing enemy he slides into goes down too (a dodger who sees it coming slides out of the way), and he stops there: both are knocked down, alive. Thrown hard into a wall, he dies on it: flat against it with his arms flung out, a crash, goo splashing back off the wall, then he slides down it into a crumpled heap. Slowed down by then, he just slumps against it, alive, with a softer crash. Only the thrown body knocks enemies over, never the enemies he knocks down.
 - **Letting go (E again):** barely shot (0 to 2 hits), you snap his neck: you stand still for 0.3 s, then a crack and he drops dead. Shot 3 or more times, you just drop his body.
 - Tuning is on the Player: Shield Hits, Shield Drop After, Shield Speed, Shield Turn, Shield Front, Snap Time, Lift Time, Shield Throw Speed. How fast a thrown enemy must be to die on a wall or bowl an enemy over is on the enemy (Splat Speed, Bowl Speed).

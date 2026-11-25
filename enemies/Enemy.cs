@@ -123,6 +123,9 @@ public partial class Enemy : Character
 	// Picks a weapon up when he has none (a dog never does).
 	protected virtual bool CarriesWeapons => true;
 
+	// Empty-handed, the weapons he goes for (the dodger: only a bat or a knife).
+	protected virtual bool Wants(WeaponData weapon) => true;
+
 	// Calm and standing still: the animation he plays (smoking, on the phone...); null = just standing.
 	protected virtual StringName CalmPose => _poseName;
 
@@ -145,6 +148,12 @@ public partial class Enemy : Character
 		_wallSound = new AudioStreamPlayer2D { Stream = WallHit };
 		AddChild(_wallSound);
 	}
+
+	// A bang within earshot (a gunshot, a bark), whether or not he comes to look (see Hear): it puts a dodger on guard.
+	public virtual void HearBang() { }
+
+	// Onto you, with you in his sight right now (calm, he only notices you after a moment: see Notices).
+	protected bool Watching => _alerted && _player != null && CanSeePlayer();
 
 	// A gunshot went off within earshot, at `where`.
 	public void Hear(Vector2 where)
@@ -272,7 +281,8 @@ public partial class Enemy : Character
 			return;
 		}
 		Enemy hit = GetTree().GetNodesInGroup("enemies").OfType<Enemy>()
-			.FirstOrDefault(enemy => enemy != this && !enemy.IsDead && !enemy.IsDown && !enemy.Pinned && enemy.GlobalPosition.DistanceTo(GlobalPosition) < 16f);
+			.FirstOrDefault(enemy => enemy != this && !enemy.IsDead && !enemy.IsDown && !enemy.Pinned && enemy.GlobalPosition.DistanceTo(GlobalPosition) < 16f
+				&& !enemy.Dodges(sliding.Normalized())); // a dodger spins out of the way
 		if (hit == null)
 			return;
 		hit.KnockDown(sliding.Normalized());
@@ -280,6 +290,19 @@ public partial class Enemy : Character
 		Thrown = false;
 		ShakeCamera.Shake(2f);
 		HitStop.Freeze(this, 0.05f);
+	}
+
+	// Something just missed him (the dodger spun aside): he knows you're around and comes to look where you are,
+	// and the dodge took him off his route.
+	protected void ShotAt()
+	{
+		_alerted = true;
+		_route = null;
+		if (_player == null)
+			return;
+		_checkSpot = _player.GlobalPosition;
+		_checkSpread = SearchSpread;
+		_searchLeft = SearchTime;
 	}
 
 	// He sees you: he knows you're around, and if he loses you, he'll look where he saw you last.
@@ -508,7 +531,8 @@ public partial class Enemy : Character
 	// Empty-handed: run to the nearest gun he can see (never one behind glass) and pick it up.
 	private void GoForAGun(float dt)
 	{
-		WeaponPickup nearest = WeaponPickup.Nearest(GetTree(), GlobalPosition, SightRange, spot => ClearView(spot, Layers.Glass));
+		WeaponPickup nearest = WeaponPickup.Nearest(GetTree(), GlobalPosition, SightRange,
+			gun => Wants(gun.Data) && ClearView(gun.GlobalPosition, Layers.Glass));
 
 		if (nearest == null)
 		{

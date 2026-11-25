@@ -6,6 +6,7 @@ facing +x, centred on the body, right side = +y. Each animation is a list of (po
 import math
 from puppet import (Layer, C, SIZE, INK, blank, capsule, head, torso, arm, hand, rot,
                     read_png, PROJECT)
+import headband as hb
 
 WEAPONS = {}
 
@@ -134,7 +135,11 @@ def render(ch, pose):
     if not p['hands_top']:
         for l in hands:
             l.stamp_onto(canvas)
-    head(ch, p['head'], p['turn']).stamp_onto(canvas)
+    face = head(ch, p['head'], p['turn'])
+    if hb.worn(ch):
+        hb.draw_tails(canvas, ch, p)  # under the head: they come out from behind it
+        hb.ring(face)
+    face.stamp_onto(canvas)
     if p['hands_top']:
         for l in hands:
             l.stamp_onto(canvas)
@@ -143,8 +148,8 @@ def render(ch, pose):
             canvas[C + y][C + x] = c
     for item in p['items']:
         draw_item(canvas, item)
-    if p['smear']:
-        draw_smear(canvas, p['smear'])
+    for smear in p['smear'] if isinstance(p['smear'], list) else [p['smear']] if p['smear'] else []:
+        draw_smear(canvas, smear)
     return canvas
 
 
@@ -180,7 +185,8 @@ def lying(ch, torso_len=16, head_x=12, legs=((-8, 3.5, -20, 5.0), (-8, -3.5, -20
         layers.append(hand(ch, (hx, hy)))
     hd = Layer()
     capsule(hd, (C + head_x, C), (C + head_x + 0.01, C), 4.5, ch.hair)
-    layers.append(hd)
+    band = hb.worn(ch) and hb.lying_band(head_x)
+    layers += [band[0], hd, band[1]] if band else [hd]
     for l in layers:
         l.stamp_onto(canvas)
     return canvas
@@ -295,12 +301,114 @@ def look_around(base, free):
     return out
 
 
+GUN = {'gun_arm': True, 'rh': None}
+KNIFE_REST = {'rh': (5, 9), 'weapon': 'knife', 'wpos': (5, 9), 'wang': math.radians(25)}
+
+# The dodger's slide aside (enemies/Dodger.cs): DodgeTime long, at DodgeSpeed times Pace, still facing the way he
+# was. Copied here for where his feet land and how his headband's tails fly.
+SPIN_TIME, SPIN_SPEED, SPIN_ANGLE = 0.3, 225.0, math.radians(35)  # SPIN_ANGLE: Dodger.DodgeAngle
+SPIN_PACE = ((0.0, 0.3), (0.12, 0.3), (0.2, 1.4), (0.6, 1.0), (0.8, 0.5), (0.92, 0.1), (1.0, 0.0))
+WALK_SPEED = 120.0  # the walk cycles: how fast his headband's tails take him to be going
+
+
+def pace(x):
+    for (x0, v0), (x1, v1) in zip(SPIN_PACE, SPIN_PACE[1:]):
+        if x <= x1:
+            return v0 + (v1 - v0) * (x - x0) / (x1 - x0)
+    return 0.0
+
+
+def spin(base, way, free_right=True):
+    """The dodger's slide aside, to his right ('r') or left ('l') and a little forward, still facing the way he
+    was: a big feet-first slide along the floor. Load (crouched low, leaning away, arms wound back), push off (the
+    far foot driving, stretched long), drop (the near leg shoots out ahead, he sits back onto the floor), the slide
+    (the near leg out straight, the far one tucked, leaning back on the far hand dragging behind, the near hand up for
+    balance, dust kicked up behind), the brake (the near foot digs in, dust at it, he comes up over it), up, settle.
+    A weapon hand keeps its grip. 13 frames, 300 ms."""
+    s = 1 if way == 'r' else -1
+    tx, ty = math.sin(SPIN_ANGLE), math.cos(SPIN_ANGLE) * s  # where he goes
+    along = lambda k, at=(0.0, 0.0): (at[0] + tx * k, at[1] + ty * k)
+    near_hip, far_hip = (-1, 4 * s), (-1, -4 * s)
+
+    def pose(shear, body, head, turn, near, far, legs=None, dust=()):
+        rh, lh = (near, far) if s > 0 else (far, near)
+        p = dict(base, shear=shear, body=body, head=head, turn=turn, lh=lh, legs=legs,
+                 items=tuple(('puff', along(k, (dx, 0)), r) for k, dx, r in dust))
+        if free_right:
+            p['rh'] = rh
+        return p
+
+    def slide(k, bob, dust):  # on the floor: near leg out ahead, far leg tucked, leaning back on the far hand
+        return pose(-2.0 * s, along(-2.5 + bob), along(-4.0 + bob), -0.25 * s, (6, 12 * s), along(-12, (-2, -4 * s)),
+                    ((near_hip, along(13 + k, near_hip)), (far_hip, along(6, (3, -2 * s)))), dust)
+
+    frames = [
+        (blend(base, pose(-1.0 * s, along(-1.0), along(-0.5), 0.3 * s, (2, 9 * s), (2, -9 * s)), 0.6), 14),
+        (pose(-2.0 * s, along(-2.0), along(-1.5), 0.5 * s, (-1, 9 * s), (-1, -10 * s),
+              ((near_hip, (1, 7 * s)), (far_hip, (1, -7 * s)))), 16),                            # load, low
+        (pose(1.0 * s, along(0.5), along(1.5), 0.35 * s, (4, 11 * s), (-4, -11 * s),
+              ((near_hip, along(4, near_hip)), (far_hip, along(-8, far_hip)))), 16),             # push off
+        (pose(2.5 * s, along(2.0), along(3.0), 0.2 * s, (6, 12 * s), (-6, -10 * s),
+              ((near_hip, along(10, near_hip)), (far_hip, along(-11, far_hip)))), 18),           # stretched long
+        (pose(0.5 * s, along(0.0), along(-1.0), 0.0, (6, 12 * s), along(-9, (-1, -4 * s)),
+              ((near_hip, along(14, near_hip)), (far_hip, along(-3, far_hip))), ((-9, 0, 1),)), 20),  # dropping
+        (slide(1, 0.0, ((-10, 0, 2),)), 24),                                                        # hits the floor
+        (slide(1, 0.3, ((-12, 0, 2), (-9, 3, 1))), 26),
+        (slide(0, 0.0, ((-15, 0, 3), (-11, 2, 2))), 26),
+        (slide(0, -0.3, ((-17, 1, 3), (-13, -1, 2))), 26),
+        (pose(-1.0 * s, along(-1.0), along(-1.5), -0.15 * s, (5, 12 * s), along(-10, (-1, -4 * s)),
+              ((near_hip, along(11, near_hip)), (far_hip, along(4, (2, -2 * s)))),
+              ((-18, 1, 2), (10, 0, 2), (12, 2, 1))), 28),                                          # brake: dust at the foot
+        (pose(1.0 * s, along(1.5), along(1.0), 0.1 * s, (4, 11 * s), (2, -11 * s),
+              ((near_hip, along(8, near_hip)), (far_hip, along(-2, far_hip))), ((11, 1, 2),)), 30),  # up over it
+        (blend(pose(0.5 * s, along(0.5), along(0.5), 0.0, (3, 10 * s), (2, -10 * s)), base, 0.4), 28),
+        (blend(pose(0.5 * s, along(0.5), along(0.5), 0.0, (3, 10 * s), (2, -10 * s)), base, 0.8), 28),
+    ]
+    assert sum(ms for _, ms in frames) == round(SPIN_TIME * 1000)
+    return frames
+
+
+def spin_motion(s):
+    """The slide's way through the world (motion_for): t seconds in -> ((x, y), facing), from facing +x."""
+    tx, ty = math.sin(SPIN_ANGLE), math.cos(SPIN_ANGLE) * s
+
+    def at(t):
+        x = min(t / SPIN_TIME, 1.0)
+        gone = sum(pace(x * (k + 0.5) / 40) for k in range(40)) / 40 * x * SPIN_TIME * SPIN_SPEED
+        return (tx * gone, ty * gone), 0.0
+    return at
+
+
+def motion_for(name):
+    """How the body goes through the world in an animation: t seconds in -> ((x, y), facing), from facing +x at the
+    start; None: it stays put. Only for what trails behind him (the headband's tails)."""
+    if '_spin_' in name:
+        return spin_motion(1 if name.endswith('r') else -1)
+    if name.startswith('dash_') or '_dash_' in name:
+        dx, dy = {'f': (1, 0), 'b': (-1, 0), 'l': (0, -1), 'r': (0, 1)}[name[-1]]
+        return lambda t: ((225.0 * dx * t, 225.0 * dy * t), 0.0)  # Player.DashSpeed
+    if name.endswith('walk'):
+        return lambda t: ((WALK_SPEED * t, 0.0), 0.0)
+    return None
+
+
+def dodge_animations():
+    """The dodger's own: the slide aside, each way, with whatever is in hand."""
+    A = {}
+    for way in 'lr':
+        A['dash_spin_' + way] = spin({}, way)
+        A['gun_dash_spin_' + way] = spin(GUN, way, free_right=False)
+        A['bat_dash_spin_' + way] = spin(bat_pose(0), way, free_right=False)
+        A['knife_dash_spin_' + way] = spin(KNIFE_REST, way, free_right=False)
+    return A
+
+
 def animations():
     A = {}
     fists = {}
-    gun = {'gun_arm': True, 'rh': None}
+    gun = GUN
     bat_rest = bat_pose(0)
-    knife_rest = {'rh': (5, 9), 'weapon': 'knife', 'wpos': (5, 9), 'wang': math.radians(25)}
+    knife_rest = KNIFE_REST
 
     # holding nothing / a gun / a bat / a knife: standing and walking
     A['idle'] = breathe(fists)

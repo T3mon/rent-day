@@ -15,6 +15,7 @@ public partial class WeaponPickup : CharacterBody2D
 
 	// Moving at least this fast (pixels per second), a thrown gun still hurts.
 	private const float DangerousSpeed = 150f;
+	private const float Warning = 0.12f; // seconds ahead a dodger sees it coming
 
 	private Sprite2D _look;
 	private Sprite2D _shadow;
@@ -25,8 +26,8 @@ public partial class WeaponPickup : CharacterBody2D
 	// Lying still (or nearly), so it can be picked up.
 	public bool IsLying => Velocity.Length() < 60f && !IsQueuedForDeletion();
 
-	// The closest gun lying within `range` of `spot` (and that `canReach` agrees to), or null.
-	public static WeaponPickup Nearest(SceneTree tree, Vector2 spot, float range, Func<Vector2, bool> canReach = null)
+	// The closest gun lying within `range` of `spot` (and that `wanted` agrees to), or null.
+	public static WeaponPickup Nearest(SceneTree tree, Vector2 spot, float range, Func<WeaponPickup, bool> wanted = null)
 	{
 		WeaponPickup nearest = null;
 		foreach (Node node in tree.GetNodesInGroup("pickups"))
@@ -34,7 +35,7 @@ public partial class WeaponPickup : CharacterBody2D
 			if (node is not WeaponPickup gun || !gun.IsLying)
 				continue;
 			float distance = spot.DistanceTo(gun.GlobalPosition);
-			if (distance <= range && (canReach == null || canReach(gun.GlobalPosition)))
+			if (distance <= range && (wanted == null || wanted(gun)))
 			{
 				range = distance;
 				nearest = gun;
@@ -71,6 +72,10 @@ public partial class WeaponPickup : CharacterBody2D
 			return;
 
 		float dt = (float)delta;
+		// A dodger sees it coming and spins aside: it flies on past him.
+		if (_thrown && MoveAndCollide(Velocity * Warning, testOnly: true) is { } ahead && ahead.GetCollider() is Character dodger
+			&& dodger.Dodges(Velocity.Normalized()))
+			AddCollisionExceptionWith(dodger);
 		KinematicCollision2D hit = MoveAndCollide(Velocity * dt);
 		if (hit != null)
 		{

@@ -270,6 +270,12 @@ public partial class Character : CharacterBody2D
 	// A bullet hits us, flying `direction`: we die (the heavy enemy only counts the hit).
 	public virtual void Shot(Vector2 direction) => Die(direction);
 
+	// Untouchable for now: bullets and thrown things fly on through him (your dash, the dodger's spin).
+	public virtual bool Dodging => false;
+
+	// A bullet or a thrown thing flying `direction` is about to hit him: does it miss? (The dodger spins aside.)
+	public virtual bool Dodges(Vector2 direction) => Dodging;
+
 	// A blow lands on us while we're held: the body jolts the way it was hit, and maybe bleeds.
 	public void Flinch(Vector2 direction, float strength, bool bleed)
 	{

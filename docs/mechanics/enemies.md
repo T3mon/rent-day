@@ -50,6 +50,7 @@ Set per enemy in the level:
 ## Being hit
 
 - Any hit kills an enemy, unless it is a punch or a thrown weapon (except a knife).
+- A dodger on his feet slides out of bullets and thrown things he sees or hears coming (see [Dodger](#dodger)).
 - A punch or a thrown gun or bat knocks an enemy down instead: he lies on the floor, squirms, and gets up after a while. How long he stays down is random each time.
 - Knocked into a wall, he sits slumped against it, dazed, instead of lying flat. Same rules otherwise; finishing him with fists is kicks to the head.
 - An enemy lying on the floor can still be shot or killed with a bat or knife swing. A thrown weapon slides past him.
@@ -128,7 +129,31 @@ Set per enemy in the level:
 - A thrown thing or a door knocks the shield aside, so fists-only players still have a way in.
 - The shield stays with him when he dies (left for later in [issue #10](https://github.com/T3mon/rent-day/issues/10): could you pick it up?).
 
+## Dodger
+
+`enemies/dodger.tscn`: an ordinary enemy with a knife and a red headband, its two tails flying behind him. He sees, hears, reacts and charges like any enemy with a knife. He wears the usual enemy clothes (the `dodger` outfit in `tools/anim/outfits.py`, the band drawn on his hair); the tails are simulated per animation by `tools/anim/headband.py`, so they hang down when he stands, stream behind him when he runs and fly out when he slides.
+
+- **On his feet, he slides out of what he sees or hears coming:** anything while he's onto you and you're in his sight, and anything for a second after a gunshot within earshot (the gun's noise range, whatever his routine; a silenced pistol makes none). One coming at him (a bullet about 80 px out, a thrown thing 0.12 s out), he slides aside and it flies on past, in slow motion too. An enemy you throw at him misses too.
+- **Caught unaware, he's like anyone:** while he's calm and hasn't noticed you yet, a silenced shot, a throw, or a shot from beyond earshot kills him (a thrown gun or bat knocks him down). Once he's onto you, only when you're out of his sight, with no bang he could hear.
+- **The slide** lasts **Dodge Time** (0.3 s) at up to **Dodge Speed** (225 px/s, your dash's), about 50 px: across the shot's path, angled **Dodge Angle** (35°) toward you, so each one brings him closer. A big feet-first slide along the floor in 13 frames, facing the same way throughout: he crouches low, pushes off and stretches long, drops with his near leg shot out ahead, slides on the floor leaning back on a hand dragging behind him with dust kicking up, brakes with his foot dug in, and pops back up. Afterimages trail him like your dash, with its whoosh (**Dodge Sound**, `audio/dash.tres`).
+- **One slide covers a whole shotgun blast**, and he slides again as often as it takes, with no wait, to the other side each time if there's room. With no room either side (a corridor, a corner) he ducks on the spot.
+- After a slide he knows you're around and comes to look where you are.
+- **Up close he's like anyone, even mid-slide:** a bat or a knife kills him, a punch or a door slam knocks him down, and grabs, stealth kills and finishing off work as usual.
+- **Knocked down, he can't slide:** a bullet or a thrown knife kills him then, like anyone.
+- Disarmed, he only goes for a bat or a knife, never a gun.
+- The slide's poses are `dash_spin_l`/`_r` (and the `gun_`, `bat_`, `knife_` ones) in `tools/anim/anims.py`, which copies Dodge Time, Dodge Speed, Dodge Angle and the slide's pace from `enemies/Dodger.cs`: change them in both.
+
+**Design choices:**
+- Once he's onto you, guns can't solve him: close in on him, or knock him down and then shoot.
+- He dodges only what he sees or hears coming, as every enemy reacts only to what he sees or hears. So sneaking up pays off: a silenced shot, a throw or a long shot gets him before he knows you're there.
+- Every slide brings him closer, so shooting at him only brings his knife to you sooner.
+- One slide per blast, not one per pellet, so a shotgun blast reads as one clean miss.
+- Blows still land mid-slide, so the slide is never a wall: there's always a way in.
+- No limit on slides: a rule you can learn at once ("he dodges what he sees or hears coming") instead of a count to keep.
+- He looks like the ordinary enemy on purpose, with the red headband and its flying tails as the one difference, so he reads as "the same enemy, but quick" at a glance.
+- A knife, and only a bat or knife when disarmed: he's a melee fighter, and a dodger with a gun would be untouchable at range.
+
 ## Going for guns
 
-An enemy with no weapon runs to the nearest weapon he can see (gun, bat or knife) and picks it up. Enemies never punch (the heavy enemy has only his fists). He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room. He doesn't go for one behind a glass pane until the glass is shattered.
+An enemy with no weapon runs to the nearest weapon he can see (gun, bat or knife; a dodger only a bat or knife) and picks it up. Enemies never punch (the heavy enemy has only his fists). He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room. He doesn't go for one behind a glass pane until the glass is shattered.
 Enemies with guns never run out of ammo.
