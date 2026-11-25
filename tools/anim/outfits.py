@@ -17,13 +17,22 @@ OUTFITS = {
     'enemy_d': ('enemy_b', {  # cream suit, dark purple shirt, slicked brown hair
         '4a3328': 'd8d4c8', '2a1c15': '9a968c', '26262e': '2a1c3a', 'd9b45a': '5a3a2a', 'f2d98a': '7a5240',
         '7a5644': '3a2418', '121620': 'a8a49a', '1e2433': 'cfcabe'}),
+    'riot': ('enemy_a', {  # the shield enemy: the usual enemy in a black helmet
+        '3b2e28': '22252e', '5a463c': '8a96aa'}),
 }
+# The riot outfit's visor: a band of blue glass along the helmet's front edge, where it meets the face (standing only).
+HELMET, FACE, VISOR = '22252e', ('c98e6a', '9a6448'), (110, 170, 210, 255)
 
 hexc = lambda c: '%02x%02x%02x' % c[:3]
 for name, (base, swap) in OUTFITS.items():
     for part in PARTS:
         w, h, px = read_png(f'{ART}{base}/{base}_{part}.png')
         out = [[tuple(int(swap[hexc(c)][i:i + 2], 16) for i in (0, 2, 4)) + (c[3],) if c[3] and hexc(c) in swap else c for c in row] for row in px]
+        if name == 'riot' and part == 'unarmed':
+            edge = [(x, y) for y in range(23, 36) for x in range(24, 40)
+                    if hexc(out[y][x]) == HELMET and hexc(out[y][x + 1]) in FACE]
+            for x, y in edge:
+                out[y][x] = VISOR
         os.makedirs(f'{ART}{name}', exist_ok=True)
         png(f'{ART}{name}/{name}_{part}.png', w, h, out)
     print(name, 'from', base)

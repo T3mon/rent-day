@@ -1,0 +1,67 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://enemies/ShieldEnemy.cs" id="1_shield"]
+[ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="2_gun"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="3_pickup"]
+[ext_resource type="Resource" uid="uid://bdh80ousndj8k" path="res://weapons/pistol.tres" id="4_pistol"]
+[ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="5_death"]
+[ext_resource type="AudioStream" path="res://audio/melee/heavy_clang.wav" id="6_block"]
+[ext_resource type="AudioStream" path="res://audio/shield_ricochet.wav" id="7_ricochet"]
+[ext_resource type="SpriteFrames" path="res://art/anim/riot.tres" id="anim"]
+[ext_resource type="Texture2D" path="res://art/anim/shield.png" id="8_shield"]
+
+[sub_resource type="CircleShape2D" id="body"]
+radius = 8.0
+
+[node name="ShieldEnemy" type="CharacterBody2D" groups=["enemies"]]
+z_index = 4
+collision_layer = 4
+collision_mask = 17
+motion_mode = 1
+script = ExtResource("1_shield")
+TurnSpeed = 150.0
+Stride = 95.0
+Look = ExtResource("anim")
+StartWeapon = ExtResource("4_pistol")
+PickupScene = ExtResource("3_pickup")
+BlockSound = ExtResource("6_block")
+RicochetSound = ExtResource("7_ricochet")
+
+[node name="Legs" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("anim")
+animation = &"legs"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("body")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Alive" type="Node2D" parent="Visual"]
+
+[node name="Gun" parent="Visual/Alive" instance=ExtResource("2_gun")]
+position = Vector2(16, 1.5)
+
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual/Alive"]
+sprite_frames = ExtResource("anim")
+animation = &"gun_idle"
+
+[node name="Shield" type="Sprite2D" parent="Visual/Alive"]
+position = Vector2(9, -3)
+texture = ExtResource("8_shield")
+
+[node name="Corpse" type="Node2D" parent="Visual"]
+visible = false
+
+[node name="Body" type="AnimatedSprite2D" parent="Visual/Corpse"]
+position = Vector2(3, 0)
+sprite_frames = ExtResource("anim")
+animation = &"lie_dead"
+
+[node name="Shield" type="Sprite2D" parent="Visual/Corpse"]
+position = Vector2(4, 17)
+rotation = 1.35
+texture = ExtResource("8_shield")
+
+[node name="DeathSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_death")
+volume_db = -12.0

@@ -67,6 +67,9 @@ public partial class Gun : Node2D
 		_flash.Visible = _flashLeft > 0 && Settings.Flashes;
 	}
 
+	// How many times it has fired (the shield enemy lowers his shield for each shot).
+	public int Shots { get; private set; }
+
 	// Fires if the gun is ready. Returns true if bullets came out.
 	public bool TryFire()
 	{
@@ -82,6 +85,7 @@ public partial class Gun : Node2D
 		}
 
 		_cooldownLeft = HeldByEnemy ? Data.EnemyCooldown : Data.Cooldown;
+		Shots++;
 		if (!HeldByEnemy && !DevSettings.Current.InfiniteAmmo)
 			Ammo--;
 

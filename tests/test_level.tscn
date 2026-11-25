@@ -6,7 +6,7 @@
 [ext_resource type="TileSet" uid="uid://kekc68nbqdgk" path="res://levels/floors3.tres" id="floors"]
 [ext_resource type="FontFile" uid="uid://ocencif2bgh6" path="res://ui/fonts/Silkscreen-Regular.ttf" id="font"]
 [ext_resource type="PackedScene" uid="uid://bjyh0jmn83uuu" path="res://props/glass_partition.tscn" id="glass"]
-[ext_resource type="PackedScene" path="res://enemies/heavy.tscn" id="heavy"]
+[ext_resource type="PackedScene" path="res://enemies/shield_enemy.tscn" id="shield_enemy"]
 [ext_resource type="Resource" uid="uid://cr4p31cyfkwgq" path="res://weapons/knife.tres" id="knife"]
 [ext_resource type="SpriteFrames" uid="uid://u6tef2csv2e" path="res://art/anim/enemy_b.tres" id="look_b"]
 [ext_resource type="SpriteFrames" uid="uid://caxniidqnw0hv" path="res://art/anim/enemy_c.tres" id="look_c"]
@@ -244,10 +244,9 @@ FacingDegrees = 90.0
 Look = ExtResource("look_c")
 StartWeapon = ExtResource("uzi")
 
-[node name="Heavy" parent="." unique_id=188352673 instance=ExtResource("heavy")]
+[node name="ShieldEnemy" parent="." unique_id=188352673 instance=ExtResource("shield_enemy")]
 position = Vector2(1060, 380)
 FacingDegrees = 270.0
-StayInRoom = true
 
 [node name="NewRoomStart" type="Marker2D" parent="." unique_id=1847290361]
 position = Vector2(1180, 80)

@@ -19,6 +19,7 @@ How doors behave, and how to place them in a level. Tuning values live in the do
 - A door you pushed, swinging hard, knocks down any enemy it passes. He drops his gun (see [enemies.md](enemies.md)).
 - A slam sounds like the door cracking into him (`audio/door_hit.wav`, turned down 4 dB on the door's SlamSound), and he hits the floor with a body fall.
 - A door an enemy pushed open never knocks anyone down.
+- A slam on a shield enemy's shield doesn't knock him down: it shoves him back and knocks the shield aside for a moment (see [enemies.md](enemies.md)).
 
 ## Bullets
 

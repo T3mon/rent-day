@@ -19,7 +19,7 @@ They run by themselves before every `git push`, and a failure stops the push. `g
 Switches and tools for testing the game: in the admin panel (F1 while playing), or in `debug/dev_settings.tres`.
 
 - They only work in runs started from the editor. Exported builds ignore them and have no admin panel.
-- **Admin panel (F1):** pauses and dims the game; F1 or Esc closes it. Switches flip live and are saved to `debug/dev_settings.tres`, so the next run starts with them too. Switches are on the left, tools on the right. A cyan square marks anything changed from a normal game, the title counts them, and hovering a switch explains it. Keyboard and gamepad work too.
+- **Admin panel (F1):** pauses and dims the game; F1 or Esc closes it. Switches flip live and are saved to `debug/dev_settings.tres`, so the next run starts with them too. Switches are on the left, tools on the right. A cyan square marks anything changed from a normal game, the title counts them, and hovering a switch explains it (the tooltip is scaled like the panel, so it fits on screen). Keyboard and gamepad work too.
 - Or set them in the Inspector, then press play and pick New game on the menu (or run `main.tscn` with F6 to skip the menu).
 - The repository stores the normal (default) values. Changing them locally does not change the repository.
 - Active switches are listed in the top-right corner while playing, so a cheat is never mistaken for a bug.
@@ -52,6 +52,6 @@ Tools, in the admin panel only:
 - **Poses:** two talkers, a leaner, a hider, and a wanderer on the phone.
 - **Glass:** a guard watching through three glass panes, with an open way round them.
 - **Doors:** one enemy just behind the door, for door slams, and one facing it.
-- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others. Now: a dog, kept in the room.
+- **New:** the big room on the right, for the enemy type being built. It goes there alone first, with room to run, then gets mixed with the others. Now: a shield enemy, standing guard.
 
 Nothing is saved while you're on it, R restarts it, and clearing it only shows FLOOR CLEAR. The automatic tests run it like a floor. Unarmed enemies aren't placed: an enemy without a weapon only looks for one, so punch someone to see that.

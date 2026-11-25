@@ -78,12 +78,17 @@ public partial class Character
 			if (space.IntersectRay(between).Count > 0)
 				continue;
 
+			Vector2 direction = (target.GlobalPosition - GlobalPosition).Normalized();
+			if (target is Enemy guard && guard.Blocks(direction))
+			{
+				guard.Fend(direction, _swung.Lethal ? 160f : 0f); // a bat or knife on the shield shoves him back a little
+				continue;
+			}
 			if (target is Enemy { MeleeProof: true } || (!_swung.Lethal && target is Enemy { KnockProof: true }))
 			{
 				((Enemy)target).Shrug(); // it does nothing to him: the dog stays silent, the heavy enemy's vest clangs
 				continue;
 			}
-			Vector2 direction = (target.GlobalPosition - GlobalPosition).Normalized();
 			_strikeSound.Stream = _swung.HitSound;
 			_strikeSound.Play();
 			if (!Gun.HeldByEnemy)

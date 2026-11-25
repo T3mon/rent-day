@@ -77,6 +77,13 @@ Set per enemy in the level:
 - It carries nothing, so it drops nothing.
 - Sounds: a bark when it spots you (**Bark Sound**) and a snap of the jaws when it bites (**Bite Sound**). It dies silently.
 
+**Design choices:**
+- It's the fast enemy: you can't outrun it, so you have to stand and deal with it, or dash through it.
+- The bark is your warning and its weakness at once: a moment to react before the charge, but it calls the walking enemies over.
+- It bounces off walls instead of steering round them, so luring it past a corner buys time.
+- Fists, doors and throws do nothing, so a floor with a dog asks you to keep a gun, bat or knife.
+- Following the walls makes it come past every door sooner or later, so no room is safe for long.
+
 ## Heavy enemy
 
 `enemies/heavy.tscn`: a big man with bare fists, far wider than anyone else, who sees and hears like anyone. His art is drawn by `tools/anim/heavy.py`.
@@ -89,6 +96,37 @@ Set per enemy in the level:
 - Each bullet takes **Slow Per Hit** (12 px/s) off his chasing speed.
 - He carries nothing, so he drops nothing.
 - Sounds: no alert sound. Each swing is a grunt (`audio/melee/heavy_grunt.tres`, five takes picked at random); the hit is the punch's. A bullet that doesn't kill him plays his hurt sound (**Hurt Sound**, `audio/heavy_hurt.wav`).
+
+**Design choices:**
+- He's the slow, tough enemy: the opposite of the dog. Easy to see coming, hard to put down.
+- Only bullets work, so melee players have to pick up a gun for him.
+- Bleeding out instead of a health bar: one bullet is enough if you can then keep away from him, more bullets end it sooner. Running and shooting both pay off.
+- The shotgun kills him at once, so a shotgun on a floor with a heavy enemy is a gift.
+- Bare fists and no gun, so he only threatens you up close, and you can always see his reach.
+- The vest clang tells you straight away that a bat or punch was wasted.
+
+## Shield enemy
+
+`enemies/shield_enemy.tscn`: an ordinary enemy with a pistol behind a heavy black shield. He sees, hears, reacts and shoots like anyone. He wears the usual enemy clothes with a black helmet and a blue visor (the `riot` outfit in `tools/anim/outfits.py`); the shield is its own picture, drawn by `tools/anim/shield.py`.
+
+- **The shield covers his front** (**Front**, 120°). From there bullets bounce off it, a little off true, and can kill you or other enemies; a bat, a knife, punches, thrown things, door slams and grabs do nothing to him. From his side or back he dies like anyone.
+- **He turns slowly** (**Turn Speed** 150°/s, against everyone else's 540), and only fires once he's turned to you, so you can circle round him or dash past him.
+- **A shotgun blast knocks him down**, even on the shield (its pellets still bounce off). Down, he can be finished off like anyone.
+- **It opens up:** for **Peek Time** (0.35 s) after each of his shots he swings the shield aside to his left, and his front is open. A door slam or a thrown thing knocks it aside for **Lower Time** (1 s).
+- A door slam on the shield shoves him back a little, a bat or knife a little less. Punches don't move him.
+- **Spotting you** he bangs on his shield: a jab forward and a low clang.
+- Lying down or dead, his shield lies beside him. Nobody can pick it up.
+- Sounds: a clang when a blow hits the shield, and when he bangs on it (**Block Sound**, the heavy enemy's vest clang); a bullet's crack when one bounces off (**Ricochet Sound**, `audio/shield_ricochet.wav`).
+
+**Design choices:**
+- He's the enemy you have to go round: the puzzle is the angle, not the aim. His slow turn is what makes getting round him possible.
+- He looks like the ordinary enemy on purpose, with only the helmet, visor and shield as the difference, so he reads as "the same enemy, armoured" at a glance.
+- Ricochets instead of the shield just eating bullets: firing at his front is a real danger to you, and a chance to hit the enemies around him. Both versions were tried; this one stayed.
+- Every way of hurting him has an answer on the shield, so the rule is simple: from the front, nothing works.
+- The shotgun knocks him over, so it's the heavy weapon's answer to him, as it is to the heavy enemy.
+- He lowers the shield to shoot, so a patient player can wait for his shot and fire into the gap.
+- A thrown thing or a door knocks the shield aside, so fists-only players still have a way in.
+- The shield stays with him when he dies (left for later in [issue #10](https://github.com/T3mon/rent-day/issues/10): could you pick it up?).
 
 ## Going for guns
 

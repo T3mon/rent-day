@@ -18,6 +18,7 @@ public partial class Bullet : Area2D
 	private static readonly Color TracerHot = new(1f, 0.62f, 0.11f), TracerCool = new(1f, 0.35f, 0.16f);
 	private float _flown;                   // pixels so far: the tail never reaches back past the muzzle
 	private bool _traced;                   // the tail is drawn (cleared again once slow motion ends)
+	private Rid _skip;                      // the shield it just bounced off
 
 	public override void _Ready()
 	{
@@ -33,10 +34,12 @@ public partial class Bullet : Area2D
 		// Check the whole stretch it flies this frame, or it could skip right over a thin door.
 		PhysicsDirectSpaceState2D space = GetWorld2D().DirectSpaceState;
 		var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + step, CollisionMask);
+		if (_skip.IsValid)
+			query.Exclude = [_skip];
 		var hit = space.IntersectRay(query);
 		if (hit.Count > 0 && hit["collider"].As<GodotObject>() is Player { Dodging: true } dodger)
 		{
-			query.Exclude = [dodger.GetRid()]; // a dashing player: it flies on through him
+			query.Exclude = _skip.IsValid ? [_skip, dodger.GetRid()] : [dodger.GetRid()]; // a dashing player: it flies on through him
 			hit = space.IntersectRay(query);
 		}
 		if (hit.Count > 0)
@@ -72,8 +75,17 @@ public partial class Bullet : Area2D
 
 	public void Hit(Node2D body)
 	{
-		if (IsQueuedForDeletion() || body is Player { Dodging: true })
-			return; // already hit something this frame, or flies on through a dashing player
+		if (IsQueuedForDeletion() || body is Player { Dodging: true } || (body is CollisionObject2D solid && solid.GetRid() == _skip))
+			return; // already hit something this frame, flies on through a dashing player, or just bounced off him
+
+		// A shield from the front: it bounces off with sparks, and a shotgun blast knocks him down.
+		if (body is Enemy guard && guard.Blocks(Transform.X))
+		{
+			guard.Fend(Transform.X, knock: Blast, bounced: true);
+			Effects.Spawn(SparkScene, this, GlobalPosition, Rotation + Mathf.Pi);
+			Ricochet(guard);
+			return;
+		}
 
 		if (body is Glass glass)
 		{
@@ -96,5 +108,13 @@ public partial class Bullet : Area2D
 
 		// QueueFree removes the node from the game at the end of this frame.
 		QueueFree();
+	}
+
+	// Off a shield: it flies back out a little off true, and can now hit anyone, you and enemies alike.
+	private void Ricochet(Enemy guard)
+	{
+		GlobalRotation = Transform.X.Bounce(guard.Facing).Angle() + (float)GD.RandRange(-0.35, 0.35);
+		CollisionMask |= Layers.Player | Layers.Enemies;
+		_skip = guard.GetRid();
 	}
 }

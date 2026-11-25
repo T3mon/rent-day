@@ -256,6 +256,7 @@ public partial class Main : Node2D
 				_carried = null;
 			}
 			GetTree().ReloadCurrentScene();
+			return; // this scene has just left the tree: nothing more to update
 		}
 
 		UpdateAmmo();

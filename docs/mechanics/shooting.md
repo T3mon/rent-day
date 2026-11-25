@@ -33,7 +33,8 @@ The silenced pistol (`weapons/silenced_pistol.tres`) has Noise 0: nobody hears i
 - Bullets fly over dead bodies, but a knocked-down enemy can still be shot.
 - A shot is checked from the shooter's center to the muzzle, so a barrel poking through a wall
   can't shoot through it: the shot hits the wall (or whoever stands in between) right there.
-- Bullets damage characters on the enemy side only: the player's bullets hit enemies, enemy bullets hit the player. Enemies never hit each other.
+- Bullets damage characters on the enemy side only: the player's bullets hit enemies, enemy bullets hit the player. Enemies never hit each other, except with a ricochet.
+- **Ricochets:** a bullet that hits a shield enemy's shield from the front bounces off it, a little off true, with a spark. From then on it hits anyone, you and enemies alike, but never the same shield enemy again (see [enemies.md](enemies.md)).
 - Any hit on a character kills it in one shot.
 
 ## Feedback

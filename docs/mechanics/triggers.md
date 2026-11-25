@@ -96,7 +96,7 @@ Skips to the next floor song, without pausing. See [music.md](music.md).
 
 One key, two takedowns. An enemy standing right in front of you comes first; otherwise the nearest enemy lying on the floor within reach.
 
-**Stealth kill** (an enemy standing right in front of you, whichever way he faces):
+**Stealth kill** (an enemy standing right in front of you, whichever way he faces; not a shield enemy from his shield side, nor the dog or the heavy enemy):
 - You grab him and his gun flies out of his hands. He struggles for a moment, weaker and weaker, then goes limp.
 - No clicks needed.
 - Non-lethal style: no goo and no blood, he just slumps face down. He still counts as taken out.

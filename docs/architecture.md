@@ -35,6 +35,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   `Enemy` too: he walks at you and swings his fists (`weapons/heavy_fists.tres`), only bullets hurt him
   (each bullet calls `Character.Shot`, which kills anyone else), and he bleeds out. The dog's and the
   heavy enemy's art is drawn whole in code, by `tools/anim/dog.py` and `tools/anim/heavy.py`.
+  **`enemies/ShieldEnemy.cs`** is an ordinary enemy behind a shield: `Enemy.Blocks` says whether a hit from some
+  direction lands on it, and bullets, blows, doors, thrown things and grabs ask it first (`Enemy.Fend`).
 - **`weapons/`**: `WeaponData` is one weapon's settings, saved as a data file per weapon (`*.tres`);
   melee weapons (bat, knife, the player's fists and the heavy enemy's) tick `Melee`. `Gun` is the weapon in a hand and
   does the shooting. `Bullet` flies and hits. `WeaponPickup` is

@@ -77,7 +77,9 @@ public partial class WeaponPickup : CharacterBody2D
 			if (hit.GetCollider() is Enemy enemy && _thrown && !enemy.IsDown)
 			{
 				// A thrown gun to the head: he goes down, the gun bounces off him. Off a dog it just bounces.
-				if (!enemy.KnockProof)
+				if (enemy.Blocks(Velocity.Normalized()))
+					enemy.Fend(Velocity.Normalized(), lower: true); // off a shield: knocked aside for a moment
+				else if (!enemy.KnockProof)
 				{
 					if (Data.KillsWhenThrown)
 						enemy.Die(Velocity.Normalized());

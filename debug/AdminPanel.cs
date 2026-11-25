@@ -162,6 +162,13 @@ public partial class AdminPanel : Control
 		box.Scale = new Vector2(scale, scale);
 		box.Position = ((screen - box.Size * scale) / 2f).Floor();
 
+		// Tooltips pop up outside the scaled box, so they get the same scale by hand.
+		var tip = new StyleBoxFlat { BgColor = Style.Ink };
+		tip.SetContentMarginAll(4f * scale);
+		tip.ContentMarginLeft = tip.ContentMarginRight = 8f * scale;
+		box.Theme.SetStylebox("panel", "TooltipPanel", tip);
+		box.Theme.SetFontSize("font_size", "TooltipLabel", Mathf.Max(1, Mathf.RoundToInt(18 * scale)));
+
 		// Keyboard and gamepad work too: start on the first switch.
 		left.GetChildren().OfType<Control>().SelectMany(row => row.GetChildren().OfType<CheckButton>()).FirstOrDefault()?.GrabFocus();
 	}
@@ -259,9 +266,7 @@ public partial class AdminPanel : Control
 
 		var line = new StyleBoxLine { Color = Style.Faint, Thickness = 1 };
 		theme.SetStylebox("separator", "HSeparator", line);
-		theme.SetStylebox("panel", "TooltipPanel", Box(Style.Ink, Style.Soft));
-		theme.SetColor("font_color", "TooltipLabel", Style.Soft);
-		theme.SetFontSize("font_size", "TooltipLabel", 18);
+		theme.SetColor("font_color", "TooltipLabel", Style.Soft); // its box and size: scaled in _Ready
 		theme.SetStylebox("panel", "PopupMenu", Box(Style.Ink, Style.Pink));
 		return theme;
 	}

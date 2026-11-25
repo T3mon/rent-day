@@ -110,6 +110,16 @@ public partial class Enemy : Character
 	// A blow or a thrown thing lands and does nothing (see KnockProof, MeleeProof).
 	public virtual void Shrug() { }
 
+	// A hit travelling `direction` lands on his shield and does nothing to him (the shield enemy).
+	public virtual bool Blocks(Vector2 direction) => false;
+
+	// A hit lands on his shield (see Blocks): push shoves him back (pixels per second), lower knocks the shield
+	// aside for a moment, knock knocks him down (a shotgun blast), bounced says a bullet flew back off it.
+	public virtual void Fend(Vector2 direction, float push = 0f, bool lower = false, bool knock = false, bool bounced = false) { }
+
+	// Which way he faces (the shield enemy: which way his shield faced when it was hit).
+	public virtual Vector2 Facing => Visual.GlobalTransform.X;
+
 	// Picks a weapon up when he has none (a dog never does).
 	protected virtual bool CarriesWeapons => true;
 
