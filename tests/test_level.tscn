@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="player"]
 [ext_resource type="PackedScene" path="res://enemies/enemy.tscn" id="enemy"]
 [ext_resource type="PackedScene" path="res://enemies/dog.tscn" id="dog"]
+[ext_resource type="PackedScene" path="res://enemies/heavy.tscn" id="heavy"]
 [ext_resource type="PackedScene" path="res://props/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://props/glass_partition.tscn" id="glass"]
 [ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="pickup"]
@@ -256,4 +257,9 @@ StartWeapon = ExtResource("uzi")
 
 [node name="Dog" parent="." instance=ExtResource("dog")]
 position = Vector2(1110, 240)
+StayInRoom = true
+
+[node name="Heavy" parent="." instance=ExtResource("heavy")]
+position = Vector2(1060, 380)
+FacingDegrees = 270.0
 StayInRoom = true

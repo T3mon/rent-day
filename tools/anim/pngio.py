@@ -7,8 +7,15 @@ def png(path, w, h, pixels):
     raw = b''.join(b'\x00' + bytes(c for px in row for c in px) for row in pixels)
     def chunk(t, d):
         return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
-    data = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
-    open(path, 'wb').write(data)
+    ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0))
+    # same picture already there: leave the file alone (zlib packs it differently on each system)
+    try:
+        old = open(path, 'rb').read()
+        if old[8:8 + len(ihdr)] == ihdr and zlib.decompress(old[8 + len(ihdr) + 8:-16]) == raw:
+            return
+    except (OSError, zlib.error):
+        pass
+    open(path, 'wb').write(b'\x89PNG\r\n\x1a\n' + ihdr + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b''))
 
 
 def read_png(path):

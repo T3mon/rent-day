@@ -1,11 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponData" format=3]
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://cr4p31cyfkwgq"]
 
-[ext_resource type="Script" path="res://weapons/WeaponData.cs" id="1_script"]
-[ext_resource type="Texture2D" path="res://weapons/knife.png" id="2_look"]
-[ext_resource type="Texture2D" path="res://weapons/knife_floor.png" id="3_floor"]
+[ext_resource type="Script" uid="uid://bsqyeexacgudx" path="res://weapons/WeaponData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cx3rhvtd13vsh" path="res://weapons/knife.png" id="2_look"]
+[ext_resource type="Texture2D" uid="uid://wldjci181c5a" path="res://weapons/knife_floor.png" id="3_floor"]
+[ext_resource type="AudioStream" uid="uid://b3v067xwplx75" path="res://audio/melee/knife_hit.wav" id="hit"]
 [ext_resource type="AudioStream" path="res://audio/melee/swoosh.tres" id="swing"]
-[ext_resource type="AudioStream" path="res://audio/melee/knife_hit.wav" id="hit"]
-[ext_resource type="AudioStream" path="res://audio/melee/knife_throw.wav" id="throw_hit"]
+[ext_resource type="AudioStream" uid="uid://btt6btsjd7hy0" path="res://audio/melee/knife_throw.wav" id="throw_hit"]
 
 [resource]
 script = ExtResource("1_script")
@@ -14,12 +14,12 @@ Look = ExtResource("2_look")
 FloorLook = ExtResource("3_floor")
 HoldOffset = Vector2(3.5, 0)
 Ammo = 0
-Cooldown = 0.17
+Cooldown = 0.7
 EnemyCooldown = 0.5
 Melee = true
 SwingTime = 0.15
 KillsWhenThrown = true
 ThrownHitSound = ExtResource("throw_hit")
+HitSound = ExtResource("hit")
 Shake = 0.0
 ShotSound = ExtResource("swing")
-HitSound = ExtResource("hit")

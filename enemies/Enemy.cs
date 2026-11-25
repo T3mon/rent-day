@@ -103,6 +103,9 @@ public partial class Enemy : Character
 	// Can't be knocked down or grabbed: punches, door slams and thrown things do nothing (the dog).
 	public virtual bool KnockProof => false;
 
+	// A bat, a knife or a fist lands on him and does nothing (the heavy enemy).
+	public virtual bool MeleeProof => false;
+
 	// Picks a weapon up when he has none (a dog never does).
 	protected virtual bool CarriesWeapons => true;
 
@@ -521,7 +524,7 @@ public partial class Enemy : Character
 	// Heads for a spot on a route around walls and furniture (see LevelGrid), planning a new
 	// route when the spot moves or he gets stuck. spread: aims for a random open spot this close to it
 	// (and not behind a wall from it) instead. Returns false once he has arrived, or if there's no way there.
-	private bool RunTo(Vector2 spot, float speed, float dt, float spread = 0f)
+	protected bool RunTo(Vector2 spot, float speed, float dt, float spread = 0f)
 	{
 		if (SteppingOut(speed))
 			return true;

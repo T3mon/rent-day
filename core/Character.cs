@@ -267,6 +267,9 @@ public partial class Character : CharacterBody2D
 		EmitSignal(SignalName.Died);
 	}
 
+	// A bullet hits us, flying `direction`: we die (the heavy enemy only counts the hit).
+	public virtual void Shot(Vector2 direction) => Die(direction);
+
 	// A blow lands on us while we're held: the body jolts the way it was hit, and maybe bleeds.
 	public void Flinch(Vector2 direction, float strength, bool bleed)
 	{

@@ -31,9 +31,12 @@ Gameplay rules are in [mechanics/](mechanics/).
 - **`player/Player.cs`** and **`enemies/Enemy.cs`** build on `Character`. The player adds
   keyboard/mouse control, the camera and the takedowns (executions, stealth kills); the enemy adds
   the AI (behaviours, sight, hearing, chasing, route-finding). **`enemies/Dog.cs`** builds on `Enemy`:
-  it barks and charges instead of shooting, and nothing knocks it down.
+  it barks and charges instead of shooting, and nothing knocks it down. **`enemies/Heavy.cs`** builds on
+  `Enemy` too: he walks at you and swings his fists (`weapons/heavy_fists.tres`), only bullets hurt him
+  (each bullet calls `Character.Shot`, which kills anyone else), and he bleeds out. The dog's and the
+  heavy enemy's art is drawn whole in code, by `tools/anim/dog.py` and `tools/anim/heavy.py`.
 - **`weapons/`**: `WeaponData` is one weapon's settings, saved as a data file per weapon (`*.tres`);
-  melee weapons (bat, knife, and the player's fists) tick `Melee`. `Gun` is the weapon in a hand and
+  melee weapons (bat, knife, the player's fists and the heavy enemy's) tick `Melee`. `Gun` is the weapon in a hand and
   does the shooting. `Bullet` flies and hits. `WeaponPickup` is
   a gun on the floor or in the air (dropped or thrown). On the floor a weapon is drawn the size it is
   in hand, with no outline, over its shadow. Its floor picture (`FloorLook`) is seen from the side, so

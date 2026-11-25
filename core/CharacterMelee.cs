@@ -83,6 +83,8 @@ public partial class Character
 			_strikeSound.Play();
 			if (!Gun.HeldByEnemy)
 				ShakeCamera.Shake(_swung.Shake);
+			if (target is Enemy { MeleeProof: true })
+				continue; // it lands, and he shrugs it off
 			if (_swung.Lethal)
 				target.Die(direction);
 			else

@@ -86,7 +86,7 @@ public partial class Bullet : Area2D
 		if (body is Character target)
 		{
 			if (!(target is Player holder && holder.ShieldTakes(Transform.X, Blast)))
-				target.Die(Transform.X);
+				target.Shot(Transform.X);
 		}
 		else
 			Effects.Spawn(SparkScene, this, GlobalPosition, Rotation + Mathf.Pi); // sparks fly back off the wall

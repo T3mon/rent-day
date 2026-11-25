@@ -431,4 +431,4 @@ Pose = 1
 
 [node name="Dog" parent="." unique_id=580841247 instance=ExtResource("54_e0mxu")]
 position = Vector2(261, 464)
-BarkNoise = 200.0
+BarkNoise = 210.0

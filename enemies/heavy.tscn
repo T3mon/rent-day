@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://enemies/Heavy.cs" id="1_heavy"]
+[ext_resource type="PackedScene" uid="uid://cm4gru2imyosy" path="res://weapons/gun.tscn" id="2_gun"]
+[ext_resource type="PackedScene" path="res://weapons/pickup.tscn" id="3_pickup"]
+[ext_resource type="Resource" path="res://weapons/heavy_fists.tres" id="4_fists"]
+[ext_resource type="AudioStream" uid="uid://cui1ejb5xdd2i" path="res://audio/enemy_death.wav" id="5_death"]
+[ext_resource type="SpriteFrames" path="res://art/anim/heavy.tres" id="anim"]
+
+[sub_resource type="CircleShape2D" id="body"]
+radius = 10.0
+
+[node name="Heavy" type="CharacterBody2D" groups=["enemies"]]
+z_index = 4
+collision_layer = 4
+collision_mask = 17
+motion_mode = 1
+script = ExtResource("1_heavy")
+Behaviour = 1
+WalkSpeed = 45.0
+ChaseSpeed = 100.0
+SwingRange = 24.0
+Look = ExtResource("anim")
+Stride = 110.0
+PickupScene = ExtResource("3_pickup")
+Fists = ExtResource("4_fists")
+
+[node name="Legs" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("anim")
+animation = &"legs"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("body")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Alive" type="Node2D" parent="Visual"]
+
+[node name="Gun" parent="Visual/Alive" instance=ExtResource("2_gun")]
+
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual/Alive"]
+sprite_frames = ExtResource("anim")
+animation = &"idle"
+
+[node name="Corpse" type="Node2D" parent="Visual"]
+visible = false
+
+[node name="Body" type="AnimatedSprite2D" parent="Visual/Corpse"]
+sprite_frames = ExtResource("anim")
+animation = &"lie_dead"
+
+[node name="DeathSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_death")
+volume_db = -12.0

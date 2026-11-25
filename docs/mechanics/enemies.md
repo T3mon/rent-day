@@ -76,7 +76,20 @@ Set per enemy in the level:
 - It carries nothing, so it drops nothing.
 - Sounds: a bark when it spots you (**Bark Sound**) and a snap of the jaws when it bites (**Bite Sound**). It dies silently.
 
+## Heavy enemy
+
+`enemies/heavy.tscn`: a big man with bare fists, far wider than anyone else, who sees and hears like anyone. His art is drawn by `tools/anim/heavy.py`.
+
+- **Routine:** patrols (**Walk Speed** 45, slower than anyone).
+- **Seeing you:** he grunts and walks straight at you (**Chase Speed** 100, slower than you), around walls. Once you're within **Swing Range** (24 px) he swings his fist (`weapons/heavy_fists.tres`, reach 16 px), and it kills you. A dash goes through the swing, like through a bullet.
+- **Only bullets hurt him.** A bat, a knife, punches, door slams and thrown things do nothing, and he can't be grabbed or stealth-killed.
+- **Bleeding out:** every bullet is a hit. At **Max Hits** (5) he dies at once. Before that he bleeds out, sooner the more hits he has, and keeps coming meanwhile: 1 hit about 6.4 s, 2 hits 4 s, 3 hits 2.3 s, 4 hits 1 s. Goo drips behind him while he bleeds, faster the more hits he has.
+- A shotgun blast kills him at once (5 of its 7 pellets hit him even from 100 px away): the shotgun is the answer to him.
+- Each bullet takes **Slow Per Hit** (12 px/s) off his chasing speed.
+- He carries nothing, so he drops nothing.
+- Sounds: none yet for his grunt (**Grunt Sound**); his swing uses the punch's whoosh and hit for now.
+
 ## Going for guns
 
-An enemy with no weapon runs to the nearest weapon he can see (gun, bat or knife) and picks it up. Enemies never punch. He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room. He doesn't go for one behind a glass pane until the glass is shattered.
+An enemy with no weapon runs to the nearest weapon he can see (gun, bat or knife) and picks it up. Enemies never punch (the heavy enemy has only his fists). He can reach a gun that landed where nobody fits, up to an arm's length away, but never one across a room. He doesn't go for one behind a glass pane until the glass is shattered.
 Enemies with guns never run out of ammo.
