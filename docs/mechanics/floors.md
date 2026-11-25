@@ -16,7 +16,12 @@ The building is played floor by floor, bottom to top.
 
 ## Restarting and the end
 
-- R restarts the current floor, with the gun you came up the stairs with.
+- Dying: the camera punches in on your body, the floor goes neon, and a stopped tape display shows how long you
+  lasted and REWIND with the restart key. It never holds you up.
+- R restarts the current floor, with the gun you came up the stairs with, on any frame.
+- The fresh floor is yours at once. Over it, the try before plays back for a moment: everyone who moved races home
+  the way they went as a see-through ghost, under the living and in nobody's way, and the tape counter spins back to
+  0:00:00, then PLAY. Nothing waits for it.
 - The last floor has no stairs up. Clearing it shows "RENT COLLECTED". R then starts again from the first floor, empty-handed.
 
 ## The edge of the map

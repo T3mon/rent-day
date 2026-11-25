@@ -12,8 +12,21 @@ public static class Afterimage
 
 	public static void Leave(Node2D who)
 	{
-		// Slowed: above slow motion's look (z 7), under you (lifted to 9 meanwhile). Otherwise just under you (z 4).
-		var ghost = new Node2D { ZIndex = SlowMotion.On ? 8 : 3, ZAsRelative = false, Modulate = Fresh, Material = Flat };
+		Node2D ghost = Silhouette(who);
+		ghost.ZIndex = SlowMotion.On ? 8 : 3; // slowed: above slow motion's look (z 7), under you (lifted to 9 meanwhile). Otherwise just under you (z 4).
+		ghost.ZAsRelative = false;
+		ghost.Modulate = Fresh;
+		who.GetTree().CurrentScene.AddChild(ghost);
+		Tween fade = ghost.CreateTween().SetIgnoreTimeScale();
+		fade.TweenProperty(ghost, "modulate", Gone, Life);
+		fade.TweenCallback(Callable.From(ghost.QueueFree));
+	}
+
+	// How someone looks this moment, where they stand, as one flat silhouette in its modulate colour (not added to
+	// anything yet). The rewind's ghosts (Rewind) are made of these too.
+	public static Node2D Silhouette(Node2D who)
+	{
+		var ghost = new Node2D { Material = Flat };
 		foreach (Node node in who.FindChildren("*", "", true, false))
 		{
 			if (node is not CanvasItem { Visible: true } part || !part.IsVisibleInTree())
@@ -31,9 +44,6 @@ public static class Afterimage
 			copy.UseParentMaterial = true;
 			ghost.AddChild(copy);
 		}
-		who.GetTree().CurrentScene.AddChild(ghost);
-		Tween fade = ghost.CreateTween().SetIgnoreTimeScale();
-		fade.TweenProperty(ghost, "modulate", Gone, Life);
-		fade.TweenCallback(Callable.From(ghost.QueueFree));
+		return ghost;
 	}
 }

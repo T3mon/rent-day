@@ -116,7 +116,7 @@ public partial class Menu
 	// Listed by hand: walking the project's folders for them took over half a second. A new shader goes here.
 	internal static readonly string[] Shaders =
 		{ "res://art/goo_canvas.gdshader", "res://art/goo_stamp.gdshader", "res://art/vignette.gdshader", "res://ui/pause.gdshader",
-		  "res://effects/slow_motion.gdshader", "res://effects/afterimage.gdshader" };
+		  "res://effects/slow_motion.gdshader", "res://effects/afterimage.gdshader", "res://ui/death.gdshader" };
 
 	private void WarmUp(ulong now)
 	{

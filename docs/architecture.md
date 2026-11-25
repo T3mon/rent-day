@@ -117,6 +117,18 @@ Gameplay rules are in [mechanics/](mechanics/).
   one at random each time, filling the screen (cropped to fit). Make them 400 x 225, the game screen's
   size in pixels, so each picture pixel is one game pixel; a bigger one is shrunk on screen and loses
   its crisp pixels.
+- **`ui/DeathScreen.cs`**: what you see when you die (`Main` adds it). On its own layer, over the floor and under
+  the HUD and the Esc menu, `ui/death.gdshader` zooms in on your body and turns the floor neon; over that, the Esc
+  menu's tape display has stopped (its tracking band, scanlines and counter: `Menu.Band`, `Menu.Lines`,
+  `Menu.Timecode`), with the restart key and REWIND in the top left. Its beats are milliseconds of real time after
+  you die; R restarts the floor on any frame, as always, and the fresh floor plays the try back (`Rewind`).
+- **`ui/Rewind.cs`**: R played back, without holding anything up. `Main` keeps a tape of the floor (`Rewind.Record`:
+  where you and every enemy have been, a point every 4 px they move) and hands it to the fresh floor on R
+  (`Rewind.Take`). That floor is yours at once; over it, everyone who moved races home the way they went, as
+  see-through pink and cyan ghosts (`Afterimage.Silhouette`, z 3, under the living) that melt into the real ones in
+  0.35 s. Meanwhile the death screen's REWIND stays up with its key pressed (`DeathScreen.Sign`), a tracking band
+  races up and the counter spins back to 0:00:00, then PLAY for a second. The top-left sign gives way to the
+  HUD's dash and battery.
 - **`core/Music.cs`**: all music, one player that outlives scene changes (menu song, floor songs, the
   clear song, skip, shuffle, loop, volume). Rules in [mechanics/music.md](mechanics/music.md).
 - **`core/SaveGame.cs`**: one JSON file per named playthrough in `Documents/My Games/Rent Day/Saves`
@@ -170,7 +182,7 @@ Gameplay rules are in [mechanics/](mechanics/).
 - Draw order, bottom to top (z index): floor and rugs 0, goo 1, corpses, floor guns and clutter 2,
   furniture and doors 3 (bodies and goo go under them), the living 4, walls 5 (over everyone, so
   brushing a wall never looks like being stuck in it), sparks, smoke and flying goo 6, stairs and
-  slow motion's tint 7, bullets and afterimages 8 (a dash's at normal speed: 3), and you while slowed 9. Set with each scene's
+  slow motion's tint 7, bullets and afterimages 8 (a dash's at normal speed, and the rewind's ghosts: 3), and you while slowed 9. Set with each scene's
   z index, or in code where the thing is made.
 - Tuning values live in the Inspector (scene and data files), not in code.
 - **Every ability with a recharge shows it the dash's way** (`Main.DrawDash`): a 16 px square (`Main.Tile`) in the

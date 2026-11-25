@@ -520,7 +520,7 @@ StartWeapon = ExtResource("uzi")
 
 [node name="Enemy11" parent="." unique_id=1931120906 instance=ExtResource("enemy")]
 position = Vector2(424, 431)
-Pose = 10
+Pose = 9
 Look = ExtResource("b_look")
 StartWeapon = ExtResource("bat")
 

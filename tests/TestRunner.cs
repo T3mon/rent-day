@@ -52,6 +52,8 @@ public partial class TestRunner : SceneTree
 		await DashDodges();
 		await DodgerDodges();
 		await DrinkerThrows();
+		await DeathScreenShows();
+		await RewindPlaysBack();
 	}
 
 	private async Task Frames(int n)
@@ -229,6 +231,61 @@ public partial class TestRunner : SceneTree
 		bullet.GlobalPosition = at.GlobalPosition + side * 30f;
 		bullet.Rotation = (-side).Angle();
 		return bullet;
+	}
+
+	// You die on a floor: the death screen comes up and plays all the way through.
+	private async Task DeathScreenShows()
+	{
+		var main = GD.Load<PackedScene>("res://main.tscn").Instantiate<Main>();
+		Root.AddChild(main);
+		CurrentScene = main;
+		await Frames(30);
+		((Player)GetFirstNodeInGroup("player")).Die(Vector2.Right);
+		ulong died = Time.GetTicksMsec();
+		while (Time.GetTicksMsec() - died < 1100) // its beats are in real time: past the last, and a blink
+			await Frames(1);
+		var problems = new List<string>();
+		if (main.GetChildren().OfType<DeathScreen>().Count() != 1)
+			problems.Add("no death screen after the player died");
+		Check("dying shows the death screen", problems);
+		main.Free();
+		await Frames(1);
+		Engine.TimeScale = 1;
+	}
+
+	// You walk a little and press R: the fresh floor is up straight away and nothing waits (not paused, full speed),
+	// and over it the try plays back, with a ghost for you; after its last beat it's gone.
+	private async Task RewindPlaysBack()
+	{
+		var main = GD.Load<PackedScene>("res://main.tscn").Instantiate<Main>();
+		Root.AddChild(main);
+		CurrentScene = main;
+		await Frames(5);
+		var player = (Player)GetFirstNodeInGroup("player");
+		for (int i = 0; i < 10; i++) // 60 px along
+		{
+			player.GlobalPosition += new Vector2(6, 0);
+			await Frames(1);
+		}
+		await Press("restart");
+		ulong pressed = Time.GetTicksMsec();
+		var problems = new List<string>();
+		Rewind rewind = CurrentScene?.GetChildren().OfType<Rewind>().SingleOrDefault();
+		if (CurrentScene is not Main fresh || fresh == main)
+			problems.Add("R didn't start the floor over");
+		else if (rewind == null)
+			problems.Add("no rewind over the fresh floor");
+		else if (!rewind.GetChildren().OfType<Node2D>().Any())
+			problems.Add("no ghost for the player, who moved");
+		if (Paused || Engine.TimeScale != 1)
+			problems.Add($"the fresh floor waits: paused {Paused}, game speed {Engine.TimeScale}");
+		while (Time.GetTicksMsec() - pressed < 1500) // its beats are in real time: past the last
+			await Frames(1);
+		if (IsInstanceValid(rewind))
+			problems.Add("the rewind is still up after its last beat");
+		Check("R plays the try back over the fresh floor, which nothing holds up", problems);
+		CurrentScene.Free();
+		await Frames(1);
 	}
 
 	private void Check(string what, IEnumerable<string> problems)

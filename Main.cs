@@ -6,8 +6,9 @@ namespace RentDay;
 
 // The top of a run. Plays the floors in order: kill every enemy on a floor and its stairs
 // up open; walk onto them and you're on the next floor, holding the gun you came with.
-// Holds the on-screen messages and ammo counter, and handles restarting. Every floor start saves the
-// playthrough (SaveGame); Esc (or switching to another window) opens the Esc menu (Menu).
+// Holds the on-screen messages and ammo counter, puts up the death screen (DeathScreen), and handles restarting
+// (the fresh floor plays the try back: Rewind). Every floor start saves the playthrough (SaveGame); Esc (or
+// switching to another window) opens the Esc menu (Menu).
 // A run starts from the main menu: NewGame, or Continue a saved playthrough.
 public partial class Main : Node2D
 {
@@ -94,7 +95,12 @@ public partial class Main : Node2D
 
 		// Groups are tags set in the scenes: everyone tagged "player" / "enemies".
 		_player = (Player)GetTree().GetFirstNodeInGroup("player");
-		_player.Died += () => ShowMessage("YOU'RE DEAD\npress R");
+		_player.Died += () =>
+		{
+			_message.Visible = false; // FLOOR CLEAR, if it's still up
+			_note.Visible = false;    // and NOW PLAYING: the rest of the HUD clears itself when you die
+			AddChild(new DeathScreen { Body = _player });
+		};
 		if (_testing && _inNewRoom && level.FindChild("NewRoomStart", false, false) is Node2D start)
 		{
 			_player.GlobalPosition = start.GlobalPosition;
@@ -131,6 +137,7 @@ public partial class Main : Node2D
 			SaveGame.Write(_save, Checkpoint());
 		_songShown = Music.Started;
 		Music.Floor(this, _floor); // keeps playing through a death or a restart
+		Rewind.Start(this);        // this floor's tape; after R, the try before played back over it
 	}
 
 	// The edge of the map stops everyone, you and anyone thrown: four thick sides just outside it, on the
@@ -255,9 +262,12 @@ public partial class Main : Node2D
 				_floor = 0;
 				_carried = null;
 			}
+			else if (!_leaving) // on the stairs, R only hurries the next floor in
+				Rewind.Take(Time.GetTicksMsec() - FloorStarted); // the fresh floor plays this try back over itself
 			GetTree().ReloadCurrentScene();
 			return; // this scene has just left the tree: nothing more to update
 		}
+		Rewind.Record();
 
 		UpdateAmmo();
 		UpdateBattery();

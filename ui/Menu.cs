@@ -451,19 +451,29 @@ public partial class Menu : Control
 	private void Scanlines(ulong now)
 	{
 		if (_view != View.Settings && Settings.Flashes)
+			Band(this, (int)(now / 38 % (H + 40)) - 20, now);
+		Lines(this);
+	}
+
+	// The tracking band, from row y down: a light band with streaks, `strength` times as bright and busy.
+	// The death screen draws it too.
+	internal static void Band(CanvasItem on, int y, ulong now, float strength = 1f)
+	{
+		for (int k = 0; k < 7; k++)
+			on.DrawRect(new Rect2(0, y + k, W, 1), new Color(220 / 255f, 220 / 255f, 1f, Math.Min((0.05f + 0.04f * Mathf.Sin(k + now / 90f)) * strength, 1f)));
+		uint s = (uint)(now / 60);
+		for (uint k = 0; k < 26 * strength; k++)
 		{
-			int y = (int)(now / 38 % (H + 40)) - 20;
-			for (int k = 0; k < 7; k++)
-				R(0, y + k, W, 1, new Color(220 / 255f, 220 / 255f, 1f, 0.05f + 0.04f * Mathf.Sin(k + now / 90f)));
-			uint s = (uint)(now / 60);
-			for (uint k = 0; k < 26; k++)
-			{
-				s = Hash(s + k * 7);
-				R(s % W, y + (s >> 8) % 7, 2 + (s >> 4) % 10, 1, new Color(1f, 1f, 1f, 0.35f));
-			}
+			s = Hash(s + k * 7);
+			on.DrawRect(new Rect2(s % W, y + (s >> 8) % 7, 2 + (s >> 4) % 10, 1), new Color(1f, 1f, 1f, 0.35f));
 		}
+	}
+
+	// Scanlines: every other row a little darker. The death screen draws them too.
+	internal static void Lines(CanvasItem on)
+	{
 		for (int y = 0; y < H; y += 2)
-			R(0, y, W, 1, new Color(0f, 0f, 0f, 0.26f));
+			on.DrawRect(new Rect2(0, y, W, 1), new Color(0f, 0f, 0f, 0.26f));
 	}
 
 	// PLAY or PAUSE in the top left, the timecode in the bottom right (on the Esc menu: time on this floor).
@@ -474,8 +484,14 @@ public partial class Menu : Control
 			PauseSign(16 + w + 7, 15, Colors.White);
 		else
 			Tri(16 + w + 7, 15, Colors.White);
-		ulong sec = (Paused ? _opened - Main.FloorStarted : now - _opened) / 1000;
-		Osd($"SP {sec / 3600}:{sec / 60 % 60:00}:{sec % 60:00}", W - 16, H - 12, Colors.White, HorizontalAlignment.Right);
+		Osd(Timecode(Paused ? _opened - Main.FloorStarted : now - _opened), W - 16, H - 12, Colors.White, HorizontalAlignment.Right);
+	}
+
+	// A tape counter: SP h:mm:ss. The death screen's stops at how long you lasted on the floor.
+	internal static string Timecode(ulong ms)
+	{
+		ulong sec = ms / 1000;
+		return $"SP {sec / 3600}:{sec / 60 % 60:00}:{sec % 60:00}";
 	}
 
 	// ---------------------------------------------------------------- the pieces every page is made of

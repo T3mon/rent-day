@@ -254,7 +254,7 @@ position = Vector2(148, 196)
 FacingDegrees = 135.0
 
 [node name="Dodger" parent="." unique_id=1543051937 instance=ExtResource("dodger")]
-position = Vector2(1060, 372)
+position = Vector2(1057.225, 337.9)
 FacingDegrees = 270.0
 
 [node name="NewRoomStart" type="Marker2D" parent="." unique_id=1847290361]
