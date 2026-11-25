@@ -19,7 +19,7 @@ They run by themselves before every `git push`, and a failure stops the push. `g
 Switches and tools for testing the game: in the admin panel (F1 while playing), or in `debug/dev_settings.tres`.
 
 - They only work in runs started from the editor. Exported builds ignore them and have no admin panel.
-- **Admin panel (F1):** pauses the game; F1 or Esc closes it. Switches flip live and are saved to `debug/dev_settings.tres`, so the next run starts with them too.
+- **Admin panel (F1):** pauses and dims the game; F1 or Esc closes it. Switches flip live and are saved to `debug/dev_settings.tres`, so the next run starts with them too. Switches are on the left, tools on the right. A cyan square marks anything changed from a normal game, the title counts them, and hovering a switch explains it. Keyboard and gamepad work too.
 - Or set them in the Inspector, then press play and pick New game on the menu (or run `main.tscn` with F6 to skip the menu).
 - The repository stores the normal (default) values. Changing them locally does not change the repository.
 - Active switches are listed in the top-right corner while playing, so a cheat is never mistaken for a bug.
@@ -27,12 +27,13 @@ Switches and tools for testing the game: in the admin panel (F1 while playing), 
 Available switches:
 - **Enemies see you:** off makes enemies blind to you (they still patrol, wander and hear shots).
 - **Enemies hear shots:** off makes your gunshots alert nobody.
-- **Enemies shoot:** off lets enemies spot and aim at you but never fire.
+- **Enemies shoot** ("Attack" in the panel): off lets enemies spot and aim at you but never shoot or swing.
 - **Start weapon:** start the level holding a chosen gun.
 - **Start floor:** New game starts on a later floor (1 = the first, as normal). Loading a save always goes to the save's floor.
 - **Infinite ammo:** your guns never run dry.
 - **God mode:** you can't die.
 - **Infinite slow motion:** the slow-motion meter never runs dry.
+- **No cooldowns:** abilities are ready again as soon as they end. So far that's the dash.
 - **Show enemy info:** draws what each enemy sees and where he is heading, and the noise radius of each shot.
 - **Red goo:** all goo is plain red blood instead of mixed colours.
 

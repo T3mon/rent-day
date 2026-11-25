@@ -194,7 +194,7 @@ public partial class Player : Character
 		{
 			_dashDirection = direction != Vector2.Zero ? direction.Normalized() : Vector2.Right.Rotated(Visual.Rotation);
 			_dashLeft = DashTime;
-			DashWait = DashCooldown;
+			DashWait = DevSettings.Current.NoCooldowns ? DashTime : DashCooldown; // ready again once it ends
 			_dashSound.Play();
 			Vector2 way = _dashDirection.Rotated(-Visual.Rotation); // from where he aims, which he keeps facing
 			float off = Mathf.Abs(way.Angle());

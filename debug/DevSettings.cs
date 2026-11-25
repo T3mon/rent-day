@@ -19,6 +19,7 @@ public partial class DevSettings : Resource
 	[Export] public bool InfiniteAmmo;            // your guns never run dry
 	[Export] public bool GodMode;                 // you can't die
 	[Export] public bool InfiniteSlowMotion;      // the slow-motion meter never runs dry
+	[Export] public bool NoCooldowns;             // abilities (so far the dash) are ready again as soon as they end
 	[Export] public int StartFloor = 1;           // start on this floor (1 = the first, as normal)
 
 	[ExportGroup("Show")]
@@ -43,6 +44,7 @@ public partial class DevSettings : Resource
 		if (InfiniteAmmo) on.Add("INF AMMO");
 		if (GodMode) on.Add("GOD MODE");
 		if (InfiniteSlowMotion) on.Add("INF SLOWMO");
+		if (NoCooldowns) on.Add("NO COOLDOWNS");
 		if (StartFloor > 1) on.Add("FLOOR " + StartFloor);
 		if (ShowEnemyInfo) on.Add("ENEMY INFO");
 		if (RedGoo) on.Add("RED GOO");
