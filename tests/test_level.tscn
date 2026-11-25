@@ -248,3 +248,6 @@ StartWeapon = ExtResource("uzi")
 position = Vector2(1060, 380)
 FacingDegrees = 270.0
 StayInRoom = true
+
+[node name="NewRoomStart" type="Marker2D" parent="." unique_id=1847290361]
+position = Vector2(1180, 80)

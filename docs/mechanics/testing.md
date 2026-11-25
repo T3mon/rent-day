@@ -45,7 +45,7 @@ Tools, in the admin panel only:
 
 # Test level
 
-`tests/test_level.tscn`, reached from the admin panel (Go to, Test level). It's not one of the floors, and exports leave it out with the rest of `tests/`. You start in a hall with every weapon at your feet. Five rooms open off it, each named on the floor by its door:
+`tests/test_level.tscn`, reached from the admin panel (Go to, Test level), or from the main menu's **TEST ROOM** (debug runs only). TEST ROOM puts you straight into the NEW room, at the `NewRoomStart` marker (move it in the editor), with the admin panel open; R keeps you there. It's not one of the floors, and exports leave it out with the rest of `tests/`. You start in a hall with every weapon at your feet. Five rooms open off it, each named on the floor by its door:
 
 - **Guns:** a guard, a smoker with a shotgun, a patroller with an uzi.
 - **Melee:** a patroller with a bat, a guard with a knife.

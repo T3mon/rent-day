@@ -89,9 +89,15 @@ public partial class Menu : Control
 	}
 
 	// ---------------------------------------------------------------- what's on each page
-	private string[] MainItems() => _saves.Count > 0
-		? new[] { "CONTINUE", "NEW GAME", "LOAD", "SETTINGS", "QUIT" }
-		: new[] { "NEW GAME", "LOAD", "SETTINGS", "QUIT" };
+	private string[] MainItems()
+	{
+		var items = new List<string> { "NEW GAME", "LOAD", "SETTINGS", "QUIT" };
+		if (_saves.Count > 0)
+			items.Insert(0, "CONTINUE");
+		if (OS.IsDebugBuild() && ResourceLoader.Exists(Main.TestLevelPath)) // the test level's NEW room; exports leave it out
+			items.Insert(items.Count - 1, "TEST ROOM");
+		return items.ToArray();
+	}
 
 	private int Count() => _view switch
 	{
@@ -131,6 +137,7 @@ public partial class Menu : Control
 						_col = 0;
 						break;
 					case "SETTINGS": Go(View.Settings); break;
+					case "TEST ROOM": Main.GoToTestRoom(GetTree()); break;
 					case "MUSIC":
 						Go(View.Music);
 						_sel = Math.Max(Music.Current, 0); // starts on the song playing

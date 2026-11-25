@@ -23,6 +23,8 @@ public partial class Main : Node2D
 	private static int _carriedAmmo;
 	private static bool _arriving;
 	private static bool _testing; // on the test level instead of a floor: nothing is saved, and R restarts it
+	private static bool _inNewRoom; // ...starting in its NEW room (the menu's TEST ROOM), R included
+	private static bool _openPanel; // the admin panel opens on arrival (TEST ROOM), once
 	private static string _save, _name; // the playthrough: its save's file (null in a test run of main.tscn) and name
 	private static readonly PackedScene MenuScene = GD.Load<PackedScene>(Menu.ScenePath);
 
@@ -64,11 +66,15 @@ public partial class Main : Node2D
 		_ammo = GetNode<Label>("HUD/Ammo");
 		_fade = new ColorRect { Color = Colors.Black, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_fade.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		_arriving &= !_openPanel; // no fade under the panel: pausing would hold it black
 		_fade.Modulate = _arriving ? Colors.White : Colors.Transparent;
 		GetNode("HUD").AddChild(_fade);
 		if (_arriving)
 			CreateTween().TweenProperty(_fade, "modulate:a", 0f, 0.3);
 		_arriving = false;
+		if (_openPanel)
+			CallDeferred(MethodName.OpenAdminPanel);
+		_openPanel = false;
 
 		// Short notes in the top left corner, in the menu's lettering: "NOW PLAYING  ...".
 		_note = new Label { Position = new Vector2(16, 6), Visible = false };
@@ -89,6 +95,11 @@ public partial class Main : Node2D
 		// Groups are tags set in the scenes: everyone tagged "player" / "enemies".
 		_player = (Player)GetTree().GetFirstNodeInGroup("player");
 		_player.Died += () => ShowMessage("YOU'RE DEAD\npress R");
+		if (_testing && _inNewRoom && level.FindChild("NewRoomStart", false, false) is Node2D start)
+		{
+			_player.GlobalPosition = start.GlobalPosition;
+			_player.GetNode<Camera2D>("Camera").ResetSmoothing(); // there at once, even under the paused panel
+		}
 		if (_carried != null)
 			_player.Equip(_carried, _carriedAmmo);
 		foreach (Node node in GetTree().GetNodesInGroup("enemies"))
@@ -159,9 +170,17 @@ public partial class Main : Node2D
 	// Testing (the admin panel): the test level, empty-handed. Going to a floor leaves it.
 	public static void GoToTestLevel(SceneTree tree) => Begin(tree, new SaveGame.Data(SaveGame.Version, _floor + 1, null, 0, DateTime.Now, _name), testing: true);
 
+	// The main menu's TEST ROOM shortcut: the test level's NEW room, with the admin panel open.
+	public static void GoToTestRoom(SceneTree tree)
+	{
+		GoToTestLevel(tree);
+		_inNewRoom = _openPanel = true;
+	}
+
 	private static void Begin(SceneTree tree, SaveGame.Data save, bool testing = false)
 	{
 		_testing = testing;
+		_inNewRoom = false;
 		_floor = save != null ? save.Floor - 1 : -1;
 		_carried = save != null ? SaveGame.WeaponOf(save) : null;
 		_carriedAmmo = _carried != null ? save.Ammo : 0;
@@ -173,6 +192,12 @@ public partial class Main : Node2D
 	private static SaveGame.Data Checkpoint() =>
 		new(SaveGame.Version, _floor + 1, _carried?.ResourcePath, _carried != null ? _carriedAmmo : 0, DateTime.Now, _name);
 
+	private void OpenAdminPanel()
+	{
+		GetNode("HUD").AddChild(new AdminPanel { FloorCount = Floors.Length, Changed = ShowDevInfo });
+		GetTree().Paused = true;
+	}
+
 	public override void _UnhandledInput(InputEvent e)
 	{
 		if (e.IsActionPressed("ui_cancel"))
@@ -183,8 +208,7 @@ public partial class Main : Node2D
 		else if (e.IsActionPressed("admin_panel") && OS.IsDebugBuild())
 		{
 			GetViewport().SetInputAsHandled();
-			GetNode("HUD").AddChild(new AdminPanel { FloorCount = Floors.Length, Changed = ShowDevInfo });
-			GetTree().Paused = true;
+			OpenAdminPanel();
 		}
 		else if (e.IsActionPressed("next_song"))
 			Music.Skip(1);

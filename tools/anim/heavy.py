@@ -93,8 +93,18 @@ def lying(spread=0.0, face_down=False, side=False):
         for y in (-4, 0, 4) if not side else (-2, 2):  # pouches
             capsule(body, at((5, y)), at((5, y)), 1.2, PLATE, VEST_DARK)
     head = Layer()
-    capsule(head, at((13, 0)), at((13.5, 0)), 4.0, SCALP if face_down else SKIN, SKIN_DARK)
-    if not face_down:  # staring eyes and a slack mouth, like everyone's dead face
+    if face_down:  # head turned to one side, so a cheek and one staring eye still show past the vest
+        capsule(head, at((15, 0)), at((16, 0)), 4.2, SKIN, SKIN_DARK)
+        capsule(head, at((13.5, -2.5)), at((15.5, -2.5)), 2.2, SCALP)
+        for x in (15, 16):
+            for y in (1, 2):
+                head.put(*at((x, y)), EYE)
+        head.put(*at((16, 1)), PANTS_DARK)  # the pupil
+        head.put(*at((13, 2)), PANTS_DARK)  # slack mouth
+        head.put(*at((13, 3)), PANTS_DARK)
+        head.put(*at((20, 0)), SKIN_DARK)
+    else:
+        capsule(head, at((13, 0)), at((13.5, 0)), 4.0, SKIN, SKIN_DARK)  # staring eyes and a slack mouth, like everyone's dead face
         for y in (-2, -1, 1, 2):
             head.put(*at((13, y)), EYE)
             head.put(*at((14, y)), EYE if abs(y) == 1 else PANTS_DARK)
