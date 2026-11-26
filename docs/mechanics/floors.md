@@ -35,12 +35,23 @@ The building is played floor by floor, bottom to top.
 
 ## Level design for floors
 
-- One floor = one level scene in `levels/`, listed in order in `main.tscn` (Main's Floors).
+- One floor = one level scene in `levels/` (`level_1.tscn` up), listed in order in `main.tscn` (Main's Floors).
+- A new floor can be drafted with the level builder (`tools/levels/`, see [architecture.md](../architecture.md)),
+  which checks the rules below that it can measure. After that, edit the scene in Godot.
 - Each floor has stairs up (its exit), except the last. Floors above the first also have the stairs you arrive on, with the player placed at their top.
 - Put the stairs up far from where you arrive, so the floor has to be crossed.
-- Leave a gun near where you arrive, for a player who comes up empty-handed.
+- Leave a gun near where you arrive, for a player who comes up empty-handed, and at most one more weapon lying about.
 - Stairs are walked onto, not around: keep furniture off them and leave a free approach.
 - No green anywhere in a level: green is the crosshair's colour, and it must always stand out.
+- Size: 2 to 2.7 screens of floor inside the walls (a screen is 400 x 225), in 6 to 8 rooms. One or two of
+  them small (110 x 110 or less), one or two left empty.
+- Enemies: about 6 or 7 per screen of floor, so 14 to 18 a floor, in groups of 2 to 4. Nobody waits alone:
+  every enemy that stays put has another within about 110 px. About a third carry a bat or a knife.
+- Room to move: halls 64 to 96 px wide, open doorways 40 to 96 px.
+- Few doors, 2 or 3 a floor; most rooms open into each other through gaps. Never one enemy alone behind a door.
+- Every floor has a room walled in glass, so you can see a fight before you walk into it.
+- From the second floor on, each floor brings in one new enemy type (dogs, the heavy, dodgers, shields); the
+  last floor mixes them all.
 - Mix the enemy behaviours: guards facing doorways, patrollers in corridors, wanderers in rooms.
 - Give guards and wanderers something to do (Pose, see [enemies.md](enemies.md)): sitters on a couch or
   chair (facing = 90 + the seat's rotation; seats face down at rotation 0), leaners with their back

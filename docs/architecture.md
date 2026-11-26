@@ -76,6 +76,20 @@ Gameplay rules are in [mechanics/](mechanics/).
     planks, parquet, red, purple, blue and teal carpet, pink and pool tiles, black and white checker, terracotta,
     cream stone, lavender lino, purple velvet, polished concrete). Every room gets its own, and rooms side
     by side never share one, so the floor plan reads by colour.
+- **Levels** can be drafted from a floor plan: **`tools/levels/`** (Python, no packages).
+  - In `build.py` a level is a function: rooms as rectangles on the 8 px wall grid with 8 px between them (that
+    gap becomes the inner wall, and a 16 px band round the lot the outer wall), the doorways, doors and glass cut
+    into those walls, then furniture, stairs, guns, enemies and the player. Props are placed by name: the builder
+    reads each one's collision boxes from its scene in `props/`.
+  - `floorplan.py` works out the rest (each wall piece and its material, the floor tiles, shadows, windows) and
+    checks the level: doors swing clear, no furniture in a wall or on other furniture, every room, enemy, gun and
+    the stairs up reachable from the start, nobody waiting alone, no two rooms side by side with the same floor tiles.
+  - `python tools/levels/build.py 3` prints level 3's numbers (screens of floor, enemies per screen, rooms) and
+    problems, and draws its plan to `tools/levels/plans/level_3.png`: enemies are circles (filled stays put, a
+    ring walks; cyan a gun, yellow a bat or knife, purple a dog, white the heavy, pink a dodger, blue a shield),
+    the player magenta, guns lying about red diamonds, stairs up yellow, doors orange with their swing.
+  - Add `--write` to write `levels/level_3.tscn`. It never writes over a level that's already there: once a level
+    is edited in Godot, the scene is the truth and its plan in `build.py` is only where it started.
 - **`props/Stairs.cs`**: stairs. Stairs up are the floor's exit: they open once every enemy is dead and
   call `Main.NextFloor`. Rules in [mechanics/floors.md](mechanics/floors.md).
 - **`props/Door.cs`**: swinging doors, pushed by walking into them or by bullets (`Shove`); they block
