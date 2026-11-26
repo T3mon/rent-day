@@ -142,8 +142,9 @@ public static class LevelGrid
 	// Is there a wall (not furniture, not a door) on the straight line from a to b?
 	public static bool WallBetween(Vector2 a, Vector2 b) => Between(a, b, Layers.World);
 
+	// _level is static, so the floor it was built for may be gone (tests in an empty world).
 	private static bool Between(Vector2 a, Vector2 b, uint mask) =>
-		_level != null && _level.GetWorld2D().DirectSpaceState.IntersectRay(PhysicsRayQueryParameters2D.Create(a, b, mask)).Count > 0;
+		GodotObject.IsInstanceValid(_level) && _level.GetWorld2D().DirectSpaceState.IntersectRay(PhysicsRayQueryParameters2D.Create(a, b, mask)).Count > 0;
 
 	private static bool Ready()
 	{

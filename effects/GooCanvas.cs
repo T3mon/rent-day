@@ -69,13 +69,14 @@ public partial class GooCanvas : Node2D
 	}
 
 	// Someone killed by a hit: drops burst out the way it went, a big splat, a smear where
-	// the body slides, and a pool spreading under it.
-	public static void Bleed(Vector2 at, Vector2 direction)
+	// the body slides, and a pool spreading under it (unless pool is false: the body still has somewhere to go).
+	public static void Bleed(Vector2 at, Vector2 direction, bool pool = true)
 	{
 		Splat(at, direction * 12f, (float)GD.RandRange(70.0, 100.0), direction.Angle() + (float)GD.RandRange(-0.4, 0.4));
 		Splat(at, direction * 14f, 30f, direction.Angle(), stretch: 2.5f, strength: 0.8f);
 		Spray(at, direction, 16);
-		PoolUnder(at, 60f);
+		if (pool)
+			PoolUnder(at, 60f);
 	}
 
 	public static void Footprint(Vector2 at, float angle, float strength)

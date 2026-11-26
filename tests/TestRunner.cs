@@ -247,7 +247,12 @@ public partial class TestRunner : SceneTree
 		var problems = new List<string>();
 		if (main.GetChildren().OfType<DeathScreen>().Count() != 1)
 			problems.Add("no death screen after the player died");
-		Check("dying shows the death screen", problems);
+		var body = GetFirstNodeInGroup("player").GetNode<AnimatedSprite2D>("Visual/Corpse/Body");
+		if (!body.Animation.ToString().StartsWith("die_"))
+			problems.Add($"the player's body plays {body.Animation}, not a dying animation");
+		else if (!body.IsPlaying() && body.Frame != body.SpriteFrames.GetFrameCount(body.Animation) - 1)
+			problems.Add($"{body.Animation} stopped on frame {body.Frame}, not on its last");
+		Check("dying shows the death screen, and the body plays a dying animation", problems);
 		main.Free();
 		await Frames(1);
 		Engine.TimeScale = 1;
@@ -361,7 +366,7 @@ public partial class TestRunner : SceneTree
 		var everyone = new List<string> { "legs", "punch", "pickup", "throw", "push_l", "push_r", "lie_fall", "lie_dead", "lie_dead_lean", "lie_slump", "lie_splat", "lie_getup", "lie_slump_getup" };
 		everyone.AddRange(kinds.SelectMany(k => new[] { k + "idle", k + "walk" }));
 		everyone.AddRange(kinds.Where(k => k != "" && k != "gun_").Select(k => k + "swing"));
-		var player = new List<string> { "choke", "fin_knife", "fin_bat", "fin_fists", "kick", "shield_grab", "snap", "shove" };
+		var player = new List<string> { "choke", "fin_knife", "fin_bat", "fin_fists", "kick", "shield_grab", "snap", "shove", "die_kick", "die_crawl", "die_one_arm" };
 		player.AddRange(kinds.Select(k => k + "shield"));
 		player.AddRange(kinds.SelectMany(k => "fblr".Select(way => k + "dash_" + way)));
 		var enemy = new List<string> { "held" };

@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import puppet as pp
 import anims as an
 import headband as hb
+import dying
 
 OUT = pp.PROJECT + 'art/anim/'
 
@@ -24,6 +25,7 @@ def save_strip(path, frames, size):
 
 
 EXTRA = {'dodger': an.dodge_animations}  # a character's own animations, on top of everyone's
+DYING = {'player'}  # who has the dying animations (dying.py)
 
 
 def build(name):
@@ -38,6 +40,8 @@ def build(name):
         anims[key] = ([an.render(ch, p) for p, ms in frames], [ms for p, ms in frames], 72)
     for key, frames in an.lying_animations().items():
         anims['lie_' + key] = ([an.lying_frame(ch, spec) for spec, ms in frames], [ms for spec, ms in frames], 72)
+    if name in DYING:
+        anims.update(dying.animations(ch))
     legs = pp.walk_legs(ch)
     anims['legs'] = (legs, [100] * len(legs), 28)
     write(name, anims)
@@ -45,9 +49,10 @@ def build(name):
 
 
 def write(name, anims):
-    """anims: {animation: (frames, milliseconds per frame, frame size)}. Saves the strips and the SpriteFrames."""
+    """anims: {animation: (frames, milliseconds per frame, frame size[, slide per frame])}. Saves the strips and the
+    SpriteFrames; a slide goes in as metadata slide_<animation> (Character paints goo along it)."""
     os.makedirs(OUT + name, exist_ok=True)
-    for key, (frames, ms, size) in anims.items():
+    for key, (frames, ms, size, *_) in anims.items():
         save_strip(f'{OUT}{name}/{key}.png', frames, size)
     # SpriteFrames: one animation per sheet, frame durations in seconds (speed 1). Written exactly as the
     # editor saves it (ids on every picture, animations by name, one value per line), or saving a level
@@ -59,7 +64,7 @@ def write(name, anims):
     ids = {key: i for i, key in enumerate(anims)}
     subs = []
     for key in sorted(anims):
-        frames, ms, size = anims[key]
+        frames, ms, size, *_ = anims[key]
         i, fr = ids[key], []
         for j in range(len(frames)):
             sid = f'a{i}_{j}'
@@ -70,7 +75,9 @@ def write(name, anims):
     path = f'{OUT}{name}.tres'
     uid = _uid(path)
     head = '[gd_resource type="SpriteFrames" format=3%s]' % (f' uid="{uid}"' if uid else '')
-    text = head + '\n\n' + '\n'.join(res) + '\n\n' + '\n'.join(subs) + '\n[resource]\nanimations = [' + ', '.join(entries) + ']\n'
+    meta = ''.join(f'metadata/slide_{key} = PackedFloat32Array({", ".join(map(str, a[3]))})\n'
+                   for key, a in sorted(anims.items()) if len(a) > 3)
+    text = head + '\n\n' + '\n'.join(res) + '\n\n' + '\n'.join(subs) + '\n[resource]\nanimations = [' + ', '.join(entries) + ']\n' + meta
     open(path, 'w', encoding='utf-8', newline='\n').write(text)
 
 
@@ -78,7 +85,9 @@ def _uid(path):
     """The uid at the top of a .tres or in a .import file, or None."""
     if not os.path.exists(path):
         return None
-    m = re.search(r'uid="(uid://\w+)"', open(path, encoding='utf-8').readline())  # the first line only: not a picture's
+    f = open(path, encoding='utf-8')
+    text = f.read() if path.endswith('.import') else f.readline()  # a .tres: the first line only, not a picture's
+    m = re.search(r'uid="(uid://\w+)"', text)
     return m and m.group(1)
 
 
@@ -89,4 +98,4 @@ LOOPS = {'idle', 'walk', 'gun_idle', 'gun_walk', 'bat_idle', 'bat_walk', 'knife_
 if __name__ == '__main__':
     for name in sys.argv[1:] or ('player', 'enemy_a', 'enemy_b', 'enemy_c', 'enemy_d', 'riot', 'dodger'):
         anims = build(name)
-        print(name, len(anims), 'animations', sum(len(f) for f, m, s in anims.values()), 'frames')
+        print(name, len(anims), 'animations', sum(len(a[0]) for a in anims.values()), 'frames')

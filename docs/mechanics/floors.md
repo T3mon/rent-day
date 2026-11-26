@@ -18,6 +18,11 @@ The building is played floor by floor, bottom to top.
 
 - Dying: the camera punches in on your body, the floor goes neon, and a stopped tape display shows how long you
   lasted and REWIND with the restart key. It never holds you up.
+- Shot standing, your body plays one of three dying animations, picked at random, along the way the shot went: blown
+  back into a skid with a last kick, a crawl face down, or hauling yourself along on your back with one hand on your
+  gut. They twitch and jerk rather than glide. Goo smears along where you slide and pools where you stop; the
+  last pose holds. With a wall within 44 px that way, you just fall,
+  so walls never hide you.
 - R restarts the current floor, with the gun you came up the stairs with, on any frame.
 - The fresh floor is yours at once. Over it, the try before plays back for a moment: everyone who moved races home
   the way they went as a see-through ghost, under the living and in nobody's way, and the tape counter spins back to

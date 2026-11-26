@@ -23,7 +23,8 @@ Gameplay rules are in [mechanics/](mechanics/).
   which is the character's `Look`. Poses and timings are in `tools/anim/anims.py`; rebuild with
   `python tools/anim/build.py`. A new outfit: its hand-drawn sprites in `art/` (or a recolour of an
   existing enemy in `tools/anim/outfits.py`), its name in `build.py`. A melee weapon's animations are named after it (`bat_swing`), so a new one needs
-  poses there too.
+  poses there too. The player's dying animations (`die_kick`, `die_crawl`, `die_one_arm`, 104 x 104 so the slide
+  fits) are in `tools/anim/dying.py`; `Character.Die` plays one at random when a look has any `die_*`, and paints goo along its slide (`slide_<name>` metadata, per frame).
 - **Walking:** the legs (and the arms swinging in step) run a 12-frame walk cycle driven by distance
   moved, not time: one full cycle (left foot, then right) per `Stride` pixels, set per character
   (player 133: about 180 steps a minute at top speed, a running rhythm; enemies 80: a stroll on patrol,

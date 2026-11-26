@@ -62,9 +62,12 @@ public partial class Character : CharacterBody2D
 	// One footprint per this many pixels travelled (set apart from Stride, so goo trails stay dense).
 	private const float StepLength = 20f;
 	private const int DeadFaceDown = 1; // lie_dead's frames: on the back, face down, on the side
+	private const float DyingReach = 44f; // a dying animation's slide, the knock back and his head past it
 
 	private AnimatedSprite2D _bodySprite;
 	private AnimatedSprite2D _corpseBody;
+	private float[] _slide;   // a dying animation's slide along the hit, per frame (null: not sliding, or done)
+	private float _smearedTo; // how far along it goo is painted
 	private AnimatedSprite2D _legs;
 	private Node2D _alive;
 	private Node2D _corpse;
@@ -107,6 +110,7 @@ public partial class Character : CharacterBody2D
 			if (_corpseBody.Animation == "lie_fall") // landed: the pose he stays in
 				ShowOnFloor("lie_dead", _deadPose);
 		};
+		_corpseBody.FrameChanged += SmearSlide;
 		Equip(StartWeapon, StartWeapon?.Ammo ?? 0);
 	}
 
@@ -227,7 +231,8 @@ public partial class Character : CharacterBody2D
 
 		// Already on the floor: he stays as he lies (slumped against a wall, he slumps over).
 		// Standing: he falls the way the bullet was going, into a random death pose (sometimes
-		// mirrored); choked out, face down.
+		// mirrored); choked out, face down. A look with dying animations (die_*: the player's) plays
+		// one of those instead, unless a wall is in the way of its slide (walls would hide him).
 		_corpseBody.Rotation = 0f;
 		if (_slumped)
 			ShowOnFloor("lie_dead_lean");
@@ -238,14 +243,21 @@ public partial class Character : CharacterBody2D
 			_deadPose = lethal ? GD.RandRange(0, _corpseBody.SpriteFrames.GetFrameCount("lie_dead") - 1) : DeadFaceDown;
 			_corpseBody.FlipV = GD.Randf() < 0.5f;
 			Visual.Rotation = hitDirection.Angle();
-			ShowOnFloor("lie_fall");
+			bool room = !LevelGrid.WallBetween(GlobalPosition, GlobalPosition + hitDirection.Normalized() * DyingReach);
+			string[] dying = lethal && room ? System.Array.FindAll(_corpseBody.SpriteFrames.GetAnimationNames(), a => a.StartsWith("die_")) : [];
+			ShowOnFloor(dying.Length > 0 ? dying[GD.RandRange(0, dying.Length - 1)] : "lie_fall");
+			if (dying.Length > 0)
+			{
+				_slide = _corpseBody.SpriteFrames.GetMeta("slide_" + _corpseBody.Animation).AsFloat32Array();
+				_smearedTo = 0f;
+			}
 		}
 		IsDown = false;
 		ShowLying(true);
 
 		// Goo bursts out the way the bullet went, splats, and pools under the body.
 		if (lethal)
-			GooCanvas.Bleed(GlobalPosition, hitDirection);
+			GooCanvas.Bleed(GlobalPosition, hitDirection, pool: _slide == null); // a sliding body pools where it stops
 
 		// The body is knocked back a little in the direction of the shot (not into the wall he sits against).
 		if (!_slumped)
@@ -385,6 +397,26 @@ public partial class Character : CharacterBody2D
 		_slumped = false;
 		_corpseBody.Rotation = 0f;
 		ShowLying(false);
+	}
+
+	// A dying animation's frame: goo smeared where the body has slid to, and the pool once it has stopped.
+	private void SmearSlide()
+	{
+		if (_slide == null)
+			return;
+		Vector2 along = _corpseBody.GlobalTransform.X.Normalized();
+		float slid = _slide[_corpseBody.Frame];
+		Vector2 at = _corpseBody.GlobalPosition + along * slid;
+		if (slid - _smearedTo >= 2f)
+		{
+			GooCanvas.Splat(at, Vector2.Zero, 12f, along.Angle(), stretch: 1.8f, strength: 0.8f);
+			_smearedTo = slid;
+		}
+		if (slid == _slide[^1])
+		{
+			GooCanvas.PoolUnder(at, 60f);
+			_slide = null;
+		}
 	}
 
 	// The lying layer plays `animation` from the start, or shows just its frame `frame`.
